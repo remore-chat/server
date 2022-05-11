@@ -1,0 +1,3 @@
+[submodule "Thirdparty/Opus.NET"]
+	path = Thirdparty/Opus.NET
+	url = https://github.com/roxxel/Opus.NET
