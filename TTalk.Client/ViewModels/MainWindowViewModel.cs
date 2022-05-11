@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using FragLabs.Audio.Codecs;
@@ -35,6 +36,7 @@ namespace TTalk.Client.ViewModels
             _audioQueueSlim = new(0);
             _audioQueue = new();
 
+
             SettingsModel.Init();
             SettingsModel.I.Main = this;
             Task.Run(SendAudio);
@@ -56,6 +58,14 @@ namespace TTalk.Client.ViewModels
             set { this.RaiseAndSetIfChanged(ref address, value); }
         }
 
+        private string messageContent;
+
+        public string MessageContent
+        {
+            get { return messageContent; }
+            set { this.RaiseAndSetIfChanged(ref messageContent, value); }
+        }
+
         private ObservableCollection<Channel> channels;
 
         public ObservableCollection<Channel> Channels
@@ -72,10 +82,26 @@ namespace TTalk.Client.ViewModels
             set { this.RaiseAndSetIfChanged(ref isConnected, value); }
         }
 
+        private Channel currentTextChannel;
+
+        public Channel CurrentTextChannel
+        {
+            get { return currentTextChannel; }
+            set { this.RaiseAndSetIfChanged(ref currentTextChannel, value); }
+        }
+
+
         public ChannelClient CurrentChannelClient { get; private set; }
 
         public Channel CurrentChannel { get; set; }
-        public bool IsNotConnectingToChannel { get; private set; }
+        private bool isNotConnectingToChannel;
+
+        public bool IsNotConnectingToChannel
+        {
+            get { return isNotConnectingToChannel; }
+            set { this.RaiseAndSetIfChanged(ref isNotConnectingToChannel, value); }
+        }
+
 
         #endregion
         #region Audio 
@@ -315,14 +341,28 @@ namespace TTalk.Client.ViewModels
             _udpClient.Connect();
         }
 
-        public async Task JoinChannel(string id)
+        public async Task JoinChannel(Channel channel)
         {
 
-            if (CurrentChannel?.Id == id)
+            if (CurrentChannel?.Id == channel.Id)
                 return;
+            if (channel.ÑhannelType == Library.Enums.ChannelType.Text)
+            {
+                CurrentTextChannel = channel;
+                if (channel.LastParsedPage != 0)
+                {
+                    channel.LastParsedPage++;
+                    _client.Send(new RequestChannelMessagesPacket()
+                    {
+                        ChannelId = channel.Id,
+                        Page = 0
+                    });
+                }
+                return;
+            }
             IsNotConnectingToChannel = false;
-            _client.Send(new RequestChannelJoin() { ChannelId = id });
-        }       
+            _client.Send(new RequestChannelJoin() { ChannelId = channel.Id });
+        }
         private void OnSocketErrored(object? sender, SocketError e)
         {
 
@@ -340,11 +380,11 @@ namespace TTalk.Client.ViewModels
             {
                 ;
             }
-            
+
             (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
                 .MainWindow.DataContext = new MainWindowViewModel();
         }
-        
+
         private void OnPacketReceived(object? sender, PacketReceivedEventArgs e)
         {
             var packet = e.Packet;
@@ -356,8 +396,8 @@ namespace TTalk.Client.ViewModels
             {
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    Disconnect();
                     await MainWindow.ShowDialogHost(new NotificationDialogModel("You was disconnected from this server\nReason:" + disconnect.Reason), "NotificationDialogHost");
+                    Disconnect();
                 });
             }
             else if (packet is ChannelAddedPacket addedChannel)
@@ -370,10 +410,47 @@ namespace TTalk.Client.ViewModels
                         Name = addedChannel.Name,
                         Bitrate = addedChannel.Bitrate,
                         ConnectedClients = new(addedChannel.Clients.Select(x => new ChannelClient(x)).ToList()),
-                        Parent = this
+                        Parent = this,
+                        Order = addedChannel.Order,
+                        ÑhannelType = addedChannel.ChannelType
                     });
                 });
 
+            }
+            else if (packet is ChannelMessageAddedPacket channelMessage)
+            {
+                var channel = Channels.FirstOrDefault(x => x.Id == channelMessage.ChannelId);
+                if (channel == null)
+                    return;
+                if (channel.Messages == null)
+                    channel.Messages = new();
+                channel.Messages.Add(new()
+                {
+                    ChannelId = channelMessage.ChannelId,
+                    Id = channelMessage.MessageId,
+                    Message = channelMessage.Text,
+                    Username = channelMessage.SenderName
+                });
+                if (channelMessage.SenderName == Settings.Username)
+                {
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        MainWindow.ListBox.Scroll.Offset = new Vector(MainWindow.ListBox.Scroll.Offset.X, double.MaxValue);
+                    });
+                }
+            }
+            else if (packet is ChannelMessagesResponse channelMessages)
+            {
+                var channel = Channels.FirstOrDefault(x => x.Id == channelMessages.ChannelId);
+                if (channel == null)
+                    return;
+                if (channel.Messages == null)
+                    channel.Messages = new();
+                channelMessages.Messages.Reverse();
+                foreach (var message in channelMessages.Messages)
+                {
+                    channel.Messages.Insert(0, message);
+                }
             }
             else if (packet is ChannelUserConnected userConnected)
             {
@@ -460,6 +537,23 @@ namespace TTalk.Client.ViewModels
             Connect();
         }
         #endregion
+
+        public void SendMessage(object param)
+        {
+            var message = MessageContent;
+            if (string.IsNullOrEmpty(message))
+                return;
+            if (CurrentTextChannel != null)
+            {
+
+                _client.Send(new CreateChannelMessagePacket()
+                {
+                    ChannelId = CurrentTextChannel.Id,
+                    Text = message
+                });
+                MessageContent = "";
+            }
+        }
         private void OnExited(object? sender, EventArgs e)
         {
             _cts?.Cancel();

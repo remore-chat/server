@@ -1,6 +1,7 @@
 ﻿using NetCoreServer;
 using System.Net.Sockets;
 using System.Text;
+using TTalk.Library.Models;
 using TTalk.Library.Packets;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
@@ -81,7 +82,7 @@ public class ServerSession : TcpSession
                 TCP.Multicast(new ClientConnectedPacket(auth.Username));
                 foreach (var channel in Server.Channels)
                 {
-                    this.Send(new ChannelAddedPacket(channel.Id, channel.Name, channel.ConnectedClients.Select(x => x.Username).ToList(), bitrate: channel.Bitrate));
+                    this.Send(new ChannelAddedPacket(channel.Id, channel.Name, channel.ConnectedClients.Select(x => x.Username).ToList(), channel.Bitrate, channel.Order, channel.ChannelType));
                     await Task.Delay(10);
                 }
 
@@ -90,11 +91,56 @@ public class ServerSession : TcpSession
         }
         else if (State == SessionState.Connected)
         {
-            
+
             if (packet is VersionExchangePacket || packet is AuthenticationDataPacket)
             {
                 Logger.LogWarn($"Invalid packet received at state {State} from client {Id}");
                 this.Disconnect();
+            }
+            else if (packet is CreateChannelMessagePacket channelMessage)
+            {
+                var id = channelMessage.ChannelId;
+                var text = channelMessage.Text;
+                var channel = Server.Channels.FirstOrDefault(x => x.Id == id);
+                if (channel == null)
+                    return;
+                if (channel.ChannelType != TTalk.Library.Enums.ChannelType.Text)
+                    return;
+                if (text.Length > 2000 || string.IsNullOrEmpty(text))
+                    return;
+                var message = new ChannelMessage()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ChannelId = id,
+                    Username = this.Username,
+                    Message = text
+                };
+                channel.Messages.Add(message);
+                TCP.Multicast(new ChannelMessageAddedPacket()
+                {
+                    ChannelId = channel.Id,
+                    MessageId = message.Id,
+                    SenderName = message.Username,
+                    Text = message.Message
+                });
+            } 
+            else if (packet is RequestChannelMessagesPacket messagesPacket)
+            {
+                var id = messagesPacket.ChannelId;
+                var page = messagesPacket.Page;
+                var channel = Server.Channels.FirstOrDefault(x => x.Id == id);
+                if (channel == null)
+                    return;
+                if (channel.ChannelType != TTalk.Library.Enums.ChannelType.Text)
+                    return;
+                if (messagesPacket.Page < 0)
+                    return;
+                var messages = channel.Messages.Skip(page * 20).Take(20).ToList();
+                this.Send(new ChannelMessagesResponse()
+                {
+                    ChannelId = channel.Id,
+                    Messages = messages
+                });
             }
             else if (packet is VoiceEstablishPacket voiceEstablish)
             {
@@ -114,6 +160,10 @@ public class ServerSession : TcpSession
                 else if (channel.Id == CurrentChannel?.Id)
                 {
                     this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Already joined" });
+                }
+                else if (channel.ChannelType == TTalk.Library.Enums.ChannelType.Text)
+                {
+                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "This is text channel" });
                 }
                 else
                 {

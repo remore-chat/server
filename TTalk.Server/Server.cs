@@ -39,9 +39,47 @@ public class TTalkServer
         UDP = new(this, IPAddress.Any, port);
         Channels = new()
         {
-            new Channel() { Id = Guid.NewGuid().ToString(), Name = "Main", ConnectedClients = new(), MaxClients = 32, Bitrate = 500000 },
-            new Channel() { Id = Guid.NewGuid().ToString(), Name = "Second", ConnectedClients = new(), MaxClients = 32, Bitrate = 64000 },
-            new Channel() { Id = Guid.NewGuid().ToString(), Name = "Third", ConnectedClients = new(), MaxClients = 1, Bitrate = 12000 },
+            new Channel()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Main",
+                ConnectedClients = new(),
+                MaxClients = 32,
+                Bitrate = 500000,
+                ChannelType = TTalk.Library.Enums.ChannelType.Voice,
+                Order = 0
+            },
+            new Channel()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Second",
+                ConnectedClients = new(),
+                MaxClients = 32,
+                Bitrate = 64000,
+                ChannelType = TTalk.Library.Enums.ChannelType.Voice,
+                Order = 1
+            },
+            new Channel()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Third",
+                ConnectedClients = new(),
+                MaxClients = 12,
+                Bitrate = 12000,
+                ChannelType = TTalk.Library.Enums.ChannelType.Voice,
+                Order = 2
+            },
+            new Channel()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "TextChannel",
+                ConnectedClients = new(),
+                MaxClients = 0,
+                Bitrate = 0,
+                ChannelType = TTalk.Library.Enums.ChannelType.Text,
+                Order = 3,
+                Messages = new()
+            }
         };
         Clients = new();
         Version = "0.0.1";

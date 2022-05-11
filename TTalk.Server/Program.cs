@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Runtime.Serialization.Formatters.Binary;
 using TTalk.Library.Packets;
 using TTalk.Server;
 

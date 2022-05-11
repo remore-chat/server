@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TTalk.Client.ViewModels;
+using TTalk.Library.Enums;
+using TTalk.Library.Models;
 
 namespace TTalk.Client.Models
 {
@@ -44,6 +46,17 @@ namespace TTalk.Client.Models
             set { clientsCount = value; PropertyChanged?.Invoke(this, new(nameof(ClientsCount))); }
         }
 
+        public int LastParsedPage { get; set; } = -1;
+
+        private ObservableCollection<ChannelMessage> messages;
+
+        public ObservableCollection<ChannelMessage> Messages
+        {
+            get { return messages; }
+            set { messages = value; PropertyChanged?.Invoke(this, new(nameof(Messages))); }
+        }
+
+
 
         private ObservableCollection<ChannelClient> connectedClients;
 
@@ -71,13 +84,23 @@ namespace TTalk.Client.Models
         }
 
 
+        private ChannelType channelType;
+
+        public ChannelType СhannelType
+        {
+            get { return channelType; }
+            set { channelType = value; PropertyChanged?.Invoke(this, new(nameof(СhannelType))); }
+        }
+
+
         public void JoinChannel(object parameter)
         {
             var id = (string)parameter;
-            Task.Run(() => Parent.JoinChannel(id));
+            Task.Run(() => Parent.JoinChannel(this));
         }
 
         public MainWindowViewModel Parent { get; internal set; }
+        public int Order { get; internal set; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }
