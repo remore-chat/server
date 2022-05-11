@@ -10,11 +10,19 @@ namespace TTalk.Library.Packets
     {
         public int Id { get; }
 
-        
+
 
         public static IPacket FromByteArray(byte[] data)
         {
-            return new PacketReader(data).Read();
+            try
+            {
+                return new PacketReader(data).Read();
+            }
+            catch (Exception)
+            {
+
+                return null;
+            }
         }
     }
 }
