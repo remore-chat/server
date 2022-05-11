@@ -1,0 +1,13 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace TTalk.Library.Packets.Client
+{
+    public class VoiceDataPacket : IPacket, IUdpPacket
+    {
+        public int Id => 12;
+        public string ClientUsername { get; set; }
+        public byte[] VoiceData { get; set; }
+    }
+}
