@@ -78,17 +78,48 @@ namespace TTalk.Library.Packets
                     using var mem = new MemoryStream(bytes, false);
                     prop.SetValue(instance, new BinaryFormatter().Deserialize(mem));
                 }
+                else if (prop.PropertyType.IsGenericType && (prop.PropertyType.GetGenericTypeDefinition() == typeof(List<>)))
+                {
+                    var count = reader.ReadInt();
+                    var listType = typeof(List<>);
+                    var constructedListType = listType.MakeGenericType(prop.PropertyType.GetGenericArguments()[0]);
+                    var list = Activator.CreateInstance(constructedListType);
+                    var listAddMethod = list.GetType().GetMethod("Add");
+                    for (int i = 0; i < count; i++)
+                    {
+                        var length = reader.ReadInt();
+                        var bytes = reader.ReadBytes(length);
+                        using var mem = new MemoryStream(bytes, false);
+                        listAddMethod.Invoke(list, new[] { new BinaryFormatter().Deserialize(mem) });
+                    }
+                    prop.SetValue(instance, list);
+
+                }
+                else if (prop.PropertyType.IsEnum)
+                {
+                    var enumUnderliying = Enum.GetUnderlyingType(prop.PropertyType);
+                    if (enumUnderliying == typeof(int))
+                    {
+                        prop.SetValue(instance, Enum.ToObject(prop.PropertyType, reader.ReadInt()));
+                    }
+                    else if (enumUnderliying == typeof(byte))
+                    {
+                        var @byte = reader.ReadByte();
+                        prop.SetValue(instance, Enum.ToObject(prop.PropertyType, @byte));
+                    }
+                    else
+                        throw new InvalidOperationException("Invalid underlying type of enum (Supported: int, byte)");
+                }
                 else if (prop.PropertyType == typeof(float))
                     prop.SetValue(instance, reader.ReadFloat());
                 else if (prop.PropertyType == typeof(bool))
                     prop.SetValue(instance, reader.ReadBool());
                 else if (prop.PropertyType == typeof(string))
                     prop.SetValue(instance, reader.ReadString());
-
                 else
                     throw new InvalidOperationException($"Unknown property type {prop.PropertyType.GetType().FullName}");
             }
-            reader.Dispose();            
+            reader.Dispose();
             return instance as IPacket;
         }
     }

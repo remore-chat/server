@@ -13,19 +13,47 @@ namespace TTalk.Server
     {
         public static long Send(this TcpSession session, IPacket packet)
         {
-            return session.Send(new PacketWriter(packet).Write());
+            try
+            {
+                return session.Send(new PacketWriter(packet).Write());
+
+            }
+            catch (Exception ex)
+            {
+
+                Logger.LogError(ex.Message);
+            }
+            return 0;
         }
 
         public static long Send(this UdpServer server, EndPoint endpoint, IPacket packet)
         {
-            return server.Send(endpoint, new PacketWriter(packet).Write());
+            try
+            {
+                return server.Send(endpoint, new PacketWriter(packet).Write());
+            }
+            catch (Exception ex)
+            {
+
+                Logger.LogError(ex.Message);
+            }
+            return 0;
         }
-        
+
 
         public static bool Multicast(this TcpServer server, IPacket packet)
         {
-            
-            return server.Multicast(new PacketWriter(packet).Write());
+
+            try
+            {
+                return server.Multicast(new PacketWriter(packet).Write());
+            }
+            catch (Exception ex)
+            {
+
+                Logger.LogError(ex.Message);
+            }
+            return false;
         }
     }
 }

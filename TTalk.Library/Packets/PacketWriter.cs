@@ -40,7 +40,7 @@ namespace TTalk.Library.Packets
                     if (!prop.Name.StartsWith("NL"))
                         writer.Write(((byte[])value).Length);
                     writer.Write((byte[])value);
-                }    
+                }
                 else if (value is List<byte> list)
                 {
                     writer.Write(list.Count());
@@ -55,11 +55,39 @@ namespace TTalk.Library.Packets
                     writer.Write(bytes.Length);
                     writer.Write(bytes);
                 }
+                else if (prop.PropertyType.IsEnum)
+                {
+                    var enumUnderliying = Enum.GetUnderlyingType(prop.PropertyType);
+                    if (enumUnderliying == typeof(int))
+                        writer.Write((int)value);
+                    else if (enumUnderliying == typeof(byte))
+                        writer.Write((byte)value);
+                    else
+                        throw new InvalidOperationException("Invalid underlying type of enum (Supported: int, byte)");
+                }
+                else if (prop.PropertyType.IsGenericType && (prop.PropertyType.GetGenericTypeDefinition() == typeof(List<>)))
+                {
+                    var collection = (System.Collections.IEnumerable)value;
+                    int count = 0;
+                    var bytesAll = new List<byte>();
+                    foreach (var val in collection)
+                    {
+                        using var mem = new MemoryStream();
+                        new BinaryFormatter().Serialize(mem, val);
+                        var bytes = mem.ToArray();
+                        bytesAll.AddRange(BitConverter.GetBytes(bytes.Length));
+                        bytesAll.AddRange(bytes);
+                        count++;
+                    }
+                    writer.Write(count);
+                    writer.Write(bytesAll.ToArray());
+                    
+                }
                 else if (value is float)
                     writer.Write((float)value);
                 else if (value is bool)
                     writer.Write((bool)value);
-                else if (value is string)
+                else if (prop.PropertyType == typeof(string))
                     writer.Write((string)value ?? "");
                 else
                     throw new InvalidOperationException($"Unknown property type {value.GetType().FullName}");

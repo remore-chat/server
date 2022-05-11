@@ -34,7 +34,6 @@
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
   </ItemGroup>
   <ItemGroup>
-    <!--<ProjectReference Include="..\Thirdparty\MessageBox.Avalonia\src\MessageBox.Avalonia\MessageBox.Avalonia.csproj" />-->
     <ProjectReference Include="..\Thirdparty\Opus.NET\OpusWrapper\OpusWrapper.csproj" />
     <ProjectReference Include="..\TTalk.Library\TTalk.Library.csproj" />
   </ItemGroup>
