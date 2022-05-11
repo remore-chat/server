@@ -38,116 +38,145 @@
 
 			</DataTemplate>
 		</dialogHost:DialogHost.DialogContentTemplate>
-		<dialogHost:DialogHost Identifier="SettingsDialogHost" >
+		<dialogHost:DialogHost Identifier="ConnectDialogHost">
 			<dialogHost:DialogHost.DialogContentTemplate>
-				<DataTemplate DataType="models:SettingsModel">
-					<Grid>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="0.7*" MinWidth="400" />
-						</Grid.ColumnDefinitions>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="0.8*" MinHeight="600" />
-							<RowDefinition Height="0.1*" />
-						</Grid.RowDefinitions>
-						<TabControl Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-							<TabItem Header="Appearance">
-								<StackPanel Margin="0 16 0 0">
-									<TextBox UseFloatingWatermark="True" IsReadOnly="{Binding Main.IsConnected}" wpf:TextFieldAssist.Label="Default username" Classes="Outline" Text="{Binding Username}" />
-									<TextBlock Text="Disconnect from server in order to change your nickname" IsVisible="{Binding Main.IsConnected}" />
-								</StackPanel>
-							</TabItem>
-							<TabItem Header="Playback">
-								<StackPanel Margin="0 16 0 0">
-									<TextBlock Text="Output device" />
-									<ComboBox Classes="Outline" Items="{Binding OutputDevices}" MinWidth="400"  SelectedIndex="{Binding OutputDevice}"></ComboBox>
-								</StackPanel>
-							</TabItem>
-							<TabItem Header="Recording">
-								<StackPanel Margin="0 16 0 0">
-									<TextBlock Text="Input device" />
-									<ComboBox Classes="Outline" Items="{Binding InputDevices}" SelectedIndex="{Binding InputDevice}" />
-									<DockPanel Margin="0 12 0 12" >
-										<TextBlock Classes="Subtitle1" Text="Use Voice Activity Detection" />
-										<CheckBox Margin="4 0 0 0" x:Name="UseVoiceActivityDetectionCheckBox" IsChecked="{Binding UseVoiceActivityDetection}" />
-									</DockPanel>
-									<StackPanel Margin="0 12 0 12" IsEnabled="{Binding #UseVoiceActivityDetectionCheckBox.IsChecked}">
-										<DockPanel HorizontalAlignment="Stretch">
-											<TextBlock Classes="Subtitle1" Text="Voice Activity Detection threshold" DockPanel.Dock="Left" />
-											<TextBlock Text="{Binding #ThresholdSlider.Value, StringFormat={}{0:#.##}}" HorizontalAlignment="Right" DockPanel.Dock="Right" />
-										</DockPanel>
-										<Slider Minimum="0.1" x:Name="ThresholdSlider" Margin="6 0 6 0" Maximum="0.5" Value="{Binding Threshold}" />
-									</StackPanel>
-								</StackPanel>
-							</TabItem>
-						</TabControl>
-						<StackPanel Grid.Row="1" Margin="0 8 0 0" >
-							<TextBlock FontSize="12" Text="Everything saves automatically" />
-							<Button Margin="8 0 0 0" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=dialogHost:DialogHost}, Path=CloseDialogCommand}">
-								CLOSE
+				<DataTemplate DataType="models:ConnectDialogModel">
+					<StackPanel Margin="16">
+						<TextBlock Classes="Headline5"
+								   TextAlignment="Center"
+								   Text="Enter address of server you want to connect" />
+						<TextBox Classes="Body1"
+								 x:Name="ServerAddress"
+								   TextAlignment="Left"
+								   Text="{Binding Address}" />
+						<DockPanel Margin="36 0 0 0">
+							
+							<Button Margin="0 8 0 0"
+									CommandParameter="{Binding #ServerAddress.Text}"
+									Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=dialogHost:DialogHost}, Path=CloseDialogCommand}">
+								Connect
 							</Button>
-						</StackPanel>
-					</Grid>
+							<Button Margin="12 8 0 0"
+									Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=dialogHost:DialogHost}, Path=CloseDialogCommand}">
+								Close
+							</Button>
+						</DockPanel>
+					</StackPanel>
+
 				</DataTemplate>
 			</dialogHost:DialogHost.DialogContentTemplate>
-			<Grid RowDefinitions="Auto, *">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition MinWidth="300" Width="0.3*" />
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
-				<DockPanel VerticalAlignment="Top" HorizontalAlignment="Stretch"  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
-					<Menu DockPanel.Dock="Top" HorizontalAlignment="Stretch">
-						<MenuItem Header="_Connections">
-							<MenuItem Header="_Connect" Command="{Binding ShowConnectDialog}"/>
-							<MenuItem Header="_Disconnect" Command="{Binding Disconnect}"/>
-							<Separator/>
-							<MenuItem Header="_Exit"/>
-						</MenuItem>
-						<MenuItem HorizontalAlignment="Right"  DockPanel.Dock="Right" Header="{Binding Settings.Username}" />
-						<MenuItem HorizontalAlignment="Right" DockPanel.Dock="Right" Header="_Settings">
-							<MenuItem Header="_Client settings" Command="{Binding ShowSettingsDialog}" />
-						</MenuItem>
-					</Menu>
-				</DockPanel>
-				<DockPanel Grid.Row="1" Grid.Column="0" MinWidth="300">
-					<ItemsRepeater Margin="12" Items="{Binding Channels}">
-						<ItemsRepeater.ItemTemplate>
 
-							<DataTemplate>
-								<Button Margin="0 8 0 8" IsEnabled="{Binding IsNotConnectingToChannel}"
-										Command="{Binding JoinChannel}" CommandParameter="{Binding Id}"
-										HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-									<Button.Content>
-										<StackPanel>
-											<TextBlock Text="{Binding Name}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-											<TextBlock Text="{Binding Bitrate, StringFormat='Bitrate {0}bit/s'}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-											<ListBox Margin="0 8 0 0" Items="{Binding ConnectedClients}">
-												<ListBox.ItemTemplate>
-													<DataTemplate>
-														<DockPanel>
-															<TextBlock Text="{Binding Username}" />
-
-															<Border Margin="12 0 0 0" Width="8" Height="8" CornerRadius="24" Background="AliceBlue" IsVisible="{Binding IsSpeaking}" />
-															<avalonia:MaterialIcon Kind="MicrophoneOff" IsVisible="{Binding IsMuted}" Width="16" Height="16" />
-														</DockPanel>
-													</DataTemplate>
-												</ListBox.ItemTemplate>
-											</ListBox>
-
+			<dialogHost:DialogHost Identifier="SettingsDialogHost" >
+				<dialogHost:DialogHost.DialogContentTemplate>
+					<DataTemplate DataType="models:SettingsModel">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="0.7*" MinWidth="400" />
+							</Grid.ColumnDefinitions>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="0.8*" MinHeight="600" />
+								<RowDefinition Height="0.1*" />
+							</Grid.RowDefinitions>
+							<TabControl Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+								<TabItem Header="Appearance">
+									<StackPanel Margin="0 16 0 0">
+										<TextBox UseFloatingWatermark="True" IsReadOnly="{Binding Main.IsConnected}" wpf:TextFieldAssist.Label="Default username" Classes="Outline" Text="{Binding Username}" />
+										<TextBlock Text="Disconnect from server in order to change your nickname" IsVisible="{Binding Main.IsConnected}" />
+									</StackPanel>
+								</TabItem>
+								<TabItem Header="Playback">
+									<StackPanel Margin="0 16 0 0">
+										<TextBlock Text="Output device" />
+										<ComboBox Classes="Outline" Items="{Binding OutputDevices}" MinWidth="400"  SelectedIndex="{Binding OutputDevice}"></ComboBox>
+									</StackPanel>
+								</TabItem>
+								<TabItem Header="Recording">
+									<StackPanel Margin="0 16 0 0">
+										<TextBlock Text="Input device" />
+										<ComboBox Classes="Outline" Items="{Binding InputDevices}" SelectedIndex="{Binding InputDevice}" />
+										<DockPanel Margin="0 12 0 12" >
+											<TextBlock Classes="Subtitle1" Text="Use Voice Activity Detection" />
+											<CheckBox Margin="4 0 0 0" x:Name="UseVoiceActivityDetectionCheckBox" IsChecked="{Binding UseVoiceActivityDetection}" />
+										</DockPanel>
+										<StackPanel Margin="0 12 0 12" IsEnabled="{Binding #UseVoiceActivityDetectionCheckBox.IsChecked}">
+											<DockPanel HorizontalAlignment="Stretch">
+												<TextBlock Classes="Subtitle1" Text="Voice Activity Detection threshold" DockPanel.Dock="Left" />
+												<TextBlock Text="{Binding #ThresholdSlider.Value, StringFormat={}{0:#.##}}" HorizontalAlignment="Right" DockPanel.Dock="Right" />
+											</DockPanel>
+											<Slider Minimum="0.1" x:Name="ThresholdSlider" Margin="6 0 6 0" Maximum="0.5" Value="{Binding Threshold}" />
 										</StackPanel>
-									</Button.Content>
+									</StackPanel>
+								</TabItem>
+							</TabControl>
+							<StackPanel Grid.Row="1" Margin="0 8 0 0" >
+								<TextBlock FontSize="12" Text="Everything saves automatically" />
+								<Button Margin="8 0 0 0" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=dialogHost:DialogHost}, Path=CloseDialogCommand}">
+									CLOSE
 								</Button>
+							</StackPanel>
+						</Grid>
+					</DataTemplate>
+				</dialogHost:DialogHost.DialogContentTemplate>
+				<Grid RowDefinitions="Auto, *">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition MinWidth="300" Width="0.3*" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<DockPanel VerticalAlignment="Top" HorizontalAlignment="Stretch"  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+						<Menu DockPanel.Dock="Top" HorizontalAlignment="Stretch">
+							<MenuItem Header="_Connections">
+								<MenuItem Header="_Connect" Command="{Binding ShowConnectDialog}"/>
+								<MenuItem Header="_Disconnect" Command="{Binding Disconnect}"/>
+								<Separator/>
+								<MenuItem Header="_Exit"/>
+							</MenuItem>
+							<MenuItem HorizontalAlignment="Right"  DockPanel.Dock="Right" Header="{Binding Settings.Username}" />
+							<MenuItem HorizontalAlignment="Right" DockPanel.Dock="Right" Header="_Settings">
+								<MenuItem Header="_Client settings" Command="{Binding ShowSettingsDialog}" />
+							</MenuItem>
+						</Menu>
+					</DockPanel>
+					<DockPanel Grid.Row="1" Grid.Column="0" MinWidth="300">
+						<ItemsRepeater Margin="12" Items="{Binding Channels}">
+							<ItemsRepeater.ItemTemplate>
 
-							</DataTemplate>
-						</ItemsRepeater.ItemTemplate>
-					</ItemsRepeater>
-				</DockPanel>
-				<StackPanel MinWidth="400" Grid.Column="1" Grid.Row="1">
+								<DataTemplate>
+									<Button Margin="0 8 0 8" IsEnabled="{Binding IsNotConnectingToChannel}"
+											Command="{Binding JoinChannel}" CommandParameter="{Binding Id}"
+											HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+										<Button.Content>
+											<StackPanel>
+												<TextBlock Text="{Binding Name}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+												<TextBlock Text="{Binding Bitrate, StringFormat='Bitrate {0}bit/s'}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+												<ListBox Margin="0 8 0 0" Items="{Binding ConnectedClients}">
+													<ListBox.ItemTemplate>
+														<DataTemplate>
+															<DockPanel>
+																<TextBlock Text="{Binding Username}" />
+
+																<Border Margin="12 0 0 0" Width="8" Height="8" CornerRadius="24" Background="AliceBlue" IsVisible="{Binding IsSpeaking}" />
+																<avalonia:MaterialIcon Kind="MicrophoneOff" IsVisible="{Binding IsMuted}" Width="16" Height="16" />
+															</DockPanel>
+														</DataTemplate>
+													</ListBox.ItemTemplate>
+												</ListBox>
+
+											</StackPanel>
+										</Button.Content>
+									</Button>
+
+								</DataTemplate>
+							</ItemsRepeater.ItemTemplate>
+						</ItemsRepeater>
+					</DockPanel>
+					<StackPanel MinWidth="400" Grid.Column="1" Grid.Row="1">
 
 
-					<Button Command="{Binding ToggleMute}" Content="Mute/Unmute" />
-				</StackPanel>
+						<Button Command="{Binding ToggleMute}" Content="Mute/Unmute" />
+					</StackPanel>
 
-			</Grid>
+				</Grid>
+			</dialogHost:DialogHost>
 		</dialogHost:DialogHost>
 	</dialogHost:DialogHost>
 

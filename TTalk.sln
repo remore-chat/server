@@ -11,9 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTalk.Client", "TTalk.Clien
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Thirdparty", "Thirdparty", "{FE6EB4F2-5BF1-4430-8DB5-D80E2501C74C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageBox.Avalonia", "Thirdparty\MessageBox.Avalonia\src\MessageBox.Avalonia\MessageBox.Avalonia.csproj", "{CBE28DDD-98A0-4653-9AF0-07F9A1DD030C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpusWrapper", "Thirdparty\Opus.NET\OpusWrapper\OpusWrapper.csproj", "{CF3062FD-1874-4DA9-96E4-AC7F6AB80581}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpusWrapper", "Thirdparty\Opus.NET\OpusWrapper\OpusWrapper.csproj", "{0BC62D38-D680-4362-AC42-0713F00EC658}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,21 +31,16 @@ Global
 		{9E2D8EB4-49AB-481B-8D61-62B72646157A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E2D8EB4-49AB-481B-8D61-62B72646157A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E2D8EB4-49AB-481B-8D61-62B72646157A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CBE28DDD-98A0-4653-9AF0-07F9A1DD030C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CBE28DDD-98A0-4653-9AF0-07F9A1DD030C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CBE28DDD-98A0-4653-9AF0-07F9A1DD030C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CBE28DDD-98A0-4653-9AF0-07F9A1DD030C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CF3062FD-1874-4DA9-96E4-AC7F6AB80581}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CF3062FD-1874-4DA9-96E4-AC7F6AB80581}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CF3062FD-1874-4DA9-96E4-AC7F6AB80581}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CF3062FD-1874-4DA9-96E4-AC7F6AB80581}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BC62D38-D680-4362-AC42-0713F00EC658}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BC62D38-D680-4362-AC42-0713F00EC658}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BC62D38-D680-4362-AC42-0713F00EC658}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BC62D38-D680-4362-AC42-0713F00EC658}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{CBE28DDD-98A0-4653-9AF0-07F9A1DD030C} = {FE6EB4F2-5BF1-4430-8DB5-D80E2501C74C}
-		{CF3062FD-1874-4DA9-96E4-AC7F6AB80581} = {FE6EB4F2-5BF1-4430-8DB5-D80E2501C74C}
+		{0BC62D38-D680-4362-AC42-0713F00EC658} = {FE6EB4F2-5BF1-4430-8DB5-D80E2501C74C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21254289-9598-40A5-B1DE-0795DC038A2B}

@@ -14,7 +14,7 @@ using TTalk.Client.ViewModels;
 
 namespace TTalk.Client.Models
 {
-    public class SettingsModel : INotifyPropertyChanged
+    public class SettingsModel : BaseReactiveModel
     {
 
         private static SettingsModel instance;
@@ -172,21 +172,6 @@ namespace TTalk.Client.Models
 
         [JsonIgnore]
         public MainWindowViewModel Main { get; set; }
-
-        #region INotifyPropertyChanged
-        private bool RaiseAndSetIfChanged<T>(ref T backingStore, T value,
-            [CallerMemberName] string propertyName = "",
-            Action onChanged = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(backingStore, value))
-                return false;
-            backingStore = value;
-            onChanged?.Invoke();
-            OnPropertyChanged(propertyName);
-            WriteSettings();
-            return true;
-        }
-
         public static void Init()
         {
             var _path = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -229,16 +214,14 @@ namespace TTalk.Client.Models
             File.WriteAllText(_path, JsonConvert.SerializeObject(this));
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        public override bool RaiseAndSetIfChanged<T>(ref T backingStore, T value, [CallerMemberName] string propertyName = "", Action onChanged = null)
         {
-            var changed = PropertyChanged;
-            if (changed == null)
-                return;
-
-            changed.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            var res = base.RaiseAndSetIfChanged(ref backingStore, value, propertyName, onChanged);
+            if (res)
+                WriteSettings();
+            return res;
         }
-        #endregion
+
 
     }
 }

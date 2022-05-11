@@ -1,8 +1,6 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using FragLabs.Audio.Codecs;
-using MessageBox.Avalonia;
-using MessageBox.Avalonia.Models;
 using NAudio.Wave;
 using ReactiveUI;
 using System;
@@ -444,7 +442,8 @@ namespace TTalk.Client.ViewModels
         {
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                await MainWindow.ShowDialogHost(SettingsModel.I, "SettingsDialogHost");
+                var amogus = await MainWindow.ShowDialogHost(SettingsModel.I, "SettingsDialogHost");
+                ;
             });
         }
         public async void ShowConnectDialog()
@@ -454,24 +453,10 @@ namespace TTalk.Client.ViewModels
                 await MainWindow.ShowDialogHost(new NotificationDialogModel("Please set valid nickname in settings"), "NotificationDialogHost");
                 return;
             }
-            var mbox = MessageBoxManager.GetMessageBoxInputWindow(new()
-            {
-                ContentTitle = "Connect",
-                ContentMessage = "127.0.0.1:9831",
-                ShowInCenter = true,
-                Topmost = true,
-                MaxWidth = 400,
-                WatermarkText = "Enter ip:port here",
-                ButtonDefinitions = new[]
-                {
-                    new ButtonDefinition() { Name = "Connect", IsDefault = true },
-                    new ButtonDefinition() { Name = "Cancel", IsCancel = true },
-                }
-            });
-            var result = await mbox.ShowDialog(MainWindow);
-            if (result.Button == "Cancel" || string.IsNullOrEmpty(result.Message))
+            var address = await MainWindow.ShowDialogHost(new ConnectDialogModel(), "ConnectDialogHost");
+            if (string.IsNullOrEmpty(address?.ToString()))
                 return;
-            Address = result.Message;
+            Address = address.ToString();
             Connect();
         }
         #endregion
