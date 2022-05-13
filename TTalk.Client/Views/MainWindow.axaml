@@ -103,8 +103,12 @@
 												<TextBlock Classes="Subtitle1" Text="Voice Activity Detection threshold" DockPanel.Dock="Left" />
 												<TextBlock Text="{Binding #ThresholdSlider.Value, StringFormat={}{0:#.##}}" HorizontalAlignment="Right" DockPanel.Dock="Right" />
 											</DockPanel>
-											<Slider Minimum="0.1" x:Name="ThresholdSlider" Margin="6 0 6 0" Maximum="0.5" Value="{Binding Threshold}" />
+											<Slider Minimum="0.005" x:Name="ThresholdSlider" Margin="6 0 6 0" Maximum="0.5" Value="{Binding Threshold}" />
 										</StackPanel>
+										<DockPanel Margin="0 12 0 12" >
+											<TextBlock Classes="Subtitle1" Text="Use Voice Activity Detection" />
+											<CheckBox Margin="4 0 0 0" IsChecked="{Binding NoiseReductionEnabled}" />
+										</DockPanel>
 									</StackPanel>
 								</TabItem>
 							</TabControl>

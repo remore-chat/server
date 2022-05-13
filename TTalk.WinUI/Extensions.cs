@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TTalk.Library.Packets;
 
-namespace TTalk.Client
+namespace TTalk.WinUI
 {
     public static class Extensions
     {

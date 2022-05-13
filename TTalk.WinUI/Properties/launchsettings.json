@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "TTalk.WinUI (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "TTalk.WinUI (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}

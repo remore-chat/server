@@ -1,0 +1,9 @@
+﻿namespace TTalk.WinUI.Behaviors
+{
+    public enum NavigationViewHeaderMode
+    {
+        Always,
+        Never,
+        Minimal
+    }
+}

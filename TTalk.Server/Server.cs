@@ -79,6 +79,17 @@ public class TTalkServer
                 ChannelType = TTalk.Library.Enums.ChannelType.Text,
                 Order = 3,
                 Messages = new()
+            },
+            new Channel()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Text channel 2",
+                ConnectedClients = new(),
+                MaxClients = 0,
+                Bitrate = 0,
+                ChannelType = TTalk.Library.Enums.ChannelType.Text,
+                Order = 4,
+                Messages = new()
             }
         };
         Clients = new();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -71,13 +72,6 @@ namespace TTalk.Library.Packets
                     var length = reader.ReadInt();
                     prop.SetValue(instance, reader.ReadBytes(length));
                 }
-                else if (prop.PropertyType == typeof(List<string>))
-                {
-                    var length = reader.ReadInt();
-                    var bytes = reader.ReadBytes(length);
-                    using var mem = new MemoryStream(bytes, false);
-                    prop.SetValue(instance, new BinaryFormatter().Deserialize(mem));
-                }
                 else if (prop.PropertyType.IsGenericType && (prop.PropertyType.GetGenericTypeDefinition() == typeof(List<>)))
                 {
                     var count = reader.ReadInt();
@@ -87,10 +81,8 @@ namespace TTalk.Library.Packets
                     var listAddMethod = list.GetType().GetMethod("Add");
                     for (int i = 0; i < count; i++)
                     {
-                        var length = reader.ReadInt();
-                        var bytes = reader.ReadBytes(length);
-                        using var mem = new MemoryStream(bytes, false);
-                        listAddMethod.Invoke(list, new[] { new BinaryFormatter().Deserialize(mem) });
+                        var json = reader.ReadString();
+                        listAddMethod.Invoke(list, new[] { JsonConvert.DeserializeObject(json, prop.PropertyType.GetGenericArguments()[0]) });
                     }
                     prop.SetValue(instance, list);
 

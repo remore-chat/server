@@ -3,6 +3,8 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using FragLabs.Audio.Codecs;
 using NAudio.Wave;
+using NWaves.Audio;
+using NWaves.Filters;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -37,6 +39,7 @@ namespace TTalk.Client.ViewModels
             _audioQueue = new();
 
 
+            _filter = new WienerFilter(13, 0.1);
             SettingsModel.Init();
             SettingsModel.I.Main = this;
             Task.Run(SendAudio);
@@ -75,6 +78,8 @@ namespace TTalk.Client.ViewModels
         }
 
         private bool isConnected;
+        private string ip;
+        private int port;
 
         public bool IsConnected
         {
@@ -102,6 +107,8 @@ namespace TTalk.Client.ViewModels
             set { this.RaiseAndSetIfChanged(ref isNotConnectingToChannel, value); }
         }
 
+        private Channel _channel;
+
 
         #endregion
         #region Audio 
@@ -117,7 +124,7 @@ namespace TTalk.Client.ViewModels
 
         private Queue<byte[]> _microphoneAudioQueue;
         private Queue<byte[]> _audioQueue;
-
+        private WienerFilter _filter;
         private SemaphoreSlim _microphoneQueueSlim;
         private SemaphoreSlim _audioQueueSlim;
 
@@ -129,7 +136,7 @@ namespace TTalk.Client.ViewModels
             _waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback());
             _waveOut.PlaybackStopped += OnWaveOutPlaybackStopped;
             _waveOut.DeviceNumber = SettingsModel.I.OutputDevice;
-            _playBuffer = new BufferedWaveProvider(new WaveFormat(48000, 16, 1));
+            _playBuffer = new BufferedWaveProvider(new NAudio.Wave.WaveFormat(48000, 16, 1));
             _waveOut.Init(_playBuffer);
             _waveOut.Play();
         }
@@ -159,7 +166,7 @@ namespace TTalk.Client.ViewModels
             _waveIn.BufferMilliseconds = 50;
             _waveIn.DeviceNumber = SettingsModel.I.InputDevice;
             _waveIn.DataAvailable += OnWaveInDataAvailable;
-            _waveIn.WaveFormat = new WaveFormat(48000, 16, 1);
+            _waveIn.WaveFormat = new NAudio.Wave.WaveFormat(48000, 16, 1);
             _microphoneAudioQueue = new();
 
             _waveIn.StartRecording();
@@ -207,18 +214,35 @@ namespace TTalk.Client.ViewModels
         {
             while (true)
             {
-                _microphoneQueueSlim.Wait();
-                var chunk = _microphoneAudioQueue.Dequeue();
-                _udpClient.Send(new VoiceDataPacket() { ClientUsername = Settings.Username, VoiceData = chunk });
+                try
+                {
+                    _microphoneQueueSlim.Wait();
+                    var chunk = _microphoneAudioQueue.Dequeue();
+                    _playBuffer.AddSamples(chunk, 0, chunk.Length);
+                    //_udpClient.Send(new VoiceDataPacket() { ClientUsername = Settings.Username, VoiceData = chunk });
+                }
+                catch (Exception)
+                {
+
+                }
             }
         }
         private async Task PlayAudio()
         {
             while (true)
             {
-                _audioQueueSlim.Wait();
-                var chunk = _audioQueue.Dequeue();
-                _playBuffer.AddSamples(chunk, 0, chunk.Length);
+                try
+                {
+                    _audioQueueSlim.Wait();
+                    var chunk = _audioQueue.Dequeue();
+                    if (_playBuffer == null)
+                        continue;
+                    _playBuffer.AddSamples(chunk, 0, chunk.Length);
+                }
+                catch (Exception)
+                {
+
+                }
             }
         }
 
@@ -253,7 +277,7 @@ namespace TTalk.Client.ViewModels
 
         private void OnWaveInDataAvailable(object? sender, WaveInEventArgs e)
         {
-            if (CurrentChannelClient.IsMuted)
+            if (CurrentChannelClient?.IsMuted ?? false)
                 return;
 
             if (Settings.UseVoiceActivityDetection && !ProcessData(e))
@@ -266,6 +290,24 @@ namespace TTalk.Client.ViewModels
             {
                 if (_encoder == null)
                     return;
+
+
+                if (Settings.NoiseReductionEnabled)
+                {
+                    var sizeInBytes = e.BytesRecorded;
+                    var sizeInFloats = sizeInBytes / sizeof(short);  // for Pcm 16bit
+
+                    byte[] _bytes = e.Buffer;
+                    float[][] _data = new float[1][];
+                    for (var i = 0; i < 1; i++)
+                        _data[i] = new float[sizeInFloats];
+
+                    ByteConverter.ToFloats16Bit(_bytes, _data);
+                    var data = _filter.ApplyTo(new NWaves.Signals.DiscreteSignal(48000, _data[0]));
+                    var buffer = new byte[data.Length * sizeof(short)];
+                    ByteConverter.FromFloats16Bit(new float[][] { data.Samples }, buffer);
+                    e = new WaveInEventArgs(buffer, buffer.Length);
+                }
                 byte[] soundBuffer = new byte[e.BytesRecorded + _notEncodedBuffer.Length];
                 for (int i = 0; i < _notEncodedBuffer.Length; i++)
                     soundBuffer[i] = _notEncodedBuffer[i];
@@ -308,8 +350,8 @@ namespace TTalk.Client.ViewModels
             _cts = new();
             Task.Run(async () =>
             {
-                var ip = address.Split(":")[0];
-                var port = Convert.ToInt32(address.Split(":")[1]);
+                ip = address.Split(":")[0];
+                port = Convert.ToInt32(address.Split(":")[1]);
                 IsConnected = true;
                 try
                 {
@@ -361,6 +403,7 @@ namespace TTalk.Client.ViewModels
                 return;
             }
             IsNotConnectingToChannel = false;
+            _channel = channel;
             _client.Send(new RequestChannelJoin() { ChannelId = channel.Id });
         }
         private void OnSocketErrored(object? sender, SocketError e)
@@ -491,7 +534,16 @@ namespace TTalk.Client.ViewModels
             {
                 if (!response.Allowed)
                 {
+                    if (response.Reason.StartsWith("Your client isn't connected"))
+                    {
+                        UdpDisconnect();
+                        UdpConnect(ip, port);
+                        while (!_udpClient.IsConnectedToServer)
+                        {
 
+                        }
+                        _client.Send(new RequestChannelJoin() { ChannelId = _channel.Id });
+                    }
                     Dispatcher.UIThread.InvokeAsync(async () =>
                     {
                         await MainWindow.ShowDialogHost(new NotificationDialogModel(response.Reason), "NotificationDialogHost");

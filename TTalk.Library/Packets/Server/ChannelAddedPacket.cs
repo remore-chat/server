@@ -13,6 +13,7 @@ namespace TTalk.Library.Packets.Server
         public ChannelType ChannelType { get; set; }
         public int Bitrate { get; set; }
         public int Order { get; set; }
+        public int MaxClients { get; set; }
         public List<string> Clients { get; set; }
 
         public ChannelAddedPacket()
@@ -20,7 +21,7 @@ namespace TTalk.Library.Packets.Server
 
         }
 
-        public ChannelAddedPacket(string channelId, string name, List<string> clients, int bitrate, int order, ChannelType type)
+        public ChannelAddedPacket(string channelId, string name, List<string> clients, int bitrate, int order, ChannelType type, int maxClients)
         {
             ChannelId = channelId;
             Name = name;
@@ -28,6 +29,7 @@ namespace TTalk.Library.Packets.Server
             Bitrate = bitrate;
             Order = order;
             ChannelType = type;
+            MaxClients = maxClients;
         }
     }
 }

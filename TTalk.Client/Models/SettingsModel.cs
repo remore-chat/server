@@ -169,6 +169,13 @@ namespace TTalk.Client.Models
             get { return useVoiceActivityDetection; }
             set { this.RaiseAndSetIfChanged(ref useVoiceActivityDetection, value); }
         }
+        private bool noiseReductionEnabled;
+
+        public bool NoiseReductionEnabled
+        {
+            get { return noiseReductionEnabled; }
+            set { this.RaiseAndSetIfChanged(ref noiseReductionEnabled, value); }
+        }
 
         [JsonIgnore]
         public MainWindowViewModel Main { get; set; }

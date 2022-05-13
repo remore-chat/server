@@ -82,9 +82,10 @@ public class ServerSession : TcpSession
                 TCP.Multicast(new ClientConnectedPacket(auth.Username));
                 foreach (var channel in Server.Channels)
                 {
-                    this.Send(new ChannelAddedPacket(channel.Id, channel.Name, channel.ConnectedClients.Select(x => x.Username).ToList(), channel.Bitrate, channel.Order, channel.ChannelType));
+                    this.Send(new ChannelAddedPacket(channel.Id, channel.Name, channel.ConnectedClients.Select(x => x.Username).ToList(), channel.Bitrate, channel.Order, channel.ChannelType, channel.MaxClients));
                     await Task.Delay(10);
                 }
+                this.Send(new ServerToClientNegotatiationFinished());
 
             }
             //TODO: Handle privilege key

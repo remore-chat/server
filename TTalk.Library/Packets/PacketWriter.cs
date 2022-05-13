@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -46,15 +47,6 @@ namespace TTalk.Library.Packets
                     writer.Write(list.Count());
                     writer.Write(list.ToArray());
                 }
-                else if (prop.PropertyType == typeof(List<string>))
-                {
-                    var _list = value as List<string>;
-                    using var mem = new MemoryStream();
-                    new BinaryFormatter().Serialize(mem, _list);
-                    var bytes = mem.ToArray();
-                    writer.Write(bytes.Length);
-                    writer.Write(bytes);
-                }
                 else if (prop.PropertyType.IsEnum)
                 {
                     var enumUnderliying = Enum.GetUnderlyingType(prop.PropertyType);
@@ -69,18 +61,15 @@ namespace TTalk.Library.Packets
                 {
                     var collection = (System.Collections.IEnumerable)value;
                     int count = 0;
-                    var bytesAll = new List<byte>();
+                    using var listWriter = new ByteReaderWriter();
                     foreach (var val in collection)
                     {
-                        using var mem = new MemoryStream();
-                        new BinaryFormatter().Serialize(mem, val);
-                        var bytes = mem.ToArray();
-                        bytesAll.AddRange(BitConverter.GetBytes(bytes.Length));
-                        bytesAll.AddRange(bytes);
+                        var json = JsonConvert.SerializeObject(val);
+                        listWriter.Write(json);
                         count++;
                     }
-                    writer.Write(count);
-                    writer.Write(bytesAll.ToArray());
+                    listWriter.InsertInt(count);
+                    writer.Write(listWriter.ToArray());
                     
                 }
                 else if (value is float)
