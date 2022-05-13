@@ -7,7 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.UI.Xaml;
-
+using Microsoft.VisualBasic.Devices;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 
@@ -27,6 +27,7 @@ namespace TTalk.WinUI.ViewModels
         public const string UseVoiceActivityDetectionSettingsKey = "UseVoiceActivityDetectionSettingsKey";
         public const string VoiceActivityDetectionThresholdSettingsKey = "VoiceActivityDetectionThresholdSettingsKey";
         public const string UsernameSettingsKey = "UsernameSettingsKey";
+        public const string FavoritesSettingsKey = "FavoritesTabSettingsKey";
 
         public ElementTheme ElementTheme
         {
@@ -98,7 +99,6 @@ namespace TTalk.WinUI.ViewModels
                         var channelId = Main.CurrentChannel.Id.ToString();
                         Main.StopAudioPlayback();
                         Main.StopAudioPlayback();
-
                     });
 
             }
@@ -124,6 +124,15 @@ namespace TTalk.WinUI.ViewModels
 
             }
         }
+
+        private bool isNicknameErrored;
+
+        public bool IsNicknameErrored
+        {
+            get { return isNicknameErrored; }
+            set { SetProperty(ref isNicknameErrored, value); }
+        }
+
 
         private bool useVoiceActivityDetection;
 
@@ -165,6 +174,12 @@ namespace TTalk.WinUI.ViewModels
             get { return username; }
             set
             {
+                if (string.IsNullOrWhiteSpace(value) || value.Length < 3)
+                {
+                    IsNicknameErrored = true;
+                    return;
+                }
+                IsNicknameErrored = false;
                 if (SetProperty(ref username, value))
                 {
                     Action<string> execute = async (username) =>

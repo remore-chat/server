@@ -16,6 +16,9 @@ public class TTalkServer
     public List<ServerSession> Clients { get; set; }
     public TCPServer TCP { get; }
     public UDPServer UDP { get; set; }
+    public string Name { get; }
+    public int MaxClients { get; }
+
     public void Start()
     {
         TCP.Start();
@@ -37,6 +40,8 @@ public class TTalkServer
         Port = port;
         TCP = new(this, ip, port);
         UDP = new(this, IPAddress.Any, port);
+        Name = "TTalk official";
+        MaxClients = 500;
         Channels = new()
         {
             new Channel()

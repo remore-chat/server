@@ -28,7 +28,7 @@
                     <TextBlock Text="Default nickname" />
                     <TextBox Margin="0 8 0 0" MinWidth="200" MaxLength="16" IsEnabled="{x:Bind ViewModel.Main.IsConnected, Converter={StaticResource reverseBool}, Mode=OneWay}" PlaceholderText="Nickname here" Text="{x:Bind ViewModel.Username, Mode=TwoWay}" />
                     <TextBlock Text="Disconnect from current server in order to change your nickname" Margin="0 4 0 0" Visibility="{x:Bind ViewModel.Main.IsConnected, Converter={StaticResource boolToVis}, Mode=OneWay}" />
-
+                    <TextBlock Text="Minimal length of nickname is 3 symbols" Visibility="{x:Bind ViewModel.IsNicknameErrored, Converter={StaticResource boolToVis}, Mode=OneWay}" Foreground="IndianRed" />
                     <TextBlock x:Uid="Settings_Theme" Margin="0 8 0 0" />
                     <StackPanel >
                         <RadioButton

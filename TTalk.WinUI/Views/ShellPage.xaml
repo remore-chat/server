@@ -12,11 +12,13 @@
 
     <NavigationView
         x:Name="navigationView"
-        IsBackButtonVisible="Visible"
+        PaneDisplayMode="Top"
         AlwaysShowHeader="False"
-        IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+        IsBackEnabled="False"
+        IsBackButtonVisible="Collapsed"
         SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
         IsSettingsVisible="True"
+        
         ExpandedModeThresholdWidth="1280"
         Header="TTalk"
         Background="{ThemeResource SystemControlBackgroundAltHighBrush}">

@@ -34,6 +34,7 @@ public class ServerSession : TcpSession
     {
         Logger.LogInfo($"TCP session with Id {Id} disconnected!");
         DisconnectCurrentFromChannel();
+        Server.Clients.Remove(this);
     }
 
     protected override async void OnReceived(byte[] buffer, long offset, long size)
@@ -41,6 +42,20 @@ public class ServerSession : TcpSession
         var packet = IPacket.FromByteArray(buffer);
         if (State == SessionState.VersionExchange)
         {
+            if (packet is ServerQueryPacket queryPacket)
+            {
+                Server.Clients.Remove(this);
+                this.Send(new ServerQueryResponsePacket()
+                {
+                    ServerName = Server.Name,
+                    ServerVersion = Server.Version,
+                    ClientsConnected = Server.Clients.Count,
+                    MaxClients = Server.MaxClients
+                });
+                Thread.Sleep(200);
+                this.Disconnect();
+                return;
+            }
             if (packet is not VersionExchangePacket vs)
             {
                 Logger.LogWarn($"Invalid packet received at state {State} from client {Id}");
@@ -77,6 +92,12 @@ public class ServerSession : TcpSession
             {
                 State = SessionState.Connected;
                 this.Send(new StateChangedPacket(SessionState.Connected, this.Id.ToString()));
+                if (Server.Clients.Count >= Server.MaxClients)
+                {
+                    this.Send(new DisconnectPacket() { Reason = "Maximum amount of connected clients reached" });
+                    this.Disconnect();
+                    return;
+                }
                 Logger.LogInfo($"Client {Id} connected with username {auth.Username}");
                 Username = auth.Username;
                 TCP.Multicast(new ClientConnectedPacket(auth.Username));
@@ -208,10 +229,10 @@ public class ServerSession : TcpSession
         TCP.Multicast(new ChannelUserConnected() { ChannelId = channel.Id, Username = this.Username });
     }
 
+    
 
     public override bool Disconnect()
     {
-        Server.Clients.Remove(this);
         DisconnectCurrentFromChannel();
         return base.Disconnect();
     }

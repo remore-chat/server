@@ -92,6 +92,11 @@ namespace TTalk.WinUI.Networking.ClientCode
                     TcpId = stateChanged.ClientId;
                 }
             }
+            else if (packet is DisconnectPacket disconnect)
+            {
+                PacketReceived.Invoke(this, new() { Packet = disconnect });
+                return;
+            }
             else if (State == SessionState.Connected)
             {
                 PacketReceived?.Invoke(this, new() { Packet = packet });
