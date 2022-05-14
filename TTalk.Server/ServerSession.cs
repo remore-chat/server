@@ -13,7 +13,7 @@ public class ServerSession : TcpSession
     public TcpServer TCP => Server.TCP;
 
     public SessionState State { get; set; }
-
+    public string PrivilegeKey { get; set; }
     public string Username { get; set; }
     public Channel CurrentChannel { get; set; }
 
@@ -34,6 +34,9 @@ public class ServerSession : TcpSession
     {
         Logger.LogInfo($"TCP session with Id {Id} disconnected!");
         DisconnectCurrentFromChannel();
+        var connectedClient = CurrentChannel?.ConnectedClients.FirstOrDefault(x => x.Username == Username);
+        if (connectedClient != null)
+            Server.UDP.Clients.Remove(connectedClient);
         Server.Clients.Remove(this);
     }
 
@@ -81,37 +84,50 @@ public class ServerSession : TcpSession
             if (packet is not AuthenticationDataPacket auth)
             {
                 Logger.LogWarn($"Invalid packet received at state {State} from client {Id}");
+                this.Send(new DisconnectPacket($"Invalid packet received at state {State} from client {Id}"));
                 this.Disconnect();
                 return;
             }
-            if (string.IsNullOrEmpty(auth.Username))
+            if (string.IsNullOrEmpty(auth.Username) || auth.Username.Length > 16)
             {
                 Logger.LogWarn($"Client {Id} send invalid username {auth.Username}");
+                this.Send(new DisconnectPacket($"Invalid username"));
                 this.Disconnect();
-
+                return;
             }
-            else
+            if (auth.ServerPrivilegeKey != "" && auth.ServerPrivilegeKey != Server.Configuration.PrivilegeKey?.Key)
             {
-                State = SessionState.Connected;
-                this.Send(new StateChangedPacket(SessionState.Connected, this.Id.ToString()));
-                if (Server.Clients.Count >= Server.MaxClients)
-                {
-                    this.Send(new DisconnectPacket() { Reason = "Maximum amount of connected clients reached" });
-                    this.Disconnect();
-                    return;
-                }
-                Logger.LogInfo($"Client {Id} connected with username {auth.Username}");
-                Username = auth.Username;
-                TCP.Multicast(new ClientConnectedPacket(auth.Username));
-                foreach (var channel in Server.Channels)
-                {
-                    this.Send(new ChannelAddedPacket(channel.Id, channel.Name, channel.ConnectedClients.Select(x => x.Username).ToList(), channel.Bitrate, channel.Order, channel.ChannelType, channel.MaxClients));
-                    await Task.Delay(10);
-                }
-                this.Send(new ServerToClientNegotatiationFinished());
-
+                Logger.LogInfo($"Client {Id} tried to connect with invalid privilege key");
+                this.Send(new DisconnectPacket($"Invalid privilege key"));
+                this.Disconnect();
+                return;
             }
-            //TODO: Handle privilege key
+            if (auth.ServerPrivilegeKey == Server.Configuration.PrivilegeKey?.Key)
+            {
+                PrivilegeKey = auth.ServerPrivilegeKey;
+                Logger.LogInfo($"Client {Id} connected with server privilege key");
+            }
+
+            State = SessionState.Connected;
+            this.Send(new StateChangedPacket(SessionState.Connected, this.Id.ToString()));
+            if (Server.Clients.Count >= Server.MaxClients)
+            {
+                this.Send(new DisconnectPacket() { Reason = "Maximum amount of connected clients reached" });
+                this.Disconnect();
+                return;
+            }
+            Logger.LogInfo($"Client {Id} connected with username {auth.Username}");
+            Username = auth.Username;
+            TCP.Multicast(new ClientConnectedPacket(auth.Username));
+            foreach (var channel in Server.Channels)
+            {
+                this.Send(new ChannelAddedPacket(channel.Id, channel.Name, channel.ConnectedClients.Select(x => x.Username).ToList(), channel.Bitrate, channel.Order, channel.ChannelType, channel.MaxClients));
+                await Task.Delay(10);
+            }
+            if (PrivilegeKey == Server.Configuration.PrivilegeKey?.Key)
+                this.Send(new ClientPermissionsUpdatedPacket() { HasAllPermissions = true });
+            this.Send(new ServerToClientNegotatiationFinished());
+
         }
         else if (State == SessionState.Connected)
         {
@@ -147,7 +163,7 @@ public class ServerSession : TcpSession
                     SenderName = message.Username,
                     Text = message.Message
                 });
-            } 
+            }
             else if (packet is RequestChannelMessagesPacket messagesPacket)
             {
                 var id = messagesPacket.ChannelId;
@@ -165,6 +181,13 @@ public class ServerSession : TcpSession
                     ChannelId = channel.Id,
                     Messages = messages
                 });
+            }
+            else if (packet is LeaveChannelPacket)
+            {
+                if (this.CurrentChannel != null)
+                {
+                    DisconnectCurrentFromChannel();
+                }
             }
             else if (packet is VoiceEstablishPacket voiceEstablish)
             {
@@ -231,10 +254,13 @@ public class ServerSession : TcpSession
         TCP.Multicast(new ChannelUserConnected() { ChannelId = channel.Id, Username = this.Username });
     }
 
-    
+
 
     public override bool Disconnect()
     {
+        var connectedClient = CurrentChannel?.ConnectedClients.FirstOrDefault(x => x.Username == Username);
+        if (connectedClient != null)
+            Server.UDP.Clients.Remove(connectedClient);
         DisconnectCurrentFromChannel();
         return base.Disconnect();
     }
@@ -243,9 +269,10 @@ public class ServerSession : TcpSession
         var connectedClient = CurrentChannel?.ConnectedClients.FirstOrDefault(x => x.Username == Username);
         if (connectedClient == null)
             return;
-        Server.UDP.Clients.Remove(connectedClient);
+        //Server.UDP.Clients.Remove(connectedClient);
         CurrentChannel.ConnectedClients.Remove(connectedClient);
         TCP.Multicast(new ChannelUserDisconnected() { ChannelId = CurrentChannel.Id, Username = this.Username });
+        this.CurrentChannel = null;
     }
 
     protected override void OnError(SocketError error)

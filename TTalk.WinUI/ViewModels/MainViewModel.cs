@@ -39,149 +39,47 @@ namespace TTalk.WinUI.ViewModels
 
             Task.Run(SendAudio);
             Task.Run(PlayAudio);
-            ShowConnectDialog = new RelayCommand(async () =>
-            {
-                if (string.IsNullOrEmpty(Username) || Username.Length < 3)
-                {
-                    await new ContentDialog()
-                    {
-                        Title = "Connect to server",
-                        Content = "Looks like your nickname isn't configured, before connecting you have to specify your nickname in settings",
-                        XamlRoot = App.MainWindow.Content.XamlRoot,
-                        CloseButtonText = "Close",
-                    }.ShowAsync(ContentDialogPlacement.InPlace);
-                    return;
-                }
-                var parentStack = new StackPanel();
-                var stack = new StackPanel()
-                {
-                    Padding = new(12)
-                };
-                stack.Children.Add(new TextBlock() { Text = "Enter address of the server you want to connect in following format: IP:Port", TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap });
-                var textBox = new TextBox() { PlaceholderText = "Enter address here...", Name = "AddressInput", Margin = new(0, 12, 0, 0) };
-                stack.Children.Add(textBox);
-                var addToFavorites = new CheckBox() { Content = new TextBlock() { Text = "Add this server to favorites after connect" } };
-                stack.Children.Add(addToFavorites);
-                var tabView = new TabView()
-                {
-                    IsAddTabButtonVisible = false,
-                    CloseButtonOverlayMode = TabViewCloseButtonOverlayMode.OnPointerOver,
-
-                };
-                var connectToServerViaIpItem = new TabViewItem()
-                {
-                    Header = "Connect with address",
-                    Content = stack,
-                    IsClosable = false
-                };
-                var connectToServerViaFavoritesStack = new StackPanel()
-                {
-                    Padding = new(12)
-                };
-                var list = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
-                if (list == null)
-                    list = new();
-                var listView = new ListView() { SelectionMode = ListViewSelectionMode.None, MaxHeight = 560 };
-                foreach (var address in list)
-                {
-                    var _ip = address.Split(":")[0];
-                    var _port = Convert.ToInt32(address.Split(":")[1]);
-                    var progress = new ProgressRing() { IsIndeterminate = true, Width = 16, Height = 16, IsActive = true };
-                    var _stackPanel = new StackPanel()
-                    {
-                        Orientation = Orientation.Horizontal
-                    };
-                    var textBlock = new TextBlock()
-                    {
-                        Margin = new(12, 0, 0, 0),
-                        Text = $"Connecting to server {address}"
-                    };
-                    _stackPanel.Children.Add(progress);
-                    _stackPanel.Children.Add(textBlock);
-                    var button = new Button()
-                    {
-                        Content = _stackPanel,
-                        HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
-                        IsEnabled = false
-                    };
-                    button.Click += (s, e) =>
-                    {
-                        Address = address;
-                        Connect();
-                        (parentStack.Parent as ContentDialog).Hide();
-                    };
-                    _ = Task.Run(async () =>
-                    {
-                        await Task.Delay(1500);
-                        var query = await new TTalkQueryClient(_ip, _port).GetServerInfo();
-                        App.MainWindow.DispatcherQueue.TryEnqueue(() =>
-                        {
-                            progress.IsActive = false;
-                            progress.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                            if (query == null)
-                            {
-                                textBlock.Text = $"Failed to connect to server ({address})";
-                                return;
-                            }
-                            if (query.ServerVersion == SettingsViewModel.ClientVersion)
-                            {
-                                textBlock.Text = $"{query.ServerName} - {query.ServerVersion} ({query.ClientsConnected}/{query.MaxClients})";
-                                button.IsEnabled = true;
-                            }
-                            else
-                            {
-                                textBlock.TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center;
-                                textBlock.Text = $"{query.ServerName} - {query.ServerVersion}\nApp version (v{SettingsViewModel.ClientVersion}) doesn't match server's version (v{query.ServerVersion})";
-                            }
-                        });
-                    });
-                    listView.Items.Add(button);
-                }
-                connectToServerViaFavoritesStack.Children.Add(listView);
-                var connectToServerViaFavorites = new TabViewItem()
-                {
-                    Header = "Connect with favorites",
-                    Content = connectToServerViaFavoritesStack,
-                    IsClosable = false
-                };
-                tabView.TabItems.Add(connectToServerViaIpItem);
-                tabView.TabItems.Add(connectToServerViaFavorites);
-                parentStack.Children.Add(tabView);
-                var nicknameInput = new TextBox() { PlaceholderText = "Nickname", MaxLength = 16, Margin = new(0, 12, 0, 0) };
-                var result = await new ContentDialog()
-                {
-                    Title = "Connect to server",
-                    Content = parentStack,
-                    XamlRoot = App.MainWindow.Content.XamlRoot,
-                    CloseButtonText = "Close",
-                    PrimaryButtonText = "Connect",
-                }.ShowAsync(ContentDialogPlacement.InPlace);
-                Address = textBox.Text;
-                if (result == ContentDialogResult.Primary)
-                {
-                    Connect();
-                    if (addToFavorites.IsChecked ?? false)
-                    {
-                        var addresses = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
-                        if (addresses == null)
-                            addresses = new();
-                        if (!addresses.Contains(address))
-                            addresses.Add(address);
-                        await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, addresses);
-                    }
-                }
-            });
+            ShowConnectDialog = new RelayCommand(CreateConnectDialog(settingsService));
             DisconnectCommand = new RelayCommand(() =>
             {
                 Disconnect();
             });
-
+            LeaveChannel = new RelayCommand(() =>
+            {
+                this._client.Send(new LeaveChannelPacket());
+            });
             ToggleMute = new RelayCommand(() =>
             {
                 if (CurrentChannelClient != null)
                     CurrentChannelClient.IsMuted = !CurrentChannelClient.IsMuted;
             });
-
+            ShowUpdatePriviligeKeyDialog = new RelayCommand(async () =>
+            {
+                var address = $"{ip}:{port}";
+                var textBox = new TextBox() { PlaceholderText = "Enter your privilege key" };
+                var res = await new ContentDialog()
+                {
+                    Title = "Set server privilige key",
+                    Content = textBox,
+                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    CloseButtonText = "Cancel",
+                    PrimaryButtonText = "Confirm",
+                }.ShowAsync(ContentDialogPlacement.InPlace);
+                if (res == ContentDialogResult.Primary)
+                {
+                    App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                    {
+                        await SettingsService.SaveSettingAsync<string>($"{address}PrivilegeKey", textBox.Text);
+                        var res = await new ContentDialog()
+                        {
+                            Title = "Notification",
+                            Content = "For the changes to take effect, you must reconnect to the server",
+                            XamlRoot = App.MainWindow.Content.XamlRoot,
+                            CloseButtonText = "Cancel",
+                        }.ShowAsync(ContentDialogPlacement.InPlace);
+                    });
+                }
+            });
             App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
             {
                 await ReadSettings();
@@ -259,6 +157,14 @@ namespace TTalk.WinUI.ViewModels
             set { SetProperty(ref isNegotiationFinished, value); }
         }
 
+        private bool canEditServerSettings;
+
+        public bool CanEditServerSettings
+        {
+            get { return canEditServerSettings; }
+            set { SetProperty(ref canEditServerSettings, value); }
+        }
+
 
         private ChannelClient currentChannelClient;
 
@@ -280,7 +186,9 @@ namespace TTalk.WinUI.ViewModels
 
         public ICommand ShowConnectDialog { get; }
         public RelayCommand DisconnectCommand { get; }
+        public RelayCommand LeaveChannel { get; }
         public RelayCommand ToggleMute { get; }
+        public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
         public ILocalSettingsService SettingsService { get; }
         public string Username { get; private set; }
         public bool UseVoiceActivityDetection { get; private set; }
@@ -625,7 +533,16 @@ namespace TTalk.WinUI.ViewModels
                 {
                     App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
                     {
+                        var address = $"{ip}:{port}";
                         Disconnect();
+                        if (disconnect.Reason == "Invalid privilege key")
+                        {
+                            await SettingsService.SaveSettingAsync<string>($"{address}PrivilegeKey", "");
+                            var newViewModel = App.GetService<MainViewModel>();
+                            newViewModel.Address = Address;
+                            newViewModel.Connect();
+                            return;
+                        }
                         await new ContentDialog()
                         {
                             Title = "You was disconnected from the server",
@@ -633,6 +550,7 @@ namespace TTalk.WinUI.ViewModels
                             XamlRoot = App.MainWindow.Content.XamlRoot,
                             CloseButtonText = "Close"
                         }.ShowAsync(ContentDialogPlacement.InPlace);
+
                     });
                 }
                 else if (packet is ChannelAddedPacket addedChannel)
@@ -721,6 +639,7 @@ namespace TTalk.WinUI.ViewModels
                     if (userDisconnected.Username == Username)
                     {
                         StopEncoding();
+                        CurrentChannel.IsSelected = false;
                         CurrentChannel = null;
                         CurrentChannelClient = null;
                     }
@@ -751,9 +670,22 @@ namespace TTalk.WinUI.ViewModels
                             await new ContentDialog()
                             {
                                 Title = "Failed to connect to channel",
-                                Content = response.Reason
-                            }.ShowAsync();
+                                Content = new TextBlock() { Text = response.Reason },
+                                CloseButtonText = "Close",
+                                XamlRoot = App.MainWindow.Content.XamlRoot,
+                            }.ShowAsync(ContentDialogPlacement.InPlace);
                         });
+                    }
+                }
+                else if (packet is ClientPermissionsUpdatedPacket permissions)
+                {
+                    if (permissions.HasAllPermissions)
+                    {
+                        CanEditServerSettings = true;
+                    }
+                    else
+                    {
+                        //TODO: Handle permissions
                     }
                 }
                 else if (packet is ServerToClientNegotatiationFinished)
@@ -801,6 +733,144 @@ namespace TTalk.WinUI.ViewModels
             _cts?.Cancel();
             _client.DisconnectAndStop();
             UdpDisconnect();
+        }
+
+
+        //Ugly code, don't read
+        private Action CreateConnectDialog(ILocalSettingsService settingsService)
+        {
+            return async () =>
+            {
+                if (string.IsNullOrEmpty(Username) || Username.Length < 3)
+                {
+                    await new ContentDialog()
+                    {
+                        Title = "Connect to server",
+                        Content = "Looks like your nickname isn't configured, before connecting you have to specify your nickname in settings",
+                        XamlRoot = App.MainWindow.Content.XamlRoot,
+                        CloseButtonText = "Close",
+                    }.ShowAsync(ContentDialogPlacement.InPlace);
+                    return;
+                }
+                var parentStack = new StackPanel();
+                var stack = new StackPanel()
+                {
+                    Padding = new(12)
+                };
+                stack.Children.Add(new TextBlock() { Text = "Enter address of the server you want to connect in following format: IP:Port", TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap });
+                var textBox = new TextBox() { PlaceholderText = "Enter address here...", Name = "AddressInput", Margin = new(0, 12, 0, 0) };
+                stack.Children.Add(textBox);
+                var addToFavorites = new CheckBox() { Content = new TextBlock() { Text = "Add this server to favorites after connect" } };
+                stack.Children.Add(addToFavorites);
+                var tabView = new TabView()
+                {
+                    IsAddTabButtonVisible = false,
+                    CloseButtonOverlayMode = TabViewCloseButtonOverlayMode.OnPointerOver,
+
+                };
+                var connectToServerViaIpItem = new TabViewItem()
+                {
+                    Header = "Connect with address",
+                    Content = stack,
+                    IsClosable = false
+                };
+                var connectToServerViaFavoritesStack = new StackPanel()
+                {
+                    Padding = new(12)
+                };
+                var list = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
+                if (list == null)
+                    list = new();
+                var listView = new ListView() { SelectionMode = ListViewSelectionMode.None, MaxHeight = 560 };
+                foreach (var address in list)
+                {
+                    var _ip = address.Split(":")[0];
+                    var _port = Convert.ToInt32(address.Split(":")[1]);
+                    var progress = new ProgressRing() { IsIndeterminate = true, Width = 16, Height = 16, IsActive = true };
+                    var _stackPanel = new StackPanel()
+                    {
+                        Orientation = Orientation.Horizontal
+                    };
+                    var textBlock = new TextBlock()
+                    {
+                        Margin = new(12, 0, 0, 0),
+                        Text = $"Connecting to server {address}"
+                    };
+                    _stackPanel.Children.Add(progress);
+                    _stackPanel.Children.Add(textBlock);
+                    var button = new Button()
+                    {
+                        Content = _stackPanel,
+                        HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
+                        IsEnabled = false
+                    };
+                    button.Click += (s, e) =>
+                    {
+                        Address = address;
+                        Connect();
+                        (parentStack.Parent as ContentDialog).Hide();
+                    };
+                    _ = Task.Run(async () =>
+                    {
+                        await Task.Delay(1500);
+                        var query = await new TTalkQueryClient(_ip, _port).GetServerInfo();
+                        App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+                        {
+                            progress.IsActive = false;
+                            progress.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                            if (query == null)
+                            {
+                                textBlock.Text = $"Failed to connect to server ({address})";
+                                return;
+                            }
+                            if (query.ServerVersion == SettingsViewModel.ClientVersion)
+                            {
+                                textBlock.Text = $"{query.ServerName} - {query.ServerVersion} ({query.ClientsConnected}/{query.MaxClients})";
+                                button.IsEnabled = true;
+                            }
+                            else
+                            {
+                                textBlock.TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center;
+                                textBlock.Text = $"{query.ServerName} - {query.ServerVersion}\nApp version (v{SettingsViewModel.ClientVersion}) doesn't match server's version (v{query.ServerVersion})";
+                            }
+                        });
+                    });
+                    listView.Items.Add(button);
+                }
+                connectToServerViaFavoritesStack.Children.Add(listView);
+                var connectToServerViaFavorites = new TabViewItem()
+                {
+                    Header = "Connect with favorites",
+                    Content = connectToServerViaFavoritesStack,
+                    IsClosable = false
+                };
+                tabView.TabItems.Add(connectToServerViaIpItem);
+                tabView.TabItems.Add(connectToServerViaFavorites);
+                parentStack.Children.Add(tabView);
+                var nicknameInput = new TextBox() { PlaceholderText = "Nickname", MaxLength = 16, Margin = new(0, 12, 0, 0) };
+                var result = await new ContentDialog()
+                {
+                    Title = "Connect to server",
+                    Content = parentStack,
+                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    CloseButtonText = "Close",
+                    PrimaryButtonText = "Connect",
+                }.ShowAsync(ContentDialogPlacement.InPlace);
+                Address = textBox.Text;
+                if (result == ContentDialogResult.Primary)
+                {
+                    Connect();
+                    if (addToFavorites.IsChecked ?? false)
+                    {
+                        var addresses = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
+                        if (addresses == null)
+                            addresses = new();
+                        if (!addresses.Contains(address))
+                            addresses.Add(address);
+                        await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, addresses);
+                    }
+                }
+            };
         }
     }
 }

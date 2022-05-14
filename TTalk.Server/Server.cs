@@ -5,22 +5,30 @@ using TTalk.Library.Packets;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.Server;
+using TTalk.Server.Services;
 
 public class TTalkServer
 {
 
     public IPAddress Ip { get; set; }
     public int Port { get; set; }
-    public string Version { get; set; }
+    public string Version => "0.0.1";
     public List<Channel> Channels { get; set; }
     public List<ServerSession> Clients { get; set; }
     public TCPServer TCP { get; }
     public UDPServer UDP { get; set; }
-    public string Name { get; }
-    public int MaxClients { get; }
 
+    public string Name => Configuration.Name;
+    public int MaxClients => Configuration.MaxClients;
+    public ServerConfiguration Configuration { get; set; }
+
+    private ConfigurationService _configurationService;
     public void Start()
     {
+        Task.Run(async () =>
+        {
+            Configuration = await _configurationService.GetServerConfigurationAsync();
+        }).GetAwaiter().GetResult();
         TCP.Start();
         UDP.Start();
     }
@@ -31,7 +39,6 @@ public class TTalkServer
         TCP.Multicast(new DisconnectPacket() { Reason = "Server stopped." });
         TCP.Stop();
         UDP.Stop();
-        //TODO: Notify all clients (DisconnectPacket) that server was stopped and disconnect them all
     }
 
     public TTalkServer(IPAddress ip, int port)
@@ -40,8 +47,7 @@ public class TTalkServer
         Port = port;
         TCP = new(this, ip, port);
         UDP = new(this, IPAddress.Any, port);
-        Name = "TTalk official";
-        MaxClients = 500;
+        _configurationService = ServiceContainer.GetService<ConfigurationService>();
         Channels = new()
         {
             new Channel()
@@ -98,7 +104,6 @@ public class TTalkServer
             }
         };
         Clients = new();
-        Version = "0.0.1";
     }
 
     public class UDPServer : UdpServer
@@ -117,7 +122,8 @@ public class TTalkServer
                         {
                             Clients.Remove(client);
                             var channel = Server.Channels.FirstOrDefault(x => x.ConnectedClients.Any(x => x == client));
-                            channel.ConnectedClients.Remove(client);
+                            if (channel != null)
+                                channel.ConnectedClients.Remove(client);
                             continue;
                         }
                         this.Send(client.EndPoint, new PacketWriter(new UdpHeartbeatPacket() { ClientUsername = client.Username }).Write());
@@ -143,12 +149,9 @@ public class TTalkServer
             {
                 if (packet is UdpAuthenticationPacket udpAuthentication)
                 {
-
-
                     var tcpSession = Server.Clients.FirstOrDefault(x => x.Id.ToString() == udpAuthentication.TcpId);
                     if (tcpSession != null && tcpSession.Username == udpAuthentication.ClientUsername)
                     {
-
 
                         var session = new UdpSession()
                         {
@@ -168,7 +171,7 @@ public class TTalkServer
             {
                 if (ValidateClient(endpoint, heartbeat.ClientUsername, out var session))
                 {
-                    Logger.LogInfo($"Heartbeat {session.TcpSession.Id} ({session.Username})");
+                    //Logger.LogInfo($"Heartbeat {session.TcpSession.Id} ({session.Username})");
                     session.HeartbeatReceivedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
 
                 }
@@ -177,20 +180,19 @@ public class TTalkServer
             {
                 if (ValidateClient(endpoint, voiceData.ClientUsername, out var session))
                 {
-
                     var tcp = session.TcpSession;
                     if (tcp.CurrentChannel == null)
                     {
-                        Logger.LogWarn("Got invalid voice data packet");
+                        //Logger.LogWarn("Got invalid voice data packet");
                     }
                     else
-                        foreach (var vClient in tcp.CurrentChannel.ConnectedClients.ToList())
+                        Parallel.ForEach(tcp.CurrentChannel.ConnectedClients.ToList(), (vClient) =>
                         {
                             //Do not send voice data back to sender
                             if (vClient.Username == session.Username)
-                                continue;
+                                return;
                             var actualSent = this.Send(vClient.EndPoint, new VoiceDataMulticastPacket() { Username = session.Username, VoiceData = voiceData.VoiceData });
-                        }
+                        });
                 }
             }
             else if (packet is UdpDisconnectPacket disconnectPacket)

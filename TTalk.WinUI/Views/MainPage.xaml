@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+    xmlns:fluent="using:Fluent.Icons"
     xmlns:converters="using:TTalk.WinUI.Converters"
     Style="{StaticResource PageStyle}">
 
@@ -22,7 +23,9 @@
             <AppBarButton Icon="Add" Label="Connect" Command="{x:Bind ViewModel.ShowConnectDialog}" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
             <AppBarButton Icon="Remove" Command="{x:Bind ViewModel.DisconnectCommand}" Label="Disconnect" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}}" />
             <CommandBar.SecondaryCommands>
-                <AppBarButton Icon="Setting" Label="Server settings">
+                <AppBarButton Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}" IsEnabled="{x:Bind ViewModel.CanEditServerSettings, Mode=OneWay}" Icon="Setting" Label="Server settings">
+                </AppBarButton>
+                <AppBarButton Command="{x:Bind ViewModel.ShowUpdatePriviligeKeyDialog}" Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}" Icon="Admin" Label="Set privilige key">
                 </AppBarButton>
             </CommandBar.SecondaryCommands>
         </CommandBar>
@@ -87,12 +90,9 @@
 
                                                                 <Border Margin="12 0 0 0" Width="8" Visibility="{Binding IsSpeaking, Mode=OneWay, Converter={StaticResource boolToVis}}" Height="8" CornerRadius="24" Background="AliceBlue" />
                                                                 <Grid Margin="12 0 0 0" Visibility="{Binding IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}}">
-                                                                    <SymbolIcon Symbol="Microphone"  />
-                                                                    <Border RenderTransformOrigin="0.5, 0.5" Width="3" CornerRadius="4" Background="IndianRed" Opacity="100" Height="20" >
-                                                                        <Border.RenderTransform>
-                                                                            <RotateTransform Angle="45" />
-                                                                        </Border.RenderTransform>
-                                                                    </Border>
+                                                                    <Grid>
+                                                                        <fluent:FluentSymbolIcon Visibility="{Binding IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}}" Foreground="{ThemeResource DefaultTextForegroundThemeBrush}" Symbol="MicOff16Filled" Width="16" Height="16" />
+                                                                    </Grid>
                                                                 </Grid>
                                                             </StackPanel>
                                                         </DataTemplate>
@@ -105,23 +105,20 @@
                             </ListView.ItemTemplate>
                         </ListView>
 
-                        <StackPanel Grid.Row="1" Padding="12"  Orientation="Horizontal" Visibility="{x:Bind ViewModel.CurrentChannelClient, Mode=OneWay,  Converter={StaticResource boolToVis}}">
-                            <Button CornerRadius="6" Command="{x:Bind ViewModel.ToggleMute}" HorizontalAlignment="Right">
-                                <StackPanel>
-                                    <Grid>
-                                        <SymbolIcon Symbol="Microphone"  />
-                                        <Border RenderTransformOrigin="0.5, 0.5" Width="3" CornerRadius="4" Background="IndianRed" Opacity="100" Height="22" Visibility="{x:Bind ViewModel.CurrentChannelClient.IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}}" >
-                                            <Border.RenderTransform>
-                                                <RotateTransform Angle="45" />
-                                            </Border.RenderTransform>
-                                        </Border>
-                                    </Grid>
-                                </StackPanel>
+                        <StackPanel Grid.Row="1" Padding="12" HorizontalAlignment="Right" Orientation="Horizontal" Visibility="{x:Bind ViewModel.CurrentChannelClient, Mode=OneWay,  Converter={StaticResource boolToVis}}">
+                            <Button CornerRadius="6" MinHeight="37" Command="{x:Bind ViewModel.ToggleMute}" HorizontalAlignment="Right">
+                                <Grid>
+                                    <fluent:FluentSymbolIcon Visibility="{x:Bind ViewModel.CurrentChannelClient.IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}}" Foreground="{ThemeResource DefaultTextForegroundThemeBrush}" Symbol="MicOff24Filled" Width="24" Height="24" />
+                                    <fluent:FluentSymbolIcon Visibility="{x:Bind ViewModel.CurrentChannelClient.IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" Foreground="{ThemeResource DefaultTextForegroundThemeBrush}" Symbol="MicOn24Filled" Width="24" Height="24" />
+        
+                                </Grid>
+                            </Button>
+                            <Button Margin="12 0 0 0" CornerRadius="6" Command="{x:Bind ViewModel.LeaveChannel}" HorizontalAlignment="Right">
+                                <fluent:FluentSymbolIcon Foreground="{ThemeResource DefaultTextForegroundThemeBrush}" Symbol="CallEnd24Filled" Width="24" Height="24" />
                             </Button>
                         </StackPanel>
                     </Grid>
                     <Grid Margin="24 0 0 0" RowDefinitions="Auto, *, Auto" Grid.Column="1" Grid.Row="1">
-                        <!--<Button Command="{x:Bind ViewModel.ToggleMute}" Content="Mute/Unmute" />-->
                         <ListView x:Name="MessagesListBox"  ItemsSource="{x:Bind ViewModel.CurrentTextChannel.Messages, Mode=OneWay}" Grid.Row="1" VerticalAlignment="Stretch">
                             <ListView.ItemTemplate>
                                 <DataTemplate>

@@ -30,6 +30,8 @@ namespace TTalk.WinUI.Networking.ClientCode
         public event EventHandler<object> OnClientReady;
         public event EventHandler<object> OnClientDisconnected;
         public event EventHandler<System.Net.Sockets.SocketError> SocketErrored;
+
+        public string PrivilegeKey { get; private set; }
         public SessionState State { get; set; }
         public string TcpId { get; private set; }
 
@@ -45,6 +47,7 @@ namespace TTalk.WinUI.Networking.ClientCode
         private async Task Initialize()
         {
             await Task.Delay(100);
+            PrivilegeKey = (await _settingsService.ReadSettingAsync<string>($"{Address}:{Port}PrivilegeKey")) ?? "";
             State = SessionState.VersionExchange;
             this.Send(new VersionExchangePacket(SettingsViewModel.ClientVersion));
         }
@@ -84,7 +87,7 @@ namespace TTalk.WinUI.Networking.ClientCode
                 State = state;
                 if (state == SessionState.Authenticating)
                 {
-                    this.Send(new AuthenticationDataPacket(_username, ""));
+                    this.Send(new AuthenticationDataPacket(_username, PrivilegeKey));
                 }
                 else if (state == SessionState.Connected)
                 {
