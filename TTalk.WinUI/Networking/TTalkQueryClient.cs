@@ -16,7 +16,7 @@ namespace TTalk.WinUI.Networking
     {
         public TTalkQueryClient(string address, int port) : base(IPAddress.Parse(address), port)
         {
-            _slim = new(0);   
+            _slim = new(0);
         }
 
         private SemaphoreSlim _slim;
@@ -27,18 +27,32 @@ namespace TTalk.WinUI.Networking
             base.OnConnected();
         }
 
-        public ServerQueryResponsePacket GetServerInfo()
+        public async Task<ServerQueryResponsePacket> GetServerInfo()
         {
-            bool success = false;
-            if (!this.IsConnected)
+            try
             {
-                success = this.ConnectAsync();
+                bool success = false;
+                if (!this.IsConnected)
+                {
+                    success = this.ConnectAsync();
+                }
+                if (!success)
+                    return null;
+                await Task.Delay(200);
+                if (this.IsConnecting)
+                {
+                    await Task.Delay(5000);
+                    if (!this.IsConnected)
+                        return null;
+                }
+                this.Send(new ServerQueryPacket());
+                _slim.Wait();
+                return _response;
             }
-            if (!success)
+            catch (Exception ex)
+            {
                 return null;
-            this.Send(new ServerQueryPacket());
-            _slim.Wait();
-            return _response;
+            }
         }
 
         protected override void OnReceived(byte[] buffer, long offset, long size)

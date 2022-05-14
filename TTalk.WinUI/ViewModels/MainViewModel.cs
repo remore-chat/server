@@ -81,18 +81,27 @@ namespace TTalk.WinUI.ViewModels
                 var list = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
                 if (list == null)
                     list = new();
-                var listView = new ListView() { SelectionMode = ListViewSelectionMode.None };
+                var listView = new ListView() { SelectionMode = ListViewSelectionMode.None, MaxHeight = 560 };
                 foreach (var address in list)
                 {
                     var _ip = address.Split(":")[0];
                     var _port = Convert.ToInt32(address.Split(":")[1]);
+                    var progress = new ProgressRing() { IsIndeterminate = true, Width = 16, Height = 16, IsActive = true };
+                    var _stackPanel = new StackPanel()
+                    {
+                        Orientation = Orientation.Horizontal
+                    };
                     var textBlock = new TextBlock()
                     {
-                        Text = $"Loading..."
+                        Margin = new(12, 0, 0, 0),
+                        Text = $"Connecting to server {address}"
                     };
+                    _stackPanel.Children.Add(progress);
+                    _stackPanel.Children.Add(textBlock);
                     var button = new Button()
                     {
-                        Content = textBlock,
+                        Content = _stackPanel,
+                        HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
                         IsEnabled = false
                     };
                     button.Click += (s, e) =>
@@ -104,15 +113,17 @@ namespace TTalk.WinUI.ViewModels
                     _ = Task.Run(async () =>
                     {
                         await Task.Delay(1500);
-                        var query = new TTalkQueryClient(_ip, _port).GetServerInfo();
+                        var query = await new TTalkQueryClient(_ip, _port).GetServerInfo();
                         App.MainWindow.DispatcherQueue.TryEnqueue(() =>
                         {
+                            progress.IsActive = false;
+                            progress.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                             if (query == null)
                             {
                                 textBlock.Text = $"Failed to connect to server ({address})";
                                 return;
                             }
-                            textBlock.Text = $"{query.ServerName} - {query.ServerVersion}   ({query.ClientsConnected}/{query.MaxClients})";
+                            textBlock.Text = $"{query.ServerName} - {query.ServerVersion}  ({query.ClientsConnected}/{query.MaxClients})";
                             button.IsEnabled = true;
                         });
                     });

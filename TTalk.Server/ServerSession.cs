@@ -44,6 +44,7 @@ public class ServerSession : TcpSession
         {
             if (packet is ServerQueryPacket queryPacket)
             {
+                Logger.LogInfo($"Query request from {Id}");
                 Server.Clients.Remove(this);
                 this.Send(new ServerQueryResponsePacket()
                 {
@@ -54,6 +55,7 @@ public class ServerSession : TcpSession
                 });
                 Thread.Sleep(200);
                 this.Disconnect();
+                Logger.LogInfo($"Query client disconnected {Id}");
                 return;
             }
             if (packet is not VersionExchangePacket vs)
