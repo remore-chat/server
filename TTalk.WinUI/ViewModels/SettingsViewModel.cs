@@ -28,6 +28,7 @@ namespace TTalk.WinUI.ViewModels
         public const string VoiceActivityDetectionThresholdSettingsKey = "VoiceActivityDetectionThresholdSettingsKey";
         public const string UsernameSettingsKey = "UsernameSettingsKey";
         public const string FavoritesSettingsKey = "FavoritesTabSettingsKey";
+        public const string ClientVersion = "0.0.1";
 
         public ElementTheme ElementTheme
         {

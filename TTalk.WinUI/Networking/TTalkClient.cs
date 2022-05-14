@@ -46,7 +46,7 @@ namespace TTalk.WinUI.Networking.ClientCode
         {
             await Task.Delay(100);
             State = SessionState.VersionExchange;
-            this.Send(new VersionExchangePacket("0.0.1"));
+            this.Send(new VersionExchangePacket(SettingsViewModel.ClientVersion));
         }
 
         protected override void OnReceived(byte[] buffer, long offset, long size)

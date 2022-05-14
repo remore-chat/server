@@ -123,8 +123,16 @@ namespace TTalk.WinUI.ViewModels
                                 textBlock.Text = $"Failed to connect to server ({address})";
                                 return;
                             }
-                            textBlock.Text = $"{query.ServerName} - {query.ServerVersion}  ({query.ClientsConnected}/{query.MaxClients})";
-                            button.IsEnabled = true;
+                            if (query.ServerVersion == SettingsViewModel.ClientVersion)
+                            {
+                                textBlock.Text = $"{query.ServerName} - {query.ServerVersion} ({query.ClientsConnected}/{query.MaxClients})";
+                                button.IsEnabled = true;
+                            }
+                            else
+                            {
+                                textBlock.TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center;
+                                textBlock.Text = $"{query.ServerName} - {query.ServerVersion}\nApp version (v{SettingsViewModel.ClientVersion}) doesn't match server's version (v{query.ServerVersion})";
+                            }
                         });
                     });
                     listView.Items.Add(button);
