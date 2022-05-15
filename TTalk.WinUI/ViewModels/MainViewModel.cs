@@ -16,6 +16,7 @@ using NAudio.Wave;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.WinUI.Contracts.Services;
+using TTalk.WinUI.Helpers;
 using TTalk.WinUI.Models;
 using TTalk.WinUI.Networking;
 using TTalk.WinUI.Networking.ClientCode;
@@ -56,14 +57,14 @@ namespace TTalk.WinUI.ViewModels
             ShowUpdatePriviligeKeyDialog = new RelayCommand(async () =>
             {
                 var address = $"{ip}:{port}";
-                var textBox = new TextBox() { PlaceholderText = "Enter your privilege key" };
+                var textBox = new TextBox() { PlaceholderText = "Main_PrivilegeKey.PlaceholderText".GetLocalized(), MinWidth = 400 };
                 var res = await new ContentDialog()
                 {
-                    Title = "Set server privilige key",
+                    Title = "Main_PriviligeKey.Title".GetLocalized(),
                     Content = textBox,
                     XamlRoot = App.MainWindow.Content.XamlRoot,
-                    CloseButtonText = "Cancel",
-                    PrimaryButtonText = "Confirm",
+                    CloseButtonText = "Main_PrivilegeKey_Close.Text".GetLocalized(),
+                    PrimaryButtonText = "Main_PrivilegeKey_Confirm.Text".GetLocalized(),
                 }.ShowAsync(ContentDialogPlacement.InPlace);
                 if (res == ContentDialogResult.Primary)
                 {
@@ -72,10 +73,10 @@ namespace TTalk.WinUI.ViewModels
                         await SettingsService.SaveSettingAsync<string>($"{address}PrivilegeKey", textBox.Text);
                         var res = await new ContentDialog()
                         {
-                            Title = "Notification",
-                            Content = "For the changes to take effect, you must reconnect to the server",
+                            Title = "!",
+                            Content = "Main_PrivilegeKey_AfterConfirmNotification.Text".GetLocalized(),
                             XamlRoot = App.MainWindow.Content.XamlRoot,
-                            CloseButtonText = "Cancel",
+                            CloseButtonText = "Main_PrivilegeKey_Close.Text".GetLocalized(),
                         }.ShowAsync(ContentDialogPlacement.InPlace);
                     });
                 }
@@ -745,10 +746,10 @@ namespace TTalk.WinUI.ViewModels
                 {
                     await new ContentDialog()
                     {
-                        Title = "Connect to server",
-                        Content = "Looks like your nickname isn't configured, before connecting you have to specify your nickname in settings",
+                        Title = "Main_ConnectToServer_InvalidNicknameTitle".GetLocalized(),
+                        Content = "Main_ConnectToServer_InvalidNicknameContent".GetLocalized(),
                         XamlRoot = App.MainWindow.Content.XamlRoot,
-                        CloseButtonText = "Close",
+                        CloseButtonText = "Main_ConnectToServer_CloseButton".GetLocalized(),
                     }.ShowAsync(ContentDialogPlacement.InPlace);
                     return;
                 }
@@ -757,20 +758,20 @@ namespace TTalk.WinUI.ViewModels
                 {
                     Padding = new(12)
                 };
-                stack.Children.Add(new TextBlock() { Text = "Enter address of the server you want to connect in following format: IP:Port", TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap });
-                var textBox = new TextBox() { PlaceholderText = "Enter address here...", Name = "AddressInput", Margin = new(0, 12, 0, 0) };
+                stack.Children.Add(new TextBlock() { Text = "Main_ConnectToServer_Description".GetLocalized(), TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap });
+                var textBox = new TextBox() { PlaceholderText = "Main_ConnectToServer_AddressInputPlaceholder".GetLocalized(), Name = "AddressInput", Margin = new(0, 12, 0, 0) };
                 stack.Children.Add(textBox);
-                var addToFavorites = new CheckBox() { Content = new TextBlock() { Text = "Add this server to favorites after connect" } };
+                var addToFavorites = new CheckBox() { Content = new TextBlock() { Text = "Main_ConnectToServer_AddServerToFavoritesAfterConnect".GetLocalized() } };
                 stack.Children.Add(addToFavorites);
                 var tabView = new TabView()
                 {
                     IsAddTabButtonVisible = false,
                     CloseButtonOverlayMode = TabViewCloseButtonOverlayMode.OnPointerOver,
-
                 };
+               
                 var connectToServerViaIpItem = new TabViewItem()
                 {
-                    Header = "Connect with address",
+                    Header = "Main_ConnectToServer_ConnectWithAddress".GetLocalized(),
                     Content = stack,
                     IsClosable = false
                 };
@@ -794,7 +795,7 @@ namespace TTalk.WinUI.ViewModels
                     var textBlock = new TextBlock()
                     {
                         Margin = new(12, 0, 0, 0),
-                        Text = $"Connecting to server {address}"
+                        Text = string.Format("Main_ConnectToServerFavorites_ConnectingToServer".GetLocalized(), address)
                     };
                     _stackPanel.Children.Add(progress);
                     _stackPanel.Children.Add(textBlock);
@@ -820,7 +821,7 @@ namespace TTalk.WinUI.ViewModels
                             progress.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                             if (query == null)
                             {
-                                textBlock.Text = $"Failed to connect to server ({address})";
+                                textBlock.Text = string.Format($"Main_ConnectToServerFavorites_FailedToConnect".GetLocalized(), address);
                                 return;
                             }
                             if (query.ServerVersion == SettingsViewModel.ClientVersion)
@@ -831,7 +832,7 @@ namespace TTalk.WinUI.ViewModels
                             else
                             {
                                 textBlock.TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center;
-                                textBlock.Text = $"{query.ServerName} - {query.ServerVersion}\nApp version (v{SettingsViewModel.ClientVersion}) doesn't match server's version (v{query.ServerVersion})";
+                                textBlock.Text = string.Format("Main_ConnectToServer_VersionDontMatch".GetLocalized(), query.ServerName, SettingsViewModel.ClientVersion, query.ServerVersion);
                             }
                         });
                     });
@@ -840,21 +841,20 @@ namespace TTalk.WinUI.ViewModels
                 connectToServerViaFavoritesStack.Children.Add(listView);
                 var connectToServerViaFavorites = new TabViewItem()
                 {
-                    Header = "Connect with favorites",
+                    Header = "Main_ConnectToServer_ConnectFromFavoritesList".GetLocalized(),
                     Content = connectToServerViaFavoritesStack,
                     IsClosable = false
                 };
                 tabView.TabItems.Add(connectToServerViaIpItem);
                 tabView.TabItems.Add(connectToServerViaFavorites);
                 parentStack.Children.Add(tabView);
-                var nicknameInput = new TextBox() { PlaceholderText = "Nickname", MaxLength = 16, Margin = new(0, 12, 0, 0) };
                 var result = await new ContentDialog()
                 {
-                    Title = "Connect to server",
+                    Title = "Main_ConnectToServer_Title".GetLocalized(),
                     Content = parentStack,
                     XamlRoot = App.MainWindow.Content.XamlRoot,
-                    CloseButtonText = "Close",
-                    PrimaryButtonText = "Connect",
+                    CloseButtonText = "Main_ConnectToServer_CloseButton".GetLocalized(),
+                    PrimaryButtonText = "Main_ConnectToServer_ConnectButton".GetLocalized(),
                 }.ShowAsync(ContentDialogPlacement.InPlace);
                 Address = textBox.Text;
                 if (result == ContentDialogResult.Primary)

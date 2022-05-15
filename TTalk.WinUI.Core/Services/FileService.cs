@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Text;
-
+using System.Threading;
 using Newtonsoft.Json;
 
 using TTalk.WinUI.Core.Contracts.Services;
@@ -29,7 +29,15 @@ namespace TTalk.WinUI.Core.Services
             }
 
             var fileContent = JsonConvert.SerializeObject(content);
-            File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
+            try
+            {
+                File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
+            }
+            catch
+            {
+                Thread.Sleep(1000);
+                Save(folderPath, fileName, fileContent);
+            }
         }
 
         public void Delete(string folderPath, string fileName)

@@ -12,7 +12,7 @@ public class TTalkServer
 
     public IPAddress Ip { get; set; }
     public int Port { get; set; }
-    public string Version => "0.0.1";
+    public string Version => "1.0.0";
     public List<Channel> Channels { get; set; }
     public List<ServerSession> Clients { get; set; }
     public TCPServer TCP { get; }

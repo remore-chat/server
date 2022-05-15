@@ -30,7 +30,7 @@ namespace TTalk.WinUI.Views
 
         private void OnNavigationViewItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            //shellFrame.Navigate(typeof(MainPage), MainViewModel, args.RecommendedNavigationTransitionInfo);
+            ;
         }
 
         private void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

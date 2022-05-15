@@ -118,13 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppDisplayName" xml:space="preserve">
-    <value>TTalk.WinUI</value>
+    <value>TTalk</value>
   </data>
   <data name="AppDescription" xml:space="preserve">
-    <value>TTalk.WinUI</value>
+    <value>TTalk</value>
   </data>
   <data name="Shell_Main.Content" xml:space="preserve">
-    <value>Main</value>
+    <value>Home</value>
   </data>
   <data name="Settings_Personalization.Text" xml:space="preserve">
     <value>Personalization</value>
@@ -152,5 +152,111 @@
   </data>
   <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
     <value>https://YourPrivacyUrlGoesHere/</value>
+  </data>
+  <data name="Main_Connect.Label" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="Main_ConnectToServerFavorites_ConnectingToServer" xml:space="preserve">
+    <value>Connecting to server {0}</value>
+    <comment>where {0} - address of server</comment>
+  </data>
+  <data name="Main_ConnectToServerFavorites_FailedToConnect" xml:space="preserve">
+    <value>Failed to connect to server ({0})</value>
+    <comment>where {0} - address of server</comment>
+  </data>
+  <data name="Main_ConnectToServer_AddressInputPlaceholder" xml:space="preserve">
+    <value>Enter address here</value>
+  </data>
+  <data name="Main_ConnectToServer_AddServerToFavoritesAfterConnect" xml:space="preserve">
+    <value>Add this server to favorites after connect</value>
+  </data>
+  <data name="Main_ConnectToServer_CloseButton" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Main_ConnectToServer_ConnectButton" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="Main_ConnectToServer_ConnectFromFavoritesList" xml:space="preserve">
+    <value>Favorites</value>
+  </data>
+  <data name="Main_ConnectToServer_ConnectWithAddress" xml:space="preserve">
+    <value>Connect with server address</value>
+  </data>
+  <data name="Main_ConnectToServer_Description" xml:space="preserve">
+    <value>Enter address of the server you want to connect and press Connect</value>
+  </data>
+  <data name="Main_ConnectToServer_InvalidNicknameContent" xml:space="preserve">
+    <value>Looks like your nickname isn't configured, before connecting you have to specify your nickname in settings</value>
+  </data>
+  <data name="Main_ConnectToServer_InvalidNicknameTitle" xml:space="preserve">
+    <value>Invald nickname</value>
+  </data>
+  <data name="Main_ConnectToServer_Title" xml:space="preserve">
+    <value>Connect to server</value>
+  </data>
+  <data name="Main_ConnectToServer_VersionDontMatch" xml:space="preserve">
+    <value>{0}
+App version (v{1}) doesn't match server's version (v{2})</value>
+    <comment>{0} - server name, {1} - client version, {2} - server version</comment>
+  </data>
+  <data name="Main_Disconnect.Label" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="Main_MessageContent.PlaceholderText" xml:space="preserve">
+    <value>Type something and press Enter to send!</value>
+  </data>
+  <data name="Main_ServerSettings.Label" xml:space="preserve">
+    <value>Server settings</value>
+  </data>
+  <data name="Main_SetPrivilegeKey.Label" xml:space="preserve">
+    <value>Set privilege key</value>
+  </data>
+  <data name="Settings_Capture.Text" xml:space="preserve">
+    <value>Capture</value>
+  </data>
+  <data name="Settings_Capture_CaptureDevice.Text" xml:space="preserve">
+    <value>Capture device</value>
+  </data>
+  <data name="Settings_Capture_UseVoiceActivityDetection.Text" xml:space="preserve">
+    <value>Use Voice Activity Detection</value>
+  </data>
+  <data name="Settings_Capture_VoiceActivityThreshold.Text" xml:space="preserve">
+    <value>Voice activity detection threshold</value>
+  </data>
+  <data name="Settings_Personalization_DefaultNickname.Text" xml:space="preserve">
+    <value>Default nickname</value>
+  </data>
+  <data name="Settings_Personalization_DefaultNicknameDisconnectFromServer.Text" xml:space="preserve">
+    <value>You have to disconnect from current server to change your nickname</value>
+  </data>
+  <data name="Settings_Personalization_MinimalLength.Text" xml:space="preserve">
+    <value>Minimal length of nickname is 3 symbols</value>
+  </data>
+  <data name="Settings_Playback.Text" xml:space="preserve">
+    <value>Playback</value>
+  </data>
+  <data name="Settings_Playback_PlaybackDevice.Text" xml:space="preserve">
+    <value>Playback device</value>
+  </data>
+  <data name="Main_PrivilegeKey.PlaceholderText" xml:space="preserve">
+    <value>Enter your privilege key</value>
+  </data>
+  <data name="Main_PrivilegeKey_AfterConfirmNotification.Text" xml:space="preserve">
+    <value>You must reconnect to the server for the changes to take effect</value>
+  </data>
+  <data name="Main_PrivilegeKey_Close.Text" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Main_PrivilegeKey_Confirm.Text" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Main_PriviligeKey.Title" xml:space="preserve">
+    <value>Set privilege key</value>
+  </data>
+  <data name="Settings.Title" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_Language.Text" xml:space="preserve">
+    <value>Language</value>
   </data>
 </root>

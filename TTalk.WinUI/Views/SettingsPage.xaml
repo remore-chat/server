@@ -6,7 +6,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helpers="using:TTalk.WinUI.Helpers"
     xmlns:xaml="using:Microsoft.UI.Xaml" xmlns:converters="using:TTalk.WinUI.Converters"
+    xmlns:st="using:SettingsUI.Controls"
+    xmlns:fluent="using:Fluent.Icons"
     mc:Ignorable="d"
+    xmlns:l10n="using:TTalk.WinUI.Helpers"
     Style="{StaticResource PageStyle}">
     <Page.Resources>
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
@@ -15,101 +18,106 @@
         <converters:BooleanToVisibilityConverter x:Key="boolToVis" />
 
     </Page.Resources>
-    <Grid Margin="{StaticResource MediumLeftRightMargin}">
-        <StackPanel HorizontalAlignment="Stretch"
+    <ScrollViewer HorizontalScrollMode="Disabled"
+              VerticalScrollBarVisibility="Visible"
+              VerticalAlignment="Top">
+        <Grid Margin="{StaticResource MediumLeftRightMargin}">
+            <StackPanel HorizontalAlignment="Stretch"
             x:Name="ContentArea">
-            <TextBlock FontSize="36" Margin="0 12 0 0" Text="Settings" />
 
-            <Expander Margin="0 12 0 0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                <Expander.Header>
-                    <TextBlock x:Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
-                </Expander.Header>
-                <StackPanel>
-                    <TextBlock Text="Default nickname" />
-                    <TextBox Margin="0 8 0 0" MinWidth="200" MaxLength="16" IsEnabled="{x:Bind ViewModel.Main.IsConnected, Converter={StaticResource reverseBool}, Mode=OneWay}" PlaceholderText="Nickname here" Text="{x:Bind ViewModel.Username, Mode=TwoWay}" />
-                    <TextBlock Text="Disconnect from current server in order to change your nickname" Margin="0 4 0 0" Visibility="{x:Bind ViewModel.Main.IsConnected, Converter={StaticResource boolToVis}, Mode=OneWay}" />
-                    <TextBlock Text="Minimal length of nickname is 3 symbols" Visibility="{x:Bind ViewModel.IsNicknameErrored, Converter={StaticResource boolToVis}, Mode=OneWay}" Foreground="IndianRed" />
-                    <TextBlock x:Uid="Settings_Theme" Margin="0 8 0 0" />
-                    <StackPanel >
-                        <RadioButton
-                        x:Uid="Settings_Theme_Light"
+                <TextBlock FontSize="36" Margin="0 12 0 0" Text="{l10n:Localize Key=Settings.Title}" />
+
+                <StackPanel Margin="10,5,10,5">
+                    <st:SettingsGroup Header="{l10n:Localize Key=Settings_Personalization.Text}">
+                        <st:Setting Header="{l10n:Localize Key=Settings_Personalization_DefaultNickname.Text}">
+                            <st:Setting.Icon>
+                                <fluent:FluentSymbolIcon Symbol="Person20Filled" Width="20" Height="20" />
+                            </st:Setting.Icon>
+                            <st:Setting.ActionContent>
+                                <StackPanel MinWidth="300">
+                                    <TextBox Margin="0 0 0 0" MinWidth="300" MaxLength="16" IsEnabled="{x:Bind ViewModel.Main.IsConnected, Converter={StaticResource reverseBool}, Mode=OneWay}" PlaceholderText="Nickname here" Text="{x:Bind ViewModel.Username, Mode=TwoWay}" />
+                                    <TextBlock Text="{l10n:Localize Key=Settings_Personalization_DefaultNicknameDisconnectFromServer.Text}" Margin="0 4 0 0" Visibility="{x:Bind ViewModel.Main.IsConnected, Converter={StaticResource boolToVis}, Mode=OneWay}" />
+                                    <TextBlock Text="{l10n:Localize Key=Settings_Personalization_MinimalLength.Text}" Visibility="{x:Bind ViewModel.IsNicknameErrored, Converter={StaticResource boolToVis}, Mode=OneWay}" Foreground="IndianRed" />
+                                </StackPanel>
+                            </st:Setting.ActionContent>
+                        </st:Setting>
+                        <st:Setting Header="{l10n:Localize Key=Settings_Language.Text}">
+                            <st:Setting.Icon>
+                                <fluent:FluentSymbolIcon Symbol="Globe20Filled" Width="20" Height="20" />
+                            </st:Setting.Icon>
+                            <st:Setting.ActionContent>
+                                <ComboBox Margin="0 0 0 0" VerticalAlignment="Center" ItemsSource="{x:Bind ViewModel.Languages}" MinWidth="300"  SelectedIndex="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}"></ComboBox>
+                            </st:Setting.ActionContent>
+                        </st:Setting>
+                        <st:Setting Header="{l10n:Localize Key=Settings_Theme.Text}">
+                            <st:Setting.Icon>
+                                <fluent:FluentSymbolIcon Symbol="PaintBrush20Filled" Width="20" Height="20" />
+                            </st:Setting.Icon>
+                            <st:Setting.ActionContent>
+                                <StackPanel>
+                                    <RadioButton
+                        Content="{l10n:Localize Key=Settings_Theme_Light.Content}"
                         Command="{x:Bind ViewModel.SwitchThemeCommand}"
                         IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
                         FontSize="15"
                         GroupName="AppTheme">
-                            <RadioButton.CommandParameter>
-                                <xaml:ElementTheme>Light</xaml:ElementTheme>
-                            </RadioButton.CommandParameter>
-                        </RadioButton>
-                        <RadioButton
-                        x:Uid="Settings_Theme_Dark"
+                                        <RadioButton.CommandParameter>
+                                            <xaml:ElementTheme>Light</xaml:ElementTheme>
+                                        </RadioButton.CommandParameter>
+                                    </RadioButton>
+                                    <RadioButton
+                        Content="{l10n:Localize Key=Settings_Theme_Dark.Content}"
                         Command="{x:Bind ViewModel.SwitchThemeCommand}"
                         IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"
                         FontSize="15"
                         GroupName="AppTheme">
-                            <RadioButton.CommandParameter>
-                                <xaml:ElementTheme>Dark</xaml:ElementTheme>
-                            </RadioButton.CommandParameter>
-                        </RadioButton>
-                        <RadioButton
-                        x:Uid="Settings_Theme_Default"
+                                        <RadioButton.CommandParameter>
+                                            <xaml:ElementTheme>Dark</xaml:ElementTheme>
+                                        </RadioButton.CommandParameter>
+                                    </RadioButton>
+                                    <RadioButton
+                        Content="{l10n:Localize Key=Settings_Theme_Default.Content}"
                         Command="{x:Bind ViewModel.SwitchThemeCommand}"
                         IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"
                         FontSize="15"
                         GroupName="AppTheme">
-                            <RadioButton.CommandParameter>
-                                <xaml:ElementTheme>Default</xaml:ElementTheme>
-                            </RadioButton.CommandParameter>
-                        </RadioButton>
-                    </StackPanel>
+                                        <RadioButton.CommandParameter>
+                                            <xaml:ElementTheme>Default</xaml:ElementTheme>
+                                        </RadioButton.CommandParameter>
+                                    </RadioButton>
+                                </StackPanel>
+                            </st:Setting.ActionContent>
+                        </st:Setting>
+                    </st:SettingsGroup>
+                    <st:SettingsGroup Header="{l10n:Localize Key=Settings_Playback.Text}">
+                        <st:Setting Header="{l10n:Localize Key=Settings_Playback_PlaybackDevice.Text}">
+                            <st:Setting.Icon>
+                                <fluent:FluentSymbolIcon Symbol="Speaker220Filled" Width="20" Height="20" />
+                            </st:Setting.Icon>
+                            <st:Setting.ActionContent>
+                                <StackPanel MinWidth="300" Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <ProgressRing HorizontalAlignment="Right" Width="24" Height="24" Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
+                                    <ComboBox Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" ItemsSource="{x:Bind ViewModel.OutputDevices}" MinWidth="400"  SelectedIndex="{x:Bind ViewModel.OutputDevice, Mode=TwoWay}"></ComboBox>
+                                </StackPanel>
+                            </st:Setting.ActionContent>
+                        </st:Setting>
+                    </st:SettingsGroup>
+
+                    <st:SettingsGroup Header="{l10n:Localize Key=Settings_Capture.Text}">
+                        <st:Setting Header="{l10n:Localize Key=Settings_Capture_CaptureDevice.Text}">
+                            <st:Setting.Icon>
+                                <fluent:FluentSymbolIcon Symbol="MicOn20Filled" Width="20" Height="20" />
+                            </st:Setting.Icon>
+                            <st:Setting.ActionContent>
+                                <StackPanel MinWidth="300" Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <ProgressRing HorizontalAlignment="Right" Width="24" Height="24" Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
+                                    <ComboBox Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" ItemsSource="{x:Bind ViewModel.InputDevices}" MinWidth="400"  SelectedIndex="{x:Bind ViewModel.InputDevice, Mode=TwoWay}"></ComboBox>
+                                </StackPanel>
+                            </st:Setting.ActionContent>
+                        </st:Setting>
+                    </st:SettingsGroup>
                 </StackPanel>
-            </Expander>
-
-            <Expander Margin="0 12 0 0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                <Expander.Header>
-                    <TextBlock Text="Playback" Style="{ThemeResource SubtitleTextBlockStyle}" />
-                </Expander.Header>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                    <TextBlock Text="Playback device" TextAlignment="Center" VerticalAlignment="Center" />
-                    <ProgressRing Margin="12 0 0 0" Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
-                    <ComboBox Margin="12 0 0 0" Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" ItemsSource="{x:Bind ViewModel.OutputDevices}" MinWidth="400"  SelectedIndex="{x:Bind ViewModel.OutputDevice, Mode=TwoWay}"></ComboBox>
-                </StackPanel>
-            </Expander>
-
-            <Expander Margin="0 12 0 0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                <Expander.Header>
-                    <TextBlock Text="Capture" Style="{ThemeResource SubtitleTextBlockStyle}" />
-                </Expander.Header>
-                <StackPanel HorizontalAlignment="Stretch">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                        <TextBlock Text="Capture device" TextAlignment="Center" VerticalAlignment="Center" />
-                        <ProgressRing Margin="12 0 0 0" Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
-                        <ComboBox Margin="12 0 0 0" Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" ItemsSource="{x:Bind ViewModel.InputDevices}" MinWidth="400"  SelectedIndex="{x:Bind ViewModel.InputDevice, Mode=TwoWay}"></ComboBox>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                        <TextBlock Text="Use Voice activity detection" TextAlignment="Center" VerticalAlignment="Center" />
-                        <CheckBox Margin="12 0 0 0" IsChecked="{x:Bind ViewModel.UseVoiceActivityDetection, Mode=TwoWay}" />
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Visibility="{x:Bind ViewModel.UseVoiceActivityDetection, Mode=OneWay, Converter={StaticResource boolToVis}}">
-                        <TextBlock Text="Voice activity detection threshold" TextAlignment="Center" VerticalAlignment="Center" />
-                        <Slider Margin="12 0 0 0" VerticalAlignment="Center" MinWidth="200" Value="{x:Bind ViewModel.VoiceActivityDetectionThreshold, Mode=TwoWay}" Minimum="0.015" StepFrequency="0.01" HorizontalAlignment="Stretch"  Maximum="0.5" />
-                    </StackPanel>
-                        
-                </StackPanel>
-
-            </Expander>
-
-            <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
-
-            <StackPanel Margin="{StaticResource XSmallTopMargin}">
-                <TextBlock Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" Style="{ThemeResource BodyTextBlockStyle}" />
-
-                <!--<TextBlock
-                    x:Uid="Settings_AboutDescription"
-                    Margin="{StaticResource XSmallTopMargin}"
-                    Style="{ThemeResource BodyTextBlockStyle}" />
-                <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink" Margin="{StaticResource XSmallTopMargin}" />-->
             </StackPanel>
-        </StackPanel>
-    </Grid>
+        </Grid>
+    </ScrollViewer>
 </Page>

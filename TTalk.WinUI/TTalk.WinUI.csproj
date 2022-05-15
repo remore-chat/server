@@ -36,6 +36,7 @@
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.8" />
 		<PackageReference Include="NAudio" Version="2.0.1" />
 		<PackageReference Include="NetCoreServer" Version="6.2.0" />
+		<PackageReference Include="SettingsUI" Version="2.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -60,5 +61,9 @@
 	  <Page Update="Icons\Themes\Generic.xaml">
 	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 	  </Page>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PRIResource Remove="Strings\uk-ua.resw" />
 	</ItemGroup>
 </Project>

@@ -27,5 +27,15 @@ namespace TTalk.WinUI
             Array.Copy(source, index, slice, 0, length);
             return slice;
         }
+
+        public static string Capitalize(this string str)
+        {
+            if (string.IsNullOrEmpty(str))
+                return str;
+            if (str.Length == 1)
+                return str.ToUpper();
+
+            return str[0].ToString().ToUpper() + str[1..str.Length];
+        }
     }
 }

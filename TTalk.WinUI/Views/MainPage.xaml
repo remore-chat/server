@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     xmlns:fluent="using:Fluent.Icons"
+    xmlns:l10n="using:TTalk.WinUI.Helpers"
     xmlns:converters="using:TTalk.WinUI.Converters"
     Style="{StaticResource PageStyle}">
 
@@ -20,12 +21,12 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Right" HorizontalAlignment="Left">
-            <AppBarButton Icon="Add" Label="Connect" Command="{x:Bind ViewModel.ShowConnectDialog}" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
-            <AppBarButton Icon="Remove" Command="{x:Bind ViewModel.DisconnectCommand}" Label="Disconnect" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}}" />
+            <AppBarButton Icon="Add"  Label="{l10n:Localize Key=Main_Connect.Label}" Command="{x:Bind ViewModel.ShowConnectDialog}" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
+            <AppBarButton Icon="Remove" Label="{l10n:Localize Key=Main_Disconnect.Label}" Command="{x:Bind ViewModel.DisconnectCommand}" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}}" />
             <CommandBar.SecondaryCommands>
-                <AppBarButton Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}" IsEnabled="{x:Bind ViewModel.CanEditServerSettings, Mode=OneWay}" Icon="Setting" Label="Server settings">
+                <AppBarButton Label="{l10n:Localize Key=Main_ServerSettings.Label}" Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}" IsEnabled="{x:Bind ViewModel.CanEditServerSettings, Mode=OneWay}" Icon="Setting">
                 </AppBarButton>
-                <AppBarButton Command="{x:Bind ViewModel.ShowUpdatePriviligeKeyDialog}" Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}" Icon="Admin" Label="Set privilige key">
+                <AppBarButton Label="{l10n:Localize Key=Main_SetPrivilegeKey.Label}" Command="{x:Bind ViewModel.ShowUpdatePriviligeKeyDialog}" Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}" Icon="Admin">
                 </AppBarButton>
             </CommandBar.SecondaryCommands>
         </CommandBar>
@@ -130,7 +131,7 @@
                             </ListView.ItemTemplate>
                         </ListView>
 
-                        <TextBox Grid.Row="2" Visibility="{x:Bind ViewModel.CurrentTextChannel, Mode=OneWay, Converter={StaticResource boolToVis}}" HorizontalContentAlignment="Stretch" PlaceholderText="Type something and press Enter to send!" AcceptsReturn="False" x:Name="MessageContent"  MaxLength="1999" HorizontalAlignment="Stretch" MaxHeight="250" Margin="0 0 8 0" />
+                        <TextBox Grid.Row="2" Visibility="{x:Bind ViewModel.CurrentTextChannel, Mode=OneWay, Converter={StaticResource boolToVis}}" HorizontalContentAlignment="Stretch" PlaceholderText="{l10n:Localize Key=Main_MessageContent.PlaceholderText}" AcceptsReturn="False" x:Name="MessageContent"  MaxLength="1999" HorizontalAlignment="Stretch" MaxHeight="250" Margin="0 0 8 0" />
 
                     </Grid>
 

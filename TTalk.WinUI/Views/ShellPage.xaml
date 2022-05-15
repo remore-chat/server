@@ -8,6 +8,7 @@
     xmlns:behaviors="using:TTalk.WinUI.Behaviors"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     Loaded="OnLoaded"
+    xmlns:l10n="using:TTalk.WinUI.Helpers"
     Style="{StaticResource PageStyle}">
 
     <NavigationView
@@ -29,7 +30,7 @@
             Or to use an IconElement instead of a Symbol see https://github.com/microsoft/TemplateStudio/blob/main/docs/UWP/projectTypes/navigationpane.md
             Edit String/en-US/Resources.resw: Add a menu item title for each page
             -->
-            <NavigationViewItem x:Uid="Shell_Main" Icon="Document" helpers:NavigationHelper.NavigateTo="TTalk.WinUI.ViewModels.MainViewModel" />
+            <NavigationViewItem Content="{l10n:Localize Key=Shell_Main.Content}" Icon="Home" helpers:NavigationHelper.NavigateTo="TTalk.WinUI.ViewModels.MainViewModel" />
         </NavigationView.MenuItems>
         <NavigationView.HeaderTemplate>
             <DataTemplate>

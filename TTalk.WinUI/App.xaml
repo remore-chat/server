@@ -11,6 +11,7 @@
                 <ResourceDictionary Source="/Styles/Page.xaml" />
                 <ResourceDictionary Source="/Icons/Themes/Generic.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
+                <ResourceDictionary Source="ms-appx:///SettingsUI/Themes/SettingsUI.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

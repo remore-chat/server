@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -13,13 +15,14 @@ using NAudio.Wave;
 
 using TTalk.WinUI.Contracts.Services;
 using TTalk.WinUI.Helpers;
-
+using TTalk.WinUI.Services;
 using Windows.ApplicationModel;
 namespace TTalk.WinUI.ViewModels
 {
     public class SettingsViewModel : ObservableRecipient
     {
         private readonly IThemeSelectorService _themeSelectorService;
+        private readonly LocalizationService localizationService;
         private ElementTheme _elementTheme;
 
         public const string InputDeviceSettingsKey = "InputDeviceSettingsKey";
@@ -27,8 +30,9 @@ namespace TTalk.WinUI.ViewModels
         public const string UseVoiceActivityDetectionSettingsKey = "UseVoiceActivityDetectionSettingsKey";
         public const string VoiceActivityDetectionThresholdSettingsKey = "VoiceActivityDetectionThresholdSettingsKey";
         public const string UsernameSettingsKey = "UsernameSettingsKey";
+        public const string LanguageSettingsKey = "LanguageSettingsKey";
         public const string FavoritesSettingsKey = "FavoritesTabSettingsKey";
-        public const string ClientVersion = "0.0.1";
+        public const string ClientVersion = "1.0.0";
 
         public ElementTheme ElementTheme
         {
@@ -160,10 +164,15 @@ namespace TTalk.WinUI.ViewModels
             {
                 if (SetProperty(ref voiceActivityDetectionThreshold, value))
                 {
-                    App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                    Action<double> execute = (value) =>
                     {
-                        await SettingsService.SaveSettingAsync<double>(VoiceActivityDetectionThresholdSettingsKey, value);
-                    });
+                        App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                        {
+                            await SettingsService.SaveSettingAsync<double>(VoiceActivityDetectionThresholdSettingsKey, value);
+                        });
+                    };
+                    var debounceWrapper = execute.Debounce(1500);
+                    debounceWrapper(value);
                 }
             }
         }
@@ -192,10 +201,38 @@ namespace TTalk.WinUI.ViewModels
                     };
                     var debounceWrapper = execute.Debounce(500);
                     debounceWrapper(value);
-                    
+
                 }
             }
         }
+
+
+        private ObservableCollection<string> languages;
+
+        public ObservableCollection<string> Languages
+        {
+            get { return languages; }
+            set { SetProperty(ref languages, value); }
+        }
+
+        private int selectedLanguage;
+
+        public int SelectedLanguage
+        {
+            get { return selectedLanguage; }
+            set
+            {
+                if (SetProperty(ref selectedLanguage, value))
+                {
+                    if (localizationService.UpdateLanguage(localizationService.Languages[value]))
+                    {
+                        App.GetService<INavigationService>().NavigateTo(typeof(MainViewModel).FullName, null, true);
+                        App.GetService<INavigationService>().NavigateTo(typeof(SettingsViewModel).FullName, null, true);
+                    }
+                }
+            }
+        }
+
 
 
         private bool isDevicesLoaded;
@@ -210,9 +247,10 @@ namespace TTalk.WinUI.ViewModels
         public MainViewModel Main { get; }
         public ILocalSettingsService SettingsService { get; }
 
-        public SettingsViewModel(IThemeSelectorService themeSelectorService, MainViewModel mainViewModel, ILocalSettingsService settingsService)
+        public SettingsViewModel(IThemeSelectorService themeSelectorService, LocalizationService localizationService, MainViewModel mainViewModel, ILocalSettingsService settingsService)
         {
             _themeSelectorService = themeSelectorService;
+            this.localizationService = localizationService;
             Main = mainViewModel;
             SettingsService = settingsService;
             _elementTheme = _themeSelectorService.Theme;
@@ -262,13 +300,13 @@ namespace TTalk.WinUI.ViewModels
             });
             App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
             {
-                Username = await SettingsService.ReadSettingAsync<string>(UsernameSettingsKey); 
+                Username = await SettingsService.ReadSettingAsync<string>(UsernameSettingsKey);
                 UseVoiceActivityDetection = await SettingsService.ReadSettingAsync<bool>(UseVoiceActivityDetectionSettingsKey);
                 VoiceActivityDetectionThreshold = await SettingsService.ReadSettingAsync<double>(VoiceActivityDetectionThresholdSettingsKey);
             });
 
-
-
+            Languages = new(localizationService.Languages.Select(x => x.NativeName.Split("(")[0].Trim().Capitalize()));
+            selectedLanguage = localizationService.Languages.ToList().IndexOf(localizationService.CurrentLanguage);
         }
 
 
