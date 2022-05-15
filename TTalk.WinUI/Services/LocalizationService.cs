@@ -29,6 +29,7 @@ namespace TTalk.WinUI.Services
                 new("en-US"),
                 new("ru-RU"),
                 new("uk-UA"),
+                new("de-DE"),
             };
         }
 

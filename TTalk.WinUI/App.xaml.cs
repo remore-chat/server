@@ -50,6 +50,7 @@ namespace TTalk.WinUI
 
                 // Core Services
                 services.AddSingleton<IFileService, FileService>();
+                services.AddSingleton<SoundService>();
 
                 // Views and ViewModels
                 services.AddTransient<SettingsViewModel>();
@@ -89,7 +90,7 @@ namespace TTalk.WinUI
 
         public static void ResetMainViewModel()
         {
-            _mainViewModel = new(GetService<ILocalSettingsService>());
+            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<SoundService>());
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -105,6 +106,7 @@ namespace TTalk.WinUI
             base.OnLaunched(args);
             var activationService = App.GetService<IActivationService>();
             await activationService.ActivateAsync(args);
+
         }
     }
 }

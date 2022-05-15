@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>TTalk</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>TTalk</value>
+  </data>
+  <data name="Shell_Main.Content" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Settings_Personalization.Text" xml:space="preserve">
+    <value>Anpassung</value>
+  </data>
+  <data name="Settings_Theme.Text" xml:space="preserve">
+    <value>Design</value>
+  </data>
+  <data name="Settings_Theme_Light.Content" xml:space="preserve">
+    <value>Hell</value>
+  </data>
+  <data name="Settings_Theme_Dark.Content" xml:space="preserve">
+    <value>Dunkel</value>
+  </data>
+  <data name="Settings_Theme_Default.Content" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="Settings_About.Text" xml:space="preserve">
+    <value>Über diese Anwendung</value>
+  </data>
+  <data name="Settings_AboutDescription.Text" xml:space="preserve">
+    <value>TTalk - ist eine kostenlose und quell-offene Alternative zu TeamSpeak entwickelt von Roxxel (https://roxxel.moe)</value>
+  </data>
+  <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
+    <value>Datenschutzerklärung</value>
+  </data>
+  <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
+    <value>https://DeineDatenschutzUrlGehtHier/</value>
+  </data>
+  <data name="Main_Connect.Label" xml:space="preserve">
+    <value>Verbinden</value>
+  </data>
+  <data name="Main_ConnectToServerFavorites_ConnectingToServer" xml:space="preserve">
+    <value>Verbinde zu {0}</value>
+    <comment>where {0} - address of server</comment>
+  </data>
+  <data name="Main_ConnectToServerFavorites_FailedToConnect" xml:space="preserve">
+    <value>Verbindung zu {0} fehlgeschlagen</value>
+    <comment>where {0} - address of server</comment>
+  </data>
+  <data name="Main_ConnectToServer_AddressInputPlaceholder" xml:space="preserve">
+    <value>Adresse hier eingeben</value>
+  </data>
+  <data name="Main_ConnectToServer_AddServerToFavoritesAfterConnect" xml:space="preserve">
+    <value>Diesen Server nach Verbindung zu den Favoriten hinzufügen</value>
+  </data>
+  <data name="Main_ConnectToServer_CloseButton" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="Main_ConnectToServer_ConnectButton" xml:space="preserve">
+    <value>Verbinden</value>
+  </data>
+  <data name="Main_ConnectToServer_ConnectFromFavoritesList" xml:space="preserve">
+    <value>Favoriten</value>
+  </data>
+  <data name="Main_ConnectToServer_ConnectWithAddress" xml:space="preserve">
+    <value>Mit Adresse verbinden</value>
+  </data>
+  <data name="Main_ConnectToServer_Description" xml:space="preserve">
+    <value>Gebe die Adresse des Servers ein zu dem Du dich verbinden willst und drücke Verbinden.</value>
+  </data>
+  <data name="Main_ConnectToServer_InvalidNicknameContent" xml:space="preserve">
+    <value>Es scheint, dass Dein Nickname nicht konfiguriert ist, bevor Du dich verbindest, musst Du Deinen Nicknamen in den Einstellungen festlegen.</value>
+  </data>
+  <data name="Main_ConnectToServer_InvalidNicknameTitle" xml:space="preserve">
+    <value>Ungültiger Nickname</value>
+  </data>
+  <data name="Main_ConnectToServer_Title" xml:space="preserve">
+    <value>Zu Server verbinden</value>
+  </data>
+  <data name="Main_ConnectToServer_VersionDontMatch" xml:space="preserve">
+    <value>{0}
+App-Version (v{1}) überstimmt nicht mit den Server (v{2}) überein</value>
+    <comment>{0} - server name, {1} - client version, {2} - server version</comment>
+  </data>
+  <data name="Main_Disconnect.Label" xml:space="preserve">
+    <value>Trennen</value>
+  </data>
+  <data name="Main_MessageContent.PlaceholderText" xml:space="preserve">
+    <value>Gebe etwas ein und drücke Eingabetaste um zu verschicken!</value>
+  </data>
+  <data name="Main_ServerSettings.Label" xml:space="preserve">
+    <value>Server-Einstellungen</value>
+  </data>
+  <data name="Main_SetPrivilegeKey.Label" xml:space="preserve">
+    <value>Setze Server-Schlüssel</value>
+  </data>
+  <data name="Settings_Capture.Text" xml:space="preserve">
+    <value>Aufnahme</value>
+  </data>
+  <data name="Settings_Capture_CaptureDevice.Text" xml:space="preserve">
+    <value>Aufnahmegerät</value>
+  </data>
+  <data name="Settings_Capture_UseVoiceActivityDetection.Text" xml:space="preserve">
+    <value>Benutze Sprachaktivierung</value>
+  </data>
+  <data name="Settings_Capture_VoiceActivityThreshold.Text" xml:space="preserve">
+    <value>Empfindlichkeit</value>
+  </data>
+  <data name="Settings_Personalization_DefaultNickname.Text" xml:space="preserve">
+    <value>Standard-Nickname</value>
+  </data>
+  <data name="Settings_Personalization_DefaultNicknameDisconnectFromServer.Text" xml:space="preserve">
+    <value>Du musst dich vorher von den jetzigen Server trennen, um Deinen Nicknamen zu ändern.</value>
+  </data>
+  <data name="Settings_Personalization_MinimalLength.Text" xml:space="preserve">
+    <value>Mindestlänge eines Nicknamens ist 3 Zeichen</value>
+  </data>
+  <data name="Settings_Playback.Text" xml:space="preserve">
+    <value>Wiedergabe</value>
+  </data>
+  <data name="Settings_Playback_PlaybackDevice.Text" xml:space="preserve">
+    <value>Wiedergabengerät</value>
+  </data>
+  <data name="Main_PrivilegeKey.PlaceholderText" xml:space="preserve">
+    <value>Gebe Deinen Server-Schlüssel</value>
+  </data>
+  <data name="Main_PrivilegeKey_AfterConfirmNotification.Text" xml:space="preserve">
+    <value>Du musst dich zum Server erneut verbinden, damit die Veränderungen wirksam werden</value>
+  </data>
+  <data name="Main_PrivilegeKey_Close.Text" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="Main_PrivilegeKey_Confirm.Text" xml:space="preserve">
+    <value>Bestätigen</value>
+  </data>
+  <data name="Main_PriviligeKey.Title" xml:space="preserve">
+    <value>Server-Schlüssel setzen</value>
+  </data>
+  <data name="Settings.Title" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="Settings_Language.Text" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+</root>

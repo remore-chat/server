@@ -36,6 +36,7 @@
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.8" />
 		<PackageReference Include="NAudio" Version="2.0.1" />
 		<PackageReference Include="NetCoreServer" Version="6.2.0" />
+		<PackageReference Include="PInvoke.User32" Version="0.7.104" />
 		<PackageReference Include="SettingsUI" Version="2.0.0" />
 	</ItemGroup>
 
@@ -65,5 +66,9 @@
 
 	<ItemGroup>
 	  <PRIResource Remove="Strings\uk-ua.resw" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Include="Assets\sounds\mic_muted_user.wav" />
 	</ItemGroup>
 </Project>

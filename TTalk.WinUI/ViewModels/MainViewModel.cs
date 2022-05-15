@@ -21,12 +21,14 @@ using TTalk.WinUI.Models;
 using TTalk.WinUI.Networking;
 using TTalk.WinUI.Networking.ClientCode;
 using TTalk.WinUI.Networking.EventArgs;
+using TTalk.WinUI.Services;
+using Windows.ApplicationModel.Resources.Core;
 
 namespace TTalk.WinUI.ViewModels
 {
     public class MainViewModel : ObservableRecipient
     {
-        public MainViewModel(ILocalSettingsService settingsService)
+        public MainViewModel(ILocalSettingsService settingsService, SoundService sounds)
         {
             Process.GetCurrentProcess().Exited += OnExited;
             Channels = new();
@@ -36,6 +38,7 @@ namespace TTalk.WinUI.ViewModels
             _audioQueueSlim = new(0);
             _audioQueue = new();
             SettingsService = settingsService;
+            Sounds = sounds;
             SettingsService.SettingsUpdated += OnSettingsUpdated;
 
             Task.Run(SendAudio);
@@ -49,10 +52,12 @@ namespace TTalk.WinUI.ViewModels
             {
                 this._client.Send(new LeaveChannelPacket());
             });
-            ToggleMute = new RelayCommand(() =>
+            ToggleMute = new RelayCommand(async () =>
             {
                 if (CurrentChannelClient != null)
+                {
                     CurrentChannelClient.IsMuted = !CurrentChannelClient.IsMuted;
+                }
             });
             ShowUpdatePriviligeKeyDialog = new RelayCommand(async () =>
             {
@@ -191,6 +196,7 @@ namespace TTalk.WinUI.ViewModels
         public RelayCommand ToggleMute { get; }
         public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
         public ILocalSettingsService SettingsService { get; }
+        public SoundService Sounds { get; }
         public string Username { get; private set; }
         public bool UseVoiceActivityDetection { get; private set; }
         public double VoiceActivityDetectionThreshold { get; private set; }
@@ -768,7 +774,7 @@ namespace TTalk.WinUI.ViewModels
                     IsAddTabButtonVisible = false,
                     CloseButtonOverlayMode = TabViewCloseButtonOverlayMode.OnPointerOver,
                 };
-               
+
                 var connectToServerViaIpItem = new TabViewItem()
                 {
                     Header = "Main_ConnectToServer_ConnectWithAddress".GetLocalized(),
