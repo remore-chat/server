@@ -32,6 +32,7 @@ xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
     <Resource Language="ru-ru"/>
     <Resource Language="de-de"/>
     <Resource Language="uk-ua"/>
+    <Resource Language="cs-cz"/>
   </Resources>
 
   <Applications>
