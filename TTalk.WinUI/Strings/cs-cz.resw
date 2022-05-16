@@ -196,7 +196,7 @@
   </data>
   <data name="Main_ConnectToServer_VersionDontMatch" xml:space="preserve">
     <value>{0}
-App version (v{1}) doesn't match server's version (v{2})</value>
+Verze aplikace (v{1}) není kompatibilní s verzí serveru (v{2})</value>
     <comment>{0} - server name, {1} - client version, {2} - server version</comment>
   </data>
   <data name="Main_Disconnect.Label" xml:space="preserve">
