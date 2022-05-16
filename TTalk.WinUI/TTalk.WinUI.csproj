@@ -10,8 +10,14 @@
 		<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>true</UseWinUI>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-		<WindowsPackageType>None</WindowsPackageType>
 		<DisableXbfLineInfo>False</DisableXbfLineInfo>
+		<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+		<AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+		<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+		<GenerateTestArtifacts>True</GenerateTestArtifacts>
+		<AppxBundle>Always</AppxBundle>
+		<GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+		<AppxBundlePlatforms>x64</AppxBundlePlatforms>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,12 +33,12 @@
 		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Toolkit" Version="7.1.2" />
 		<PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls" Version="7.1.2" />
+		<PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.7" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.3" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22000.197" />
 		<Manifest Include="$(ApplicationManifest)" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="7.1.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-		<PackageReference Include="Microsoft.UI.Xaml" Version="2.7.1" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.8" />
 		<PackageReference Include="NAudio" Version="2.0.1" />
 		<PackageReference Include="NetCoreServer" Version="6.2.0" />
@@ -50,7 +56,7 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="Icons\Themes\Generic.xaml">
-		  <Generator>MSBuild:Compile</Generator>
+			<Generator>MSBuild:Compile</Generator>
 		</None>
 	</ItemGroup>
 
@@ -59,16 +65,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Page Update="Icons\Themes\Generic.xaml">
-	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-	  </Page>
+		<Page Update="Icons\Themes\Generic.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PRIResource Remove="Strings\uk-ua.resw" />
+		<PRIResource Remove="Strings\uk-ua.resw" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Resource Include="Assets\sounds\mic_muted_user.wav" />
+		<Resource Include="Assets\sounds\mic_muted_user.wav" />
 	</ItemGroup>
 </Project>

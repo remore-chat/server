@@ -16,6 +16,7 @@ using TTalk.WinUI.Models;
 using TTalk.WinUI.Services;
 using TTalk.WinUI.ViewModels;
 using TTalk.WinUI.Views;
+using Windows.ApplicationModel;
 using Windows.ApplicationModel.Resources;
 using Windows.ApplicationModel.Resources.Core;
 using Windows.Globalization;
@@ -40,7 +41,15 @@ namespace TTalk.WinUI
                 // Other Activation Handlers
 
                 // Services
-                services.AddSingleton<ILocalSettingsService, LocalSettingsServiceUnpackaged>();
+                try
+                {
+                    var desc = Package.Current.Id.Version;
+                    services.AddSingleton<ILocalSettingsService, LocalSettingsServicePackaged>();
+                }
+                catch (Exception)
+                {
+                    services.AddSingleton<ILocalSettingsService, LocalSettingsServiceUnpackaged>();
+                }
                 services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
                 services.AddTransient<INavigationViewService, NavigationViewService>();
 

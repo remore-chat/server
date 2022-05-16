@@ -5,14 +5,17 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:genTemplate="http://schemas.microsoft.com/appx/developer/templatestudio"
+xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   IgnorableNamespaces="uap rescap genTemplate">
 
   <Identity
-    Name="A87E865D-CBA6-4AF6-9E6D-84ED2AD67033"
-    Publisher="CN=Roxxel"
-    Version="1.0.0.0" />
+    Name="32781Roxxel.TTalk"
+    Publisher="CN=53F8928B-8EC1-42E7-A4D8-5B8E26077BDB"
+    Version="1.0.1.0" />
 
-  <Properties>
+	<mp:PhoneIdentity PhoneProductId="c159737a-686d-48f4-a685-872724475656" PhonePublisherId="1decb601-e64f-4088-bc00-0e28637c9926" />
+
+	<Properties>
     <DisplayName>TTalk</DisplayName>
     <PublisherDisplayName>Roxxel</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
@@ -21,6 +24,7 @@
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+	 <PackageDependency Name="Microsoft.VCLibs.140.00.UWPDesktop" MinVersion="14.0.24217.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
   </Dependencies>
 
   <Resources>
@@ -35,8 +39,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="ms-resource:AppDisplayName"
-        Description="ms-resource:AppDescription"
+        DisplayName="TTalk"
+        Description="Voice chat and text chat"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
