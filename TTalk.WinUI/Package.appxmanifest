@@ -28,6 +28,7 @@
     <Resource Language="ru-ru"/>
     <Resource Language="de-de"/>
     <Resource Language="uk-ua"/>
+    <Resource Language="cs-cz"/>
   </Resources>
 
   <Applications>

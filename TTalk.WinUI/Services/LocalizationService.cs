@@ -30,6 +30,7 @@ namespace TTalk.WinUI.Services
                 new("ru-RU"),
                 new("uk-UA"),
                 new("de-DE"),
+                new("cs-CZ"),
             };
         }
 
