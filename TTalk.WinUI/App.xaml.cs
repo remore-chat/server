@@ -89,6 +89,7 @@ namespace TTalk.WinUI
         public static Window MainWindow { get; set; }
 
         private static MainViewModel _mainViewModel;
+        private static Mutex mutex = new Mutex(true, "TTALKSINGLEINSTANCEAPPLICATIONMUTEX");
 
         public App()
         {
@@ -111,6 +112,13 @@ namespace TTalk.WinUI
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
             await App.GetService<LocalizationService>().Initialize();
+            if (!mutex.WaitOne(TimeSpan.Zero, true))
+            {
+                System.Windows.Forms.MessageBox.Show("Application_Already_Running".GetLocalized());
+                Environment.Exit(0);
+                return;
+            }
+
             MainWindow = new Window() { Title = "AppDisplayName".GetLocalized() };
             base.OnLaunched(args);
             var activationService = App.GetService<IActivationService>();

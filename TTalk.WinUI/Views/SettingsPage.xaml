@@ -16,7 +16,6 @@
 
         <converters:ReverseBooleanConverter x:Key="reverseBool" />
         <converters:BooleanToVisibilityConverter x:Key="boolToVis" />
-
     </Page.Resources>
     <ScrollViewer HorizontalScrollMode="Disabled"
               VerticalScrollBarVisibility="Visible"
@@ -104,17 +103,25 @@
                     </st:SettingsGroup>
 
                     <st:SettingsGroup Header="{l10n:Localize Key=Settings_Capture.Text}">
-                        <st:Setting Header="{l10n:Localize Key=Settings_Capture_CaptureDevice.Text}">
-                            <st:Setting.Icon>
-                                <fluent:FluentSymbolIcon Symbol="MicOn20Filled" Width="20" Height="20" />
-                            </st:Setting.Icon>
-                            <st:Setting.ActionContent>
-                                <StackPanel MinWidth="300" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <ProgressRing HorizontalAlignment="Right" Width="24" Height="24" Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
-                                    <ComboBox Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" ItemsSource="{x:Bind ViewModel.InputDevices}" MinWidth="400"  SelectedIndex="{x:Bind ViewModel.InputDevice, Mode=TwoWay}"></ComboBox>
-                                </StackPanel>
-                            </st:Setting.ActionContent>
-                        </st:Setting>
+                        <st:SettingExpander IsExpanded="True">
+                            <st:SettingExpander.Header>
+
+                                <st:Setting Header="{l10n:Localize Key=Settings_Capture_CaptureDevice.Text}">
+                                    <st:Setting.Icon>
+                                        <fluent:FluentSymbolIcon Symbol="MicOn20Filled" Width="20" Height="20" />
+                                    </st:Setting.Icon>
+                                    <st:Setting.ActionContent>
+                                        <StackPanel MinWidth="300"  Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <ProgressRing HorizontalAlignment="Right" Width="24" Height="24" Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
+                                            <ComboBox Visibility="{x:Bind ViewModel.IsDevicesLoaded, Mode=OneWay, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" ItemsSource="{x:Bind ViewModel.InputDevices}" MinWidth="400"  SelectedIndex="{x:Bind ViewModel.InputDevice, Mode=TwoWay}"></ComboBox>
+                                        </StackPanel>
+                                    </st:Setting.ActionContent>
+                                </st:Setting>
+                            </st:SettingExpander.Header>
+                            <st:SettingExpander.Content>
+                                <CheckBox Margin="18,0,18,0" IsChecked="{x:Bind ViewModel.EnableRNNoiseSuppression, Mode=TwoWay}" Content="{l10n:Localize Key=Settings_Capture_EnableRNNoiseSuppresion}" />
+                            </st:SettingExpander.Content>
+                        </st:SettingExpander>
                     </st:SettingsGroup>
                 </StackPanel>
             </StackPanel>

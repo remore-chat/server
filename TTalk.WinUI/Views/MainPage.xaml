@@ -43,7 +43,11 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <Grid RowDefinitions="Auto, *" Grid.Row="1">
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition MinWidth="172" Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -119,7 +123,12 @@
                             </Button>
                         </StackPanel>
                     </Grid>
-                    <Grid Margin="24 0 0 0" RowDefinitions="Auto, *, Auto" Grid.Column="1" Grid.Row="1">
+                    <Grid Margin="24 0 0 0" Grid.Column="1" Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
                         <ListView x:Name="MessagesListBox"  ItemsSource="{x:Bind ViewModel.CurrentTextChannel.Messages, Mode=OneWay}" Grid.Row="1" VerticalAlignment="Stretch">
                             <ListView.ItemTemplate>
                                 <DataTemplate>

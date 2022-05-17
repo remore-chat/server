@@ -27,6 +27,7 @@ namespace TTalk.WinUI.Services
         public async Task SaveSettingAsync<T>(string key, T value)
         {
             ApplicationData.Current.LocalSettings.Values[key] = await Json.StringifyAsync(value);
+            SettingsUpdated?.Invoke(this, null);
         }
     }
 }

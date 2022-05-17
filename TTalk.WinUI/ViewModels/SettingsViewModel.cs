@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -32,6 +33,7 @@ namespace TTalk.WinUI.ViewModels
         public const string UsernameSettingsKey = "UsernameSettingsKey";
         public const string LanguageSettingsKey = "LanguageSettingsKey";
         public const string FavoritesSettingsKey = "FavoritesTabSettingsKey";
+        public const string EnableRNNoiseSuppressionSettingsKey = "EnableRNNoiseSuppressionSettingsKey";
         public const string ClientVersion = "1.0.0";
 
         public ElementTheme ElementTheme
@@ -243,6 +245,28 @@ namespace TTalk.WinUI.ViewModels
             set { SetProperty(ref isDevicesLoaded, value); }
         }
 
+        private bool enableRNNoiseSuppression;
+
+        public bool EnableRNNoiseSuppression
+        {
+            get { return enableRNNoiseSuppression; }
+            set
+            {
+                if (SetProperty(ref enableRNNoiseSuppression, value))
+                {
+                    Action<bool> execute = async (enableRNNoiseSuppression) =>
+                    {
+                        App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                        {
+                            await SettingsService.SaveSettingAsync<bool>(EnableRNNoiseSuppressionSettingsKey, enableRNNoiseSuppression);
+                        });
+                    };
+                    var debounceWrapper = execute.Debounce(500);
+                    debounceWrapper(value);
+                }
+            }
+        }
+
 
         public MainViewModel Main { get; }
         public ILocalSettingsService SettingsService { get; }
@@ -261,48 +285,58 @@ namespace TTalk.WinUI.ViewModels
 
             Task.Run(() =>
             {
-                var enumerator = new MMDeviceEnumerator();
-                int waveOutDevices = WaveOut.DeviceCount;
-                for (int waveOutDevice = 0; waveOutDevice < waveOutDevices; waveOutDevice++)
+                // Protection from unfriendly devices that throw exception when you try to access their name :((
+                try
                 {
-                    WaveOutCapabilities deviceInfo = WaveOut.GetCapabilities(waveOutDevice);
-                    foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All))
+                    var enumerator = new MMDeviceEnumerator();
+                    int waveOutDevices = WaveOut.DeviceCount;
+                    for (int waveOutDevice = 0; waveOutDevice < waveOutDevices; waveOutDevice++)
                     {
-                        if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
+                        WaveOutCapabilities deviceInfo = WaveOut.GetCapabilities(waveOutDevice);
+                        foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All))
                         {
-                            App.MainWindow.DispatcherQueue.TryEnqueue(() => OutputDevices.Add(device.FriendlyName));
-                            break;
+                            if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
+                            {
+                                App.MainWindow.DispatcherQueue.TryEnqueue(() => OutputDevices.Add(device.FriendlyName));
+                                break;
+                            }
                         }
+                    }
+
+                    if (WaveOut.DeviceCount > 0)
+                        App.MainWindow.DispatcherQueue.TryEnqueue(async () => OutputDevice = await SettingsService.ReadSettingAsync<int>(OutputDeviceSettingsKey));
+
+                    int waveInDevices = WaveIn.DeviceCount;
+                    for (int waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
+                    {
+                        WaveInCapabilities deviceInfo = WaveIn.GetCapabilities(waveInDevice);
+                        foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.All))
+                        {
+                            if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
+                            {
+                                App.MainWindow.DispatcherQueue.TryEnqueue(() => InputDevices.Add(device.FriendlyName));
+                                break;
+                            }
+                        }
+
                     }
                 }
-
-                if (WaveOut.DeviceCount > 0)
-                    App.MainWindow.DispatcherQueue.TryEnqueue(async () => OutputDevice = await SettingsService.ReadSettingAsync<int>(OutputDeviceSettingsKey));
-
-                int waveInDevices = WaveIn.DeviceCount;
-                for (int waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
+                catch (Exception)
                 {
-                    WaveInCapabilities deviceInfo = WaveIn.GetCapabilities(waveInDevice);
-                    foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.All))
-                    {
-                        if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
-                        {
-                            App.MainWindow.DispatcherQueue.TryEnqueue(() => InputDevices.Add(device.FriendlyName));
-                            break;
-                        }
-                    }
-
+                    ;
                 }
 
                 if (WaveIn.DeviceCount > 0)
                     App.MainWindow.DispatcherQueue.TryEnqueue(async () => InputDevice = await SettingsService.ReadSettingAsync<int>(InputDeviceSettingsKey));
                 App.MainWindow.DispatcherQueue.TryEnqueue(() => IsDevicesLoaded = true);
             });
+
             App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
             {
                 Username = await SettingsService.ReadSettingAsync<string>(UsernameSettingsKey);
                 UseVoiceActivityDetection = await SettingsService.ReadSettingAsync<bool>(UseVoiceActivityDetectionSettingsKey);
                 VoiceActivityDetectionThreshold = await SettingsService.ReadSettingAsync<double>(VoiceActivityDetectionThresholdSettingsKey);
+                EnableRNNoiseSuppression = await SettingsService.ReadSettingAsync<bool>(EnableRNNoiseSuppressionSettingsKey);
             });
 
             Languages = new(localizationService.Languages.Select(x => x.NativeName.Split("(")[0].Trim().Capitalize()));
@@ -314,9 +348,7 @@ namespace TTalk.WinUI.ViewModels
         private string GetVersionDescription()
         {
             var appName = "AppDisplayName".GetLocalized();
-            //var version = Package.Current.Id.Version;
-
-            return $"{appName}";
+            return $"{appName} {ClientVersion}";
         }
     }
 }

@@ -21,6 +21,7 @@ using TTalk.WinUI.Models;
 using TTalk.WinUI.Networking;
 using TTalk.WinUI.Networking.ClientCode;
 using TTalk.WinUI.Networking.EventArgs;
+using TTalk.WinUI.NoiseReducer;
 using TTalk.WinUI.Services;
 using Windows.ApplicationModel.Resources.Core;
 
@@ -32,6 +33,7 @@ namespace TTalk.WinUI.ViewModels
         {
             Process.GetCurrentProcess().Exited += OnExited;
             Channels = new();
+
 
             _segmentFrames = 960;
             _microphoneQueueSlim = new(0);
@@ -86,6 +88,7 @@ namespace TTalk.WinUI.ViewModels
                     });
                 }
             });
+            _denoiser = new Denoiser();
             App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
             {
                 await ReadSettings();
@@ -105,6 +108,7 @@ namespace TTalk.WinUI.ViewModels
             VoiceActivityDetectionThreshold = await SettingsService.ReadSettingAsync<double>(SettingsViewModel.VoiceActivityDetectionThresholdSettingsKey);
             InputDevice = await SettingsService.ReadSettingAsync<int>(SettingsViewModel.InputDeviceSettingsKey);
             OutputDevice = await SettingsService.ReadSettingAsync<int>(SettingsViewModel.OutputDeviceSettingsKey);
+            EnableRNNoiseSuppression = await SettingsService.ReadSettingAsync<bool>(SettingsViewModel.EnableRNNoiseSuppressionSettingsKey);
         }
 
         private TTalkClient _client;
@@ -195,11 +199,15 @@ namespace TTalk.WinUI.ViewModels
         public RelayCommand LeaveChannel { get; }
         public RelayCommand ToggleMute { get; }
         public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
+
+        private Denoiser _denoiser;
+
         public ILocalSettingsService SettingsService { get; }
         public SoundService Sounds { get; }
         public string Username { get; private set; }
         public bool UseVoiceActivityDetection { get; private set; }
         public double VoiceActivityDetectionThreshold { get; private set; }
+        public bool EnableRNNoiseSuppression { get; private set; }
         public int InputDevice { get; private set; }
         public int OutputDevice { get; private set; }
 
@@ -364,15 +372,16 @@ namespace TTalk.WinUI.ViewModels
         }
 
 
-        private void OnWaveInDataAvailable(object? sender, WaveInEventArgs e)
+        private void OnWaveInDataAvailable(object? sender, WaveInEventArgs a)
         {
+
             if (CurrentChannelClient?.IsMuted ?? false)
             {
                 CurrentChannelClient.IsSpeaking = false;
                 return;
             }
 
-            if (UseVoiceActivityDetection && !ProcessData(e))
+            if (UseVoiceActivityDetection && !ProcessData(a))
             {
                 if (CurrentChannelClient != null)
                     CurrentChannelClient.IsSpeaking = false;
@@ -382,47 +391,99 @@ namespace TTalk.WinUI.ViewModels
             {
                 if (App.MainWindow.DispatcherQueue == null)
                     return;
-                App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                App.MainWindow.DispatcherQueue.TryEnqueue(() =>
                 {
-                    if (_encoder == null)
-                        return;
-
-                    byte[] soundBuffer = new byte[e.BytesRecorded + _notEncodedBuffer.Length];
-                    for (int i = 0; i < _notEncodedBuffer.Length; i++)
-                        soundBuffer[i] = _notEncodedBuffer[i];
-                    for (int i = 0; i < e.BytesRecorded; i++)
-                        soundBuffer[i + _notEncodedBuffer.Length] = e.Buffer[i];
-
-                    int byteCap = _bytesPerSegment;
-                    int segmentCount = (int)Math.Floor((decimal)soundBuffer.Length / byteCap);
-                    int segmentsEnd = segmentCount * byteCap;
-                    int notEncodedCount = soundBuffer.Length - segmentsEnd;
-                    _notEncodedBuffer = new byte[notEncodedCount];
-                    for (int i = 0; i < notEncodedCount; i++)
+                    try
                     {
-                        _notEncodedBuffer[i] = soundBuffer[segmentsEnd + i];
+                        if (_encoder == null)
+                            return;
+                        byte[] bytes = a.Buffer;
+                        if (EnableRNNoiseSuppression)
+                        {
+                            //I dunno, it works, small delay and low cpu usage
+                            var floats = GetFloatsFromBytes(a.Buffer, a.BytesRecorded);
+                            var floatsSpan = floats.AsSpan();
+                            _denoiser.Denoise(floatsSpan, false);
+
+                            bytes = GetSamplesWaveData(floatsSpan.ToArray(), floatsSpan.Length);
+                        }
+                        byte[] soundBuffer = new byte[a.BytesRecorded + _notEncodedBuffer.Length];
+                        for (int i = 0; i < _notEncodedBuffer.Length; i++)
+                            soundBuffer[i] = _notEncodedBuffer[i];
+                        for (int i = 0; i < a.BytesRecorded; i++)
+                            soundBuffer[i + _notEncodedBuffer.Length] = bytes[i];
+
+                        int byteCap = _bytesPerSegment;
+                        int segmentCount = (int)Math.Floor((decimal)soundBuffer.Length / byteCap);
+                        int segmentsEnd = segmentCount * byteCap;
+                        int notEncodedCount = soundBuffer.Length - segmentsEnd;
+                        _notEncodedBuffer = new byte[notEncodedCount];
+                        for (int i = 0; i < notEncodedCount; i++)
+                        {
+                            _notEncodedBuffer[i] = soundBuffer[segmentsEnd + i];
+                        }
+
+                        for (int i = 0; i < segmentCount; i++)
+                        {
+                            byte[] segment = new byte[byteCap];
+                            for (int j = 0; j < segment.Length; j++)
+                                segment[j] = soundBuffer[(i * byteCap) + j];
+                            int len;
+                            byte[] buff = _encoder.Encode(segment, segment.Length, out len);
+                            buff = _decoder.Decode(buff, len, out len);
+                            _microphoneAudioQueue.Enqueue(buff.Slice(0, len));
+                            _microphoneQueueSlim.Release();
+                            if (CurrentChannelClient != null)
+                                CurrentChannelClient.IsSpeaking = true;
+                        }
                     }
-
-                    for (int i = 0; i < segmentCount; i++)
+                    catch (Exception)
                     {
-                        byte[] segment = new byte[byteCap];
-                        for (int j = 0; j < segment.Length; j++)
-                            segment[j] = soundBuffer[(i * byteCap) + j];
-                        int len;
-                        byte[] buff = _encoder.Encode(segment, segment.Length, out len);
-                        buff = _decoder.Decode(buff, len, out len);
-                        _microphoneAudioQueue.Enqueue(buff.Slice(0, len));
-                        _microphoneQueueSlim.Release();
-                        if (CurrentChannelClient != null)
-                            CurrentChannelClient.IsSpeaking = true;
+
+                        ;
                     }
                 });
             }
             catch (Exception)
             {
-
+                ;
             }
         }
+
+        public static float[] GetFloatsFromBytes(byte[] buffer, int length)
+        {
+            float[] floats = new float[length / 2];
+            int floatIndex = 0;
+            for (int index = 0; index < length; index += 2)
+            {
+                short sample = (short)((buffer[index + 1] << 8) |
+                                        buffer[index + 0]);
+                // to floating point
+                floats[floatIndex] = sample / 32768f;
+                floatIndex++;
+            }
+            return floats;
+        }
+
+        public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
+        {
+            var pcm = new byte[samplesCount * 2];
+            int sampleIndex = 0,
+                pcmIndex = 0;
+
+            while (sampleIndex < samplesCount)
+            {
+                var outsample = (short)(samples[sampleIndex] * short.MaxValue);
+                pcm[pcmIndex] = (byte)(outsample & 0xff);
+                pcm[pcmIndex + 1] = (byte)((outsample >> 8) & 0xff);
+
+                sampleIndex++;
+                pcmIndex += 2;
+            }
+
+            return pcm;
+        }
+
         #endregion
         #region Networking
         private void Connect()
