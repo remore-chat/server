@@ -259,6 +259,9 @@ App version (v{1}) doesn't match server's version (v{2})</value>
   <data name="Settings_Language.Text" xml:space="preserve">
     <value>Language</value>
   </data>
+  <data name="Settings_Capture_EnableRNNoiseSuppresion" xml:space="preserve">
+    <value>Enable RNNoise noise suppression</value>
+  </data>
   <data name="Settings_KeyBindingsFailed" xml:space="preserve">
     <value>Looks like there's another action that bound to the key you pressed.</value>
   </data>

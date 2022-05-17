@@ -30,7 +30,7 @@
             Or to use an IconElement instead of a Symbol see https://github.com/microsoft/TemplateStudio/blob/main/docs/UWP/projectTypes/navigationpane.md
             Edit String/en-US/Resources.resw: Add a menu item title for each page
             -->
-            <NavigationViewItem Content="{l10n:Localize Key=Shell_Main.Content}" Icon="Home" helpers:NavigationHelper.NavigateTo="TTalk.WinUI.ViewModels.MainViewModel" />
+            <NavigationViewItem Tag="Shell_Main.Content" Content="{l10n:Localize Key=Shell_Main.Content}" Icon="Home" helpers:NavigationHelper.NavigateTo="TTalk.WinUI.ViewModels.MainViewModel" />
         </NavigationView.MenuItems>
         <NavigationView.HeaderTemplate>
             <DataTemplate>

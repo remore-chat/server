@@ -1,7 +1,9 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
 using TTalk.WinUI.Contracts.Services;
+using TTalk.WinUI.Services;
 using TTalk.WinUI.ViewModels;
 
 using Windows.System;
@@ -15,17 +17,31 @@ namespace TTalk.WinUI.Views
         private readonly KeyboardAccelerator _backKeyboardAccelerator = BuildKeyboardAccelerator(VirtualKey.GoBack);
 
         public ShellViewModel ViewModel { get; }
+        public ILocalSettingsService Settings { get; }
+        public LocalizationService Localization { get; }
 
         //MainViewModel should always be the same
         public MainViewModel MainViewModel { get; }
 
-        public ShellPage(ShellViewModel viewModel)
+        public ShellPage(ShellViewModel viewModel, ILocalSettingsService settings, LocalizationService localization)
         {
             ViewModel = viewModel;
+            Settings = settings;
+            Localization = localization;
             InitializeComponent();
             ViewModel.NavigationService.Frame = shellFrame;
             ViewModel.NavigationViewService.Initialize(navigationView);
             navigationView.ItemInvoked += OnNavigationViewItemInvoked;
+            Localization.LanguageUpdated += OnLanguageUpdated;
+        }
+
+        private void OnLanguageUpdated(object sender, object e)
+        {
+            foreach (var item in navigationView.MenuItems)
+            {
+                var nvi = (item as NavigationViewItem);
+                nvi.Content = App.GetService<LocalizationService>().GetString(nvi.Tag.ToString());
+            }
         }
 
         private void OnNavigationViewItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)

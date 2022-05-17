@@ -17,6 +17,7 @@ namespace TTalk.WinUI.Services
         private Dictionary<CultureInfo, ResourceMap> _cultureToResourceMap;
         private ResourceMap _currentResourceMap;
         private CultureInfo _currentCulture;
+        private CultureInfo _fallbackCulture;
 
         public CultureInfo CurrentLanguage => _currentCulture;
         public IReadOnlyList<CultureInfo> Languages { get; set; }
@@ -33,11 +34,16 @@ namespace TTalk.WinUI.Services
                 new("cs-CZ"),
             };
         }
+        public event EventHandler<object> LanguageUpdated;
 
         public async Task Initialize()
         {
             foreach (var language in Languages)
             {
+                if (language.Name.ToLowerInvariant() == "en-us")
+                {
+                    _fallbackCulture = language;
+                }
                 var map = ResourceManager.Current.MainResourceMap.GetSubtree(language.Name.ToLowerInvariant());
                 _cultureToResourceMap.Add(language, map);
             }
@@ -62,7 +68,9 @@ namespace TTalk.WinUI.Services
             }
             catch (Exception ex)
             {
-                return $"{_currentCulture.Name.ToLowerInvariant()}:{key}";
+                //Fallback to english
+                return _cultureToResourceMap[_fallbackCulture].GetValue(key.Replace(".", "/")).ValueAsString;
+                //return $"{_currentCulture.Name.ToLowerInvariant()}:{key}";
             }
             
         }
@@ -80,6 +88,7 @@ namespace TTalk.WinUI.Services
             }
             _currentCulture = cultureInfo;
             _currentResourceMap = _cultureToResourceMap[cultureInfo];
+            LanguageUpdated?.Invoke(this, null);
             Task.Run(async () =>
             {
                 await _settingsService.SaveSettingAsync(SettingsViewModel.LanguageSettingsKey, _currentCulture.Name.ToLowerInvariant());
