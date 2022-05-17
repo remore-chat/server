@@ -88,10 +88,16 @@ public class ServerSession : TcpSession
                 this.Disconnect();
                 return;
             }
-            if (string.IsNullOrEmpty(auth.Username) || auth.Username.Length > 16)
+            if (string.IsNullOrEmpty(auth.Username) || auth.Username.Length > 16 || auth.Username.Length < 3)
             {
                 Logger.LogWarn($"Client {Id} send invalid username {auth.Username}");
                 this.Send(new DisconnectPacket($"Invalid username"));
+                this.Disconnect();
+                return;
+            }
+            if (Server.Clients.Any(x=>x.Username == auth.Username))
+            {
+                this.Send(new DisconnectPacket($"Nickname unavailable"));
                 this.Disconnect();
                 return;
             }

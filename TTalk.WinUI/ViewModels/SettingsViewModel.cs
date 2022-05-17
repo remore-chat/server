@@ -1,21 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
+using DebounceThrottle;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.VisualBasic.Devices;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 
 using TTalk.WinUI.Contracts.Services;
 using TTalk.WinUI.Helpers;
+using TTalk.WinUI.KeyBindings;
 using TTalk.WinUI.Services;
 using Windows.ApplicationModel;
 namespace TTalk.WinUI.ViewModels
@@ -23,9 +27,10 @@ namespace TTalk.WinUI.ViewModels
     public class SettingsViewModel : ObservableRecipient
     {
         private readonly IThemeSelectorService _themeSelectorService;
-        private readonly LocalizationService localizationService;
+        private readonly KeyBindingsService _keyBindingsService;
+        private readonly LocalizationService _localizationService;
         private ElementTheme _elementTheme;
-
+        private ThrottleDispatcher _throttleDispatcher;
         public const string InputDeviceSettingsKey = "InputDeviceSettingsKey";
         public const string OutputDeviceSettingsKey = "OutputDeviceSettingsKey";
         public const string UseVoiceActivityDetectionSettingsKey = "UseVoiceActivityDetectionSettingsKey";
@@ -34,6 +39,7 @@ namespace TTalk.WinUI.ViewModels
         public const string LanguageSettingsKey = "LanguageSettingsKey";
         public const string FavoritesSettingsKey = "FavoritesTabSettingsKey";
         public const string EnableRNNoiseSuppressionSettingsKey = "EnableRNNoiseSuppressionSettingsKey";
+        public const string KeyBindingsListSettingsKey = "KeyBindingsListSettingsKey";
         public const string ClientVersion = "1.0.0";
 
         public ElementTheme ElementTheme
@@ -82,7 +88,7 @@ namespace TTalk.WinUI.ViewModels
             set { this.SetProperty(ref outputDevices, value); }
         }
 
-
+        public List<string> Actions { get; }
 
         private ObservableCollection<string> inputDevices;
         public ObservableCollection<string> InputDevices
@@ -166,15 +172,13 @@ namespace TTalk.WinUI.ViewModels
             {
                 if (SetProperty(ref voiceActivityDetectionThreshold, value))
                 {
-                    Action<double> execute = (value) =>
+                    _throttleDispatcher.Throttle(() =>
                     {
                         App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
                         {
                             await SettingsService.SaveSettingAsync<double>(VoiceActivityDetectionThresholdSettingsKey, value);
                         });
-                    };
-                    var debounceWrapper = execute.Debounce(1500);
-                    debounceWrapper(value);
+                    });
                 }
             }
         }
@@ -194,15 +198,14 @@ namespace TTalk.WinUI.ViewModels
                 IsNicknameErrored = false;
                 if (SetProperty(ref username, value))
                 {
-                    Action<string> execute = async (username) =>
+                    _throttleDispatcher.Throttle(() =>
                     {
                         App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
                         {
-                            await SettingsService.SaveSettingAsync<string>(UsernameSettingsKey, username);
+                            await SettingsService.SaveSettingAsync<string>(UsernameSettingsKey, value);
                         });
-                    };
-                    var debounceWrapper = execute.Debounce(500);
-                    debounceWrapper(value);
+                    });
+                    
 
                 }
             }
@@ -217,6 +220,17 @@ namespace TTalk.WinUI.ViewModels
             set { SetProperty(ref languages, value); }
         }
 
+        private ObservableCollection<KeyBinding> keyBindings;
+
+        public ObservableCollection<KeyBinding> KeyBindings
+        {
+            get { return keyBindings; }
+            set { SetProperty(ref keyBindings, value); }
+        }
+
+        public RelayCommand AddKeyBinding { get; }
+        public RelayCommand<KeyBinding> RemoveKeyBinding { get; }
+
         private int selectedLanguage;
 
         public int SelectedLanguage
@@ -226,7 +240,7 @@ namespace TTalk.WinUI.ViewModels
             {
                 if (SetProperty(ref selectedLanguage, value))
                 {
-                    if (localizationService.UpdateLanguage(localizationService.Languages[value]))
+                    if (_localizationService.UpdateLanguage(_localizationService.Languages[value]))
                     {
                         App.GetService<INavigationService>().NavigateTo(typeof(MainViewModel).FullName, null, true);
                         App.GetService<INavigationService>().NavigateTo(typeof(SettingsViewModel).FullName, null, true);
@@ -254,15 +268,13 @@ namespace TTalk.WinUI.ViewModels
             {
                 if (SetProperty(ref enableRNNoiseSuppression, value))
                 {
-                    Action<bool> execute = async (enableRNNoiseSuppression) =>
+                    _throttleDispatcher.Throttle(() =>
                     {
                         App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
                         {
                             await SettingsService.SaveSettingAsync<bool>(EnableRNNoiseSuppressionSettingsKey, enableRNNoiseSuppression);
                         });
-                    };
-                    var debounceWrapper = execute.Debounce(500);
-                    debounceWrapper(value);
+                    });
                 }
             }
         }
@@ -271,18 +283,101 @@ namespace TTalk.WinUI.ViewModels
         public MainViewModel Main { get; }
         public ILocalSettingsService SettingsService { get; }
 
-        public SettingsViewModel(IThemeSelectorService themeSelectorService, LocalizationService localizationService, MainViewModel mainViewModel, ILocalSettingsService settingsService)
+        public SettingsViewModel(IThemeSelectorService themeSelectorService, KeyBindingsService keyBindingsService, LocalizationService localizationService, MainViewModel mainViewModel, ILocalSettingsService settingsService)
         {
             _themeSelectorService = themeSelectorService;
-            this.localizationService = localizationService;
-            Main = mainViewModel;
-            SettingsService = settingsService;
+            _keyBindingsService = keyBindingsService;
+            _localizationService = localizationService;
             _elementTheme = _themeSelectorService.Theme;
-            VersionDescription = GetVersionDescription();
+            _throttleDispatcher = new DebounceThrottle.ThrottleDispatcher(500);
 
+            VersionDescription = GetVersionDescription();
+            SettingsService = settingsService;
+            Main = mainViewModel;
             InputDevices = new();
             OutputDevices = new();
+            Actions = typeof(KeyBindingAction).GetEnumNames().Select(x=> Regex.Replace(x.ToString(), "[a-z][A-Z]", m => $"{m.Value[0]} {char.ToLower(m.Value[1])}")).ToList();
+            KeyBindings = new(_keyBindingsService.KeyBindings.ToList());
+            AddKeyBinding = new RelayCommand(async () =>
+            {
+                var content = new StackPanel()
+                {
+                    Orientation = Orientation.Horizontal,
+                };
+                var textBox = new TextBox()
+                {
+                    MinWidth = 150,
+                    MaxWidth = 150,
+                    PlaceholderText = "Settings_KeyBindings_KeyInputPlaceholder".GetLocalized()
+                };
+                PInvoke.User32.VirtualKey pinvokeKey = PInvoke.User32.VirtualKey.VK_NO_KEY;
+                textBox.KeyDown += (s, e) =>
+                {
+                    if (e.Key == Windows.System.VirtualKey.LeftButton  || 
+                        e.Key == Windows.System.VirtualKey.RightButton || 
+                        e.Key == Windows.System.VirtualKey.MiddleButton)
+                        return;
+                    textBox.Text = e.Key.ToString();
+                    pinvokeKey = (PInvoke.User32.VirtualKey)(int)e.Key;
+                    textBox.IsEnabled = false;
+                    textBox.IsEnabled = true;
+                };
+                var comboBox = new ComboBox()
+                {
+                    MinWidth = 150,
+                    MaxWidth = 150,
+                    PlaceholderText = "Settings_KeyBindings_ActionInputPlaceholder".GetLocalized(),
+                    Margin = new(24, 0, 0, 0)
+                };
+                var actions = Actions.ToList();
+                actions.Remove(KeyBindingAction.Unassigned.ToString());
+                comboBox.ItemsSource = actions;
+                content.Children.Add(textBox);
+                content.Children.Add(comboBox);
+                _keyBindingsService.IsKeyBindingsEnabled = false;
+                var contentDialogResult = await new ContentDialog()
+                {
+                    Title = "Settings_KeyBindings_DialogTitle".GetLocalized(),
+                    Content = content,
+                    XamlRoot = App.MainWindow.Content.XamlRoot,
+                    CloseButtonText = "Main_ConnectToServer_CloseButton".GetLocalized(),
+                    PrimaryButtonText = "Settings_KeyBindings_AddButton".GetLocalized()
+                }.ShowAsync(ContentDialogPlacement.InPlace);
+                if (contentDialogResult == ContentDialogResult.Primary)
+                {
+                    if (pinvokeKey == PInvoke.User32.VirtualKey.VK_NO_KEY)
+                    {
+                        _keyBindingsService.IsKeyBindingsEnabled = true;
+                        return;
+                    }
+                    var keyBinding = new KeyBinding()
+                    {
+                        Action = Enum.Parse<KeyBindingAction>(comboBox.SelectedItem.ToString().Replace(" ", ""), true),
+                        Key = pinvokeKey
+                    };
 
+                    if (!_keyBindingsService.RegisterKeyBinding(keyBinding))
+                    {
+                        await new ContentDialog()
+                        {
+                            Title = "Settings_KeyBindings_DialogTitle".GetLocalized(),
+                            Content = "Settings_KeyBindingsFailed".GetLocalized(),
+                            XamlRoot = App.MainWindow.Content.XamlRoot,
+                            CloseButtonText = "Main_ConnectToServer_CloseButton".GetLocalized(),
+                        }.ShowAsync(ContentDialogPlacement.InPlace);
+                    }
+                    else
+                    {
+                        KeyBindings.Add(keyBinding);
+                    }
+                }
+                _keyBindingsService.IsKeyBindingsEnabled = true;
+            });
+            RemoveKeyBinding = new RelayCommand<KeyBinding>((binding) =>
+            {
+                _keyBindingsService.RemoveKeyBinding(binding.Key);
+                KeyBindings.Remove(binding);
+            });
             Task.Run(() =>
             {
                 // Protection from unfriendly devices that throw exception when you try to access their name :((

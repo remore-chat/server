@@ -60,7 +60,7 @@ namespace TTalk.WinUI
                 // Core Services
                 services.AddSingleton<IFileService, FileService>();
                 services.AddSingleton<SoundService>();
-
+                services.AddSingleton<KeyBindingsService>();
                 // Views and ViewModels
                 services.AddTransient<SettingsViewModel>();
                 services.AddTransient<SettingsViewModel>();
@@ -100,7 +100,7 @@ namespace TTalk.WinUI
 
         public static void ResetMainViewModel()
         {
-            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<SoundService>());
+            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<SoundService>(), GetService<KeyBindingsService>());
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -111,6 +111,7 @@ namespace TTalk.WinUI
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
+            await App.GetService<KeyBindingsService>().Initialize();
             await App.GetService<LocalizationService>().Initialize();
             if (!mutex.WaitOne(TimeSpan.Zero, true))
             {

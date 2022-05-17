@@ -259,4 +259,22 @@ App version (v{1}) doesn't match server's version (v{2})</value>
   <data name="Settings_Language.Text" xml:space="preserve">
     <value>Language</value>
   </data>
+  <data name="Settings_KeyBindingsFailed" xml:space="preserve">
+    <value>Looks like there's another action that bound to the key you pressed.</value>
+  </data>
+  <data name="Settings_KeyBindings_ActionInputPlaceholder" xml:space="preserve">
+    <value>Select action</value>
+  </data>
+  <data name="Settings_KeyBindings_AddButton" xml:space="preserve">
+    <value>Add keybind</value>
+  </data>
+  <data name="Settings_KeyBindings_DialogTitle" xml:space="preserve">
+    <value>Create keybind</value>
+  </data>
+  <data name="Settings_KeyBindings_Header" xml:space="preserve">
+    <value>Keybinds</value>
+  </data>
+  <data name="Settings_KeyBindings_KeyInputPlaceholder" xml:space="preserve">
+    <value>Press any key</value>
+  </data>
 </root>

@@ -12,6 +12,8 @@
 
 
     <Page.Resources>
+        <converters:StringFormatConverter x:Key="format" />
+        <converters:MathConverter x:Key="math" />
         <converters:BooleanToVisibilityConverter x:Key="boolToVis" />
     </Page.Resources>
 

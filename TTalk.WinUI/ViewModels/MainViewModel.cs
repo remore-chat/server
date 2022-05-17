@@ -5,11 +5,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DebounceThrottle;
 using FragLabs.Audio.Codecs;
 using Microsoft.UI.Xaml.Controls;
 using NAudio.Wave;
@@ -17,6 +19,7 @@ using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.WinUI.Contracts.Services;
 using TTalk.WinUI.Helpers;
+using TTalk.WinUI.KeyBindings;
 using TTalk.WinUI.Models;
 using TTalk.WinUI.Networking;
 using TTalk.WinUI.Networking.ClientCode;
@@ -24,12 +27,13 @@ using TTalk.WinUI.Networking.EventArgs;
 using TTalk.WinUI.NoiseReducer;
 using TTalk.WinUI.Services;
 using Windows.ApplicationModel.Resources.Core;
+using Windows.Media.SpeechSynthesis;
 
 namespace TTalk.WinUI.ViewModels
 {
     public class MainViewModel : ObservableRecipient
     {
-        public MainViewModel(ILocalSettingsService settingsService, SoundService sounds)
+        public MainViewModel(ILocalSettingsService settingsService, SoundService sounds, KeyBindingsService bindingsService)
         {
             Process.GetCurrentProcess().Exited += OnExited;
             Channels = new();
@@ -39,9 +43,13 @@ namespace TTalk.WinUI.ViewModels
             _microphoneQueueSlim = new(0);
             _audioQueueSlim = new(0);
             _audioQueue = new();
+            _throttleDispatcher = new DebounceThrottle.ThrottleDispatcher(500);
             SettingsService = settingsService;
-            Sounds = sounds;
             SettingsService.SettingsUpdated += OnSettingsUpdated;
+
+            BindingsService = bindingsService;
+            BindingsService.KeyBindingExecuted += OnKeybindingExecuted;
+            Sounds = sounds;
 
             Task.Run(SendAudio);
             Task.Run(PlayAudio);
@@ -59,6 +67,14 @@ namespace TTalk.WinUI.ViewModels
                 if (CurrentChannelClient != null)
                 {
                     CurrentChannelClient.IsMuted = !CurrentChannelClient.IsMuted;
+                    if (CurrentChannelClient.IsMuted)
+                    {
+                        Speak("Microphone muted");
+                    }
+                    else
+                    {
+                        Speak("Microphone activated");
+                    }
                 }
             });
             ShowUpdatePriviligeKeyDialog = new RelayCommand(async () =>
@@ -94,6 +110,64 @@ namespace TTalk.WinUI.ViewModels
                 await ReadSettings();
                 StartAudioPlayback();
             });
+        }
+
+
+        private static void Speak(string textToSpeech, bool wait = false)
+        {
+            // Command to execute PS  
+            Execute($@"Add-Type -AssemblyName System.speech;  
+            $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;                           
+            $speak.Speak(""{textToSpeech}"");"); // Embedd text  
+
+            void Execute(string command)
+            {
+                // create a temp file with .ps1 extension  
+                var cFile = System.IO.Path.GetTempPath() + Guid.NewGuid() + ".ps1";
+
+                //Write the .ps1  
+                using var tw = new System.IO.StreamWriter(cFile, false, Encoding.UTF8);
+                tw.Write(command);
+
+                // Setup the PS  
+                var start =
+                    new System.Diagnostics.ProcessStartInfo()
+                    {
+                        FileName = "C:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",  // CHUPA MICROSOFT 02-10-2019 23:45                    
+                        LoadUserProfile = false,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        Arguments = $"-executionpolicy bypass -File {cFile}",
+                        WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
+                    };
+
+                //Init the Process  
+                var p = System.Diagnostics.Process.Start(start);
+                // The wait may not work! :(  
+                if (wait) p.WaitForExit();
+            }
+        }
+        private void OnKeybindingExecuted(object sender, KeyBindingExecutedEventArgs e)
+        {
+            var keyBinding = e.KeyBinding;
+            switch (keyBinding.Action)
+            {
+                case KeyBindingAction.ToggleMute:
+                    {
+                        _throttleDispatcher.Throttle(() =>
+                        {
+                            ToggleMute.Execute(null);
+                        });
+                        
+                    break;
+                    }
+                case KeyBindingAction.ToggleDeafen:
+                    break;
+                case KeyBindingAction.Unassigned:
+                    break;
+            };
+
+
         }
 
         private async void OnSettingsUpdated(object sender, object e)
@@ -204,6 +278,7 @@ namespace TTalk.WinUI.ViewModels
 
         public ILocalSettingsService SettingsService { get; }
         public SoundService Sounds { get; }
+        public KeyBindingsService BindingsService { get; }
         public string Username { get; private set; }
         public bool UseVoiceActivityDetection { get; private set; }
         public double VoiceActivityDetectionThreshold { get; private set; }
@@ -228,6 +303,7 @@ namespace TTalk.WinUI.ViewModels
 
         private Queue<byte[]> _microphoneAudioQueue;
         private Queue<byte[]> _audioQueue;
+        private ThrottleDispatcher _throttleDispatcher;
         private SemaphoreSlim _microphoneQueueSlim;
         private SemaphoreSlim _audioQueueSlim;
 
@@ -632,6 +708,7 @@ namespace TTalk.WinUI.ViewModels
                             Bitrate = addedChannel.Bitrate,
                             ConnectedClients = new(addedChannel.Clients.Select(x => new ChannelClient(x)).ToList()),
                             Parent = this,
+                            ClientsCount = addedChannel.Clients.Count,
                             MaxClients = addedChannel.MaxClients,
                             Order = addedChannel.Order,
                             ChannelType = addedChannel.ChannelType
