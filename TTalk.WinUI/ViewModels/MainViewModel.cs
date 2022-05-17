@@ -43,7 +43,7 @@ namespace TTalk.WinUI.ViewModels
             _microphoneQueueSlim = new(0);
             _audioQueueSlim = new(0);
             _audioQueue = new();
-            _throttleDispatcher = new DebounceThrottle.ThrottleDispatcher(500);
+            _throttleDispatcher = new DebounceThrottle.ThrottleDispatcher(1000);
             SettingsService = settingsService;
             SettingsService.SettingsUpdated += OnSettingsUpdated;
 

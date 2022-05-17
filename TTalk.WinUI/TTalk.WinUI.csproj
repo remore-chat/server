@@ -6,7 +6,7 @@
 		<RootNamespace>TTalk.WinUI</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>x86;x64;arm64</Platforms>
-		<AppIcon>StoreLogo.ico</AppIcon>
+		<ApplicationIcon>appicon.ico</ApplicationIcon>
 		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 		<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>true</UseWinUI>
@@ -26,7 +26,6 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="Assets\StoreLogo.png" />
-	  <None Remove="StoreLogo.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -62,6 +61,9 @@
 		<ProjectReference Include="..\TTalk.WinUI.Core\TTalk.WinUI.Core.csproj" />
 	</ItemGroup>
 	<ItemGroup>
+		<None Update="appicon.ico">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
@@ -91,10 +93,6 @@
 
 	<ItemGroup>
 		<PRIResource Remove="Strings\uk-ua.resw" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Include="StoreLogo.ico" />
 	</ItemGroup>
 
 	<ItemGroup>

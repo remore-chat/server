@@ -121,6 +121,7 @@ namespace TTalk.WinUI
             }
 
             MainWindow = new Window() { Title = "AppDisplayName".GetLocalized() };
+            MainWindow.SetIcon("appicon.ico");
             base.OnLaunched(args);
             var activationService = App.GetService<IActivationService>();
             await activationService.ActivateAsync(args);
