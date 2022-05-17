@@ -36,11 +36,6 @@ namespace TTalk.WinUI.Services
             {
                 _keyBindings = keyBindingsSettings;
             }
-            _keyBindings.Add(new KeyBinding()
-            {
-                Key = PInvoke.User32.VirtualKey.VK_PAUSE,
-                Action = KeyBindingAction.ToggleMute
-            });
             IsKeyBindingsEnabled = true;
             timer = new Timer((state) => ListenKeyboard(), null, 0, 65);
         }
@@ -50,6 +45,7 @@ namespace TTalk.WinUI.Services
             if (KeyBindings.Any(x => x.Key == keyBinding.Key))
                 return false;
             _keyBindings.Add(keyBinding);
+            Task.Run(async () => await _localSettingsService.SaveSettingAsync<List<KeyBinding>>(SettingsViewModel.KeyBindingsListSettingsKey, _keyBindings));
             return true;
         }
 

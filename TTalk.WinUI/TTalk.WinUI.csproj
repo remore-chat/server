@@ -6,6 +6,7 @@
 		<RootNamespace>TTalk.WinUI</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>x86;x64;arm64</Platforms>
+		<AppIcon>StoreLogo.ico</AppIcon>
 		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 		<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>true</UseWinUI>
@@ -23,6 +24,10 @@
 		<AppxBundlePlatforms>x64</AppxBundlePlatforms>
 		
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Assets\StoreLogo.png" />
+	  <None Remove="StoreLogo.ico" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Manifest Include="$(ApplicationManifest)" />
@@ -86,6 +91,10 @@
 
 	<ItemGroup>
 		<PRIResource Remove="Strings\uk-ua.resw" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="StoreLogo.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
