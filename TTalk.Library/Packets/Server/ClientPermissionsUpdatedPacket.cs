@@ -9,5 +9,7 @@ namespace TTalk.Library.Packets.Server
         public int Id => 35;
         public bool HasAllPermissions { get; set; }
         //TODO: List of permissions
+        public string RequestId { get; set; }
+
     }
 }

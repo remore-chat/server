@@ -19,5 +19,7 @@ namespace TTalk.Library.Packets.Client
 
         public int Id => 1;
         public string Version { get; set; }
+        public string RequestId { get; set; }
+
     }
 }

@@ -7,5 +7,7 @@ namespace TTalk.Library.Packets.Client
     public class ServerQueryPacket : IPacket
     {
         public int Id => 32;
+        public string RequestId { get; set; }
+
     }
 }

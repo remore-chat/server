@@ -11,5 +11,7 @@ namespace TTalk.Library.Packets.Server
         public string ServerVersion { get; set; }
         public int ClientsConnected { get; set; }
         public int MaxClients { get; set; }
+        public string RequestId { get; set; }
+
     }
 }

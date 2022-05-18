@@ -10,5 +10,7 @@ namespace TTalk.Library.Packets.Client
 
         public string ClientUsername { get; set; }
         public string TcpId { get; set; }
+        public string RequestId { get; set; }
+
     }
 }

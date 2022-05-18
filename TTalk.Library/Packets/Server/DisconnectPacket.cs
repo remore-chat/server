@@ -18,5 +18,7 @@ namespace TTalk.Library.Packets.Server
         }
         public int Id => 2;
         public string Reason { get; set; }
+        public string RequestId { get; set; }
+
     }
 }

@@ -11,6 +11,8 @@ namespace TTalk.Library.Packets.Server
         public int NewState { get; set; }
         //Present only if State == SessionState.Connected; otherwise empty string :)
         public string ClientId { get; set; }
+        public string RequestId { get; set; }
+
         public StateChangedPacket()
         {
 

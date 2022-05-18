@@ -13,5 +13,7 @@ namespace TTalk.Library.Packets.Client
         public int Bitrate { get; set; }
         public int Order { get; set; }
         public ChannelType ChannelType { get; set; }
+        public string RequestId { get; set; }
+
     }
 }

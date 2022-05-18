@@ -8,6 +8,8 @@ namespace TTalk.Library.Packets.Server
     {
         public int Id => 6;
         public string ConnectedClientUsername { get; set; }
+        public string RequestId { get; set; }
+
 
         public ClientConnectedPacket()
         {

@@ -6,8 +6,9 @@ namespace TTalk.Library.Packets.Client
 {
     public class UdpDisconnectPacket : IPacket, IUdpPacket
     {
-        public string ClientUsername { get; set; }
 
         public int Id => 22;
+        public string ClientUsername { get; set; }
+        public string RequestId { get; set; }
     }
 }

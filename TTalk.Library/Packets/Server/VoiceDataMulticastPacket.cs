@@ -9,5 +9,7 @@ namespace TTalk.Library.Packets.Server
         public int Id => 15;
         public string Username { get; set; }
         public byte[] VoiceData { get; set; }
+        public string RequestId { get; set; }
+
     }
 }

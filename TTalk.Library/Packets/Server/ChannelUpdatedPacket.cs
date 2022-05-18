@@ -10,6 +10,7 @@ namespace TTalk.Library.Packets.Server
         public string ChannelId { get; set; }
         public string Name { get; set; }
         public int Bitrate { get; set; }
+        public string RequestId { get; set; }
 
     }
 }

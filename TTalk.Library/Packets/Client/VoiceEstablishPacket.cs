@@ -7,5 +7,7 @@ namespace TTalk.Library.Packets.Client
     public class VoiceEstablishPacket : IPacket
     {
         public int Id => 19;
+        public string RequestId { get; set; }
+
     }
 }

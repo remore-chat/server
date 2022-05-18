@@ -9,5 +9,7 @@ namespace TTalk.Library.Packets.Client
         public int Id => 27;
         public string ChannelId { get; set; }
         public string Text { get; set; }
+        public string RequestId { get; set; }
+
     }
 }

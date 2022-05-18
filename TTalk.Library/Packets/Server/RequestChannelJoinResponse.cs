@@ -11,5 +11,7 @@ namespace TTalk.Library.Packets.Server
 
         //Only present if allowed = false; otherwise empty string
         public string Reason { get; set; }
+        public string RequestId { get; set; }
+
     }
 }

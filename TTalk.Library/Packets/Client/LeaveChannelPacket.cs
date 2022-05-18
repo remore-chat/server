@@ -7,5 +7,7 @@ namespace TTalk.Library.Packets.Client
     public class LeaveChannelPacket : IPacket
     {
         public int Id => 34;
+        public string RequestId { get; set; }
+
     }
 }

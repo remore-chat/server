@@ -6,6 +6,7 @@ namespace TTalk.Library.Packets.Server
 {
     public class UdpNotifyConnectedPacket : IPacket, IUdpPacket
     {
+        public string RequestId { get; set; }
         public string ClientUsername { get; set; }
         public int Id => 16;
     }

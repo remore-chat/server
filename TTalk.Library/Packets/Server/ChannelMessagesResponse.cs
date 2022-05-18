@@ -10,5 +10,7 @@ namespace TTalk.Library.Packets.Server
         public int Id => 29;
         public string ChannelId { get; set; }
         public List<ChannelMessage> Messages { get; set; }
+        public string RequestId { get; set; }
+
     }
 }

@@ -15,6 +15,8 @@ namespace TTalk.Library.Packets.Server
         public int Order { get; set; }
         public int MaxClients { get; set; }
         public List<string> Clients { get; set; }
+        public string RequestId { get; set; }
+
 
         public ChannelAddedPacket()
         {

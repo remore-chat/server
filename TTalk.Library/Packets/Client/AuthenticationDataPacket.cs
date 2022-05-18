@@ -9,6 +9,8 @@ namespace TTalk.Library.Packets.Client
         public int Id => 5;
         public string Username { get; set; }
         public string ServerPrivilegeKey { get; set; }
+        public string RequestId { get; set; }
+
         public AuthenticationDataPacket()
         {
 
