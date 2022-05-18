@@ -25,6 +25,14 @@
 		
 	</PropertyGroup>
 	<ItemGroup>
+	  <Content Remove="Assets\Fonts\e-Ukraine-Bold.otf" />
+	  <Content Remove="Assets\Fonts\e-Ukraine-Light.otf" />
+	  <Content Remove="Assets\Fonts\e-Ukraine-Medium.otf" />
+	  <Content Remove="Assets\Fonts\e-Ukraine-Thin.otf" />
+	  <Content Remove="Assets\Fonts\e-Ukraine-UltraLight.otf" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="Assets\Fonts\e-Ukraine-Regular.otf" />
 	  <None Remove="Assets\LockScreenLogo.scale-200.png" />
 	  <None Remove="Assets\SplashScreen.scale-200.png" />
 	  <None Remove="Assets\Square150x150Logo.scale-200.png" />

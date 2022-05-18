@@ -61,10 +61,20 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <ListView Margin="0" Grid.Row="0" MinWidth="172" x:Name="ChannelsListBox"  SelectionChanged="MessagesListBox_SelectionChanged" SelectionMode="None" IsMultiSelectCheckBoxEnabled="False" ItemsSource="{x:Bind ViewModel.Channels}">
+                            <ListView.ContextFlyout>
+                                <Flyout>
+                                    <MenuFlyoutItem Text="{l10n:Localize Key=Main_CreateChannelDialog_Title}" Command="{x:Bind ViewModel.CreateChannelDialogCommand}"
+                                                    >
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Add" Height="16" Width="16" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </Flyout>
+                            </ListView.ContextFlyout>
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <ListViewItem x:Name="innerColumn" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                        <Grid HorizontalAlignment="Stretch"  CornerRadius="6" Margin="0 4 0 4" MinWidth="172" MinHeight="64" PointerPressed="StackPanel_PointerPressed" 
+                                        <Grid HorizontalAlignment="Stretch"  CornerRadius="6" Margin="0 4 0 4" MinWidth="172" MinHeight="24" PointerPressed="StackPanel_PointerPressed" 
                                           Background="{ThemeResource BackButtonPointerOverBackgroundThemeBrush}">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="3" />
@@ -82,14 +92,21 @@
                                                     <RowDefinition Height="Auto" />
                                                 </Grid.RowDefinitions>
                                                 <StackPanel Margin="0 0 8 0" Orientation="Vertical" HorizontalAlignment="Stretch" MinWidth="172">
-                                                    <TextBlock Margin="0 8 0 0" Text="{Binding Name}" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                                                    <TextBlock Visibility="{Binding IsText, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" Margin="0 -22 0 0" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                                    <Run Text="{Binding ClientsCount}" />
-                                                    <Run Text="/" />
-                                                    <Run Text="{Binding MaxClients}" />
-                                                    </TextBlock>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <fluent:FluentSymbolIcon Visibility="{Binding IsText, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" VerticalAlignment="Bottom" Foreground="{ThemeResource SystemChromeGrayColor}" Symbol="MicOn16Filled" Width="16" Height="16" />
+                                                        <TextBlock Visibility="{Binding IsText, Converter={StaticResource boolToVis}}" VerticalAlignment="Bottom" Foreground="{ThemeResource SystemChromeGrayColor}" FontSize="18" FontWeight="Bold" Text="#" Margin="0 12 0 0" />
+                                                        <TextBlock Margin="4 8 0 0" MaxWidth="125"  Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0 -22 0 0" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                                Visibility="{Binding HasUserLimit, Mode=OneWay, Converter={StaticResource boolToVis}}">
+                                                        <TextBlock Visibility="{Binding IsText, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                            <Run Text="{Binding ClientsCount}" />
+                                                            <Run Text="/" />
+                                                            <Run Text="{Binding MaxClients}" />
+                                                        </TextBlock>
+                                                    </StackPanel>
                                                 </StackPanel>
-                                                <ListView Margin="0 8 0 16" SelectionMode="Single" ItemsSource="{Binding ConnectedClients}" Grid.Row="1">
+                                                <ListView Margin="0 8 0 8" SelectionMode="Single" ItemsSource="{Binding ConnectedClients}" Grid.Row="1">
                                                     <ListView.ItemTemplate>
                                                         <DataTemplate>
                                                             <StackPanel Orientation="Horizontal">
@@ -117,7 +134,7 @@
                                 <Grid>
                                     <fluent:FluentSymbolIcon Visibility="{x:Bind ViewModel.CurrentChannelClient.IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}}" Foreground="{ThemeResource DefaultTextForegroundThemeBrush}" Symbol="MicOff24Filled" Width="24" Height="24" />
                                     <fluent:FluentSymbolIcon Visibility="{x:Bind ViewModel.CurrentChannelClient.IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" Foreground="{ThemeResource DefaultTextForegroundThemeBrush}" Symbol="MicOn24Filled" Width="24" Height="24" />
-        
+
                                 </Grid>
                             </Button>
                             <Button Margin="12 0 0 0" CornerRadius="6" Command="{x:Bind ViewModel.LeaveChannel}" HorizontalAlignment="Right">

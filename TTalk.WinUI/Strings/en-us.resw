@@ -280,4 +280,19 @@ App version (v{1}) doesn't match server's version (v{2})</value>
   <data name="Settings_KeyBindings_KeyInputPlaceholder" xml:space="preserve">
     <value>Press any key</value>
   </data>
+  <data name="Main_CreateChannelDialog_ChannelNameInputPlaceholder" xml:space="preserve">
+    <value>Channel name</value>
+  </data>
+  <data name="Main_CreateChannelDialog_ConfirmText" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="Main_CreateChannelDialog_TextChannel" xml:space="preserve">
+    <value>Text channel</value>
+  </data>
+  <data name="Main_CreateChannelDialog_Title" xml:space="preserve">
+    <value>Create channel</value>
+  </data>
+  <data name="Main_CreateChannelDialog_VoiceChannel" xml:space="preserve">
+    <value>Voice channel</value>
+  </data>
 </root>

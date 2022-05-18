@@ -5,6 +5,7 @@ using TTalk.Library.Packets;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.Server;
+using TTalk.Server.EF;
 using TTalk.Server.Services;
 
 public class TTalkServer
@@ -23,6 +24,9 @@ public class TTalkServer
     public ServerConfiguration Configuration { get; set; }
 
     private ConfigurationService _configurationService;
+
+    public ServerDbContext Context { get; }
+
     public void Start()
     {
         Task.Run(async () =>
@@ -48,61 +52,8 @@ public class TTalkServer
         TCP = new(this, ip, port);
         UDP = new(this, IPAddress.Any, port);
         _configurationService = ServiceContainer.GetService<ConfigurationService>();
-        Channels = new()
-        {
-            new Channel()
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Main",
-                ConnectedClients = new(),
-                MaxClients = 32,
-                Bitrate = 500000,
-                ChannelType = TTalk.Library.Enums.ChannelType.Voice,
-                Order = 0
-            },
-            new Channel()
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Second",
-                ConnectedClients = new(),
-                MaxClients = 32,
-                Bitrate = 64000,
-                ChannelType = TTalk.Library.Enums.ChannelType.Voice,
-                Order = 1
-            },
-            new Channel()
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Third",
-                ConnectedClients = new(),
-                MaxClients = 12,
-                Bitrate = 12000,
-                ChannelType = TTalk.Library.Enums.ChannelType.Voice,
-                Order = 2
-            },
-            new Channel()
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "TextChannel",
-                ConnectedClients = new(),
-                MaxClients = 0,
-                Bitrate = 0,
-                ChannelType = TTalk.Library.Enums.ChannelType.Text,
-                Order = 3,
-                Messages = new()
-            },
-            new Channel()
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Text channel 2",
-                ConnectedClients = new(),
-                MaxClients = 0,
-                Bitrate = 0,
-                ChannelType = TTalk.Library.Enums.ChannelType.Text,
-                Order = 4,
-                Messages = new()
-            }
-        };
+        Context = ServiceContainer.GetService<ServerDbContext>();
+        Channels = Context.Channels.ToList();
         Clients = new();
     }
 

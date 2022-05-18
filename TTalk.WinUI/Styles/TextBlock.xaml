@@ -2,15 +2,23 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <FontFamily x:Key="eUkraine">ms-appx://e-Ukraine-Regular.otf#e-Ukraine Regular</FontFamily>
+    
     <Style x:Key="PageTitleStyle" TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="FontWeight" Value="SemiLight" />
         <Setter Property="FontSize" Value="{StaticResource LargeFontSize}" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="FontFamily" Value="{StaticResource eUkraine}" />
+    </Style>
+
+    <Style TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource eUkraine}" />
     </Style>
 
     <Style x:Key="BodyTextStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource eUkraine}" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="{StaticResource MediumFontSize}" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />

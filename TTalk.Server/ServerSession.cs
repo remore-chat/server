@@ -16,7 +16,6 @@ public class ServerSession : TcpSession
     public string PrivilegeKey { get; set; }
     public string Username { get; set; }
     public Channel CurrentChannel { get; set; }
-
     public ServerSession(TTalkServer server) : base(server.TCP)
     {
         Server = server;
@@ -95,7 +94,7 @@ public class ServerSession : TcpSession
                 this.Disconnect();
                 return;
             }
-            if (Server.Clients.Any(x=>x.Username == auth.Username))
+            if (Server.Clients.Any(x => x.Username == auth.Username))
             {
                 this.Send(new DisconnectPacket($"Nickname unavailable"));
                 this.Disconnect();
@@ -246,6 +245,51 @@ public class ServerSession : TcpSession
                         }
                     }
                 }
+            }
+            else if (packet is CreateChannelPacket createChannel)
+            {
+                if (string.IsNullOrEmpty(createChannel.Name))
+                {
+                    this.Send(new DisconnectPacket("Server received invalid packet"));
+                    this.Disconnect();
+                    return;
+                }
+                if (createChannel.MaxClients <= 0)
+                {
+                    this.Send(new DisconnectPacket("Server received invalid packet"));
+                    this.Disconnect();
+                    return;
+                }
+                if (createChannel.ChannelType == TTalk.Library.Enums.ChannelType.Voice &&
+                    (createChannel.Bitrate < 8000 && createChannel.Bitrate > 500000))
+                {
+                    this.Send(new DisconnectPacket("Server received invalid packet"));
+                    this.Disconnect();
+                    return;
+                }
+
+                var channel = new Channel()
+                {
+                    Bitrate = createChannel.Bitrate,
+                    Name = createChannel.Name,
+                    ChannelType = createChannel.ChannelType,
+                    MaxClients = createChannel.MaxClients,
+                    Order = createChannel.Order,
+                };
+                Server.Channels.Add(channel);
+                TCP.Multicast(new ChannelAddedPacket()
+                {
+                    ChannelId = channel.Id,
+                    Bitrate = channel.Bitrate,
+                    ChannelType = channel.ChannelType,
+                    Name = channel.Name,
+                    MaxClients = channel.MaxClients,
+                    Order = channel.Order,
+                    Clients = new(),
+                });
+                await Server.Context.Channels.AddAsync(channel);
+                await Server.Context.SaveChangesAsync();
+
             }
         }
     }

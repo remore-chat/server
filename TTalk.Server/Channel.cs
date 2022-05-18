@@ -21,5 +21,7 @@ public class Channel
     public Channel()
     {
         Id = Guid.NewGuid().ToString();
+        Messages = new();
+        ConnectedClients = new();
     }
 }

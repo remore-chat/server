@@ -47,7 +47,11 @@ namespace TTalk.WinUI.Models
         public int MaxClients
         {
             get { return maxClients; }
-            set { SetProperty(ref maxClients, value); }
+            set { if (SetProperty(ref maxClients, value))
+                {
+                    HasUserLimit = value != 999999;
+                }
+            }
         }
 
         private int clientsCount;
@@ -103,6 +107,13 @@ namespace TTalk.WinUI.Models
             set { SetProperty(ref isSelected, value); }
         }
 
+        private bool hasUserLimit;
+
+        public bool HasUserLimit
+        {
+            get { return hasUserLimit; }
+            set { SetProperty(ref hasUserLimit, value); }
+        }
 
 
         private ChannelType channelType;

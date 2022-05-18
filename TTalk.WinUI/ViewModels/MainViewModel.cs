@@ -77,6 +77,7 @@ namespace TTalk.WinUI.ViewModels
                     }
                 }
             });
+            CreateChannelDialogCommand = new RelayCommand(CreateChannelDialog);
             ShowUpdatePriviligeKeyDialog = new RelayCommand(async () =>
             {
                 var address = $"{ip}:{port}";
@@ -112,6 +113,47 @@ namespace TTalk.WinUI.ViewModels
             });
         }
 
+        private async void CreateChannelDialog()
+        {
+            var stack = new StackPanel()
+            {
+                Spacing = 8,
+            };
+            var radioButtons = new RadioButtons();
+            radioButtons.Items.Add(new RadioButton() { Content = "Main_CreateChannelDialog_TextChannel".GetLocalized() });
+            radioButtons.Items.Add(new RadioButton() { Content = "Main_CreateChannelDialog_VoiceChannel".GetLocalized() });
+            radioButtons.SelectedIndex = 0;
+            stack.Children.Add(radioButtons);
+            var channelNameInput = new TextBox()
+            {
+                PlaceholderText = "Main_CreateChannelDialog_ChannelNameInputPlaceholder".GetLocalized(),
+                MaxLength = 32
+            };
+            stack.Children.Add(channelNameInput);
+            var dialog = new ContentDialog()
+            {
+                Title = "Main_CreateChannelDialog_Title".GetLocalized(),
+                Content = stack,
+                PrimaryButtonText = "Main_CreateChannelDialog_ConfirmText".GetLocalized(),
+                CloseButtonText = "Main_PrivilegeKey_Close.Text".GetLocalized(),
+                XamlRoot = App.MainWindow.Content.XamlRoot
+            };
+            channelNameInput.TextChanged += (s, e) =>
+            {
+                dialog.IsPrimaryButtonEnabled = channelNameInput.Text.Length > 0;
+            };
+            var result = await dialog.ShowAsync(ContentDialogPlacement.InPlace);
+            if (result == ContentDialogResult.Primary)
+            {
+                this._client.Send(new CreateChannelPacket()
+                {
+                    Name = channelNameInput.Text,
+                    Bitrate = 48000,
+                    ChannelType = radioButtons.SelectedIndex == 0 ? Library.Enums.ChannelType.Text : Library.Enums.ChannelType.Voice,
+                    MaxClients = 999999,
+                });
+            }
+        }
 
         private static void Speak(string textToSpeech, bool wait = false)
         {
@@ -158,8 +200,8 @@ namespace TTalk.WinUI.ViewModels
                         {
                             ToggleMute.Execute(null);
                         });
-                        
-                    break;
+
+                        break;
                     }
                 case KeyBindingAction.ToggleDeafen:
                     break;
@@ -272,6 +314,7 @@ namespace TTalk.WinUI.ViewModels
         public RelayCommand DisconnectCommand { get; }
         public RelayCommand LeaveChannel { get; }
         public RelayCommand ToggleMute { get; }
+        public RelayCommand CreateChannelDialogCommand { get; }
         public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
 
         private Denoiser _denoiser;

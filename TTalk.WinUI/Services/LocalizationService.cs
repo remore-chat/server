@@ -69,10 +69,16 @@ namespace TTalk.WinUI.Services
             catch (Exception ex)
             {
                 //Fallback to english
-                return _cultureToResourceMap[_fallbackCulture].GetValue(key.Replace(".", "/")).ValueAsString;
-                //return $"{_currentCulture.Name.ToLowerInvariant()}:{key}";
+                try
+                {
+                    return _cultureToResourceMap[_fallbackCulture].GetValue(key.Replace(".", "/")).ValueAsString;
+                }
+                catch (Exception)
+                {
+                    return $"{_currentCulture.Name.ToLowerInvariant()}:{key}";
+                }
             }
-            
+
         }
 
         public CultureInfo GetCurrentCulture()

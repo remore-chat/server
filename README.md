@@ -11,3 +11,4 @@
 - [x] Privilege key
 - [ ] User roles
 - [ ] Managing channels
+- [ ] Echo cancellation

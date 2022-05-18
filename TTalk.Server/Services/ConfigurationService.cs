@@ -39,6 +39,22 @@ namespace TTalk.Server.Services
                     PrivilegeKey = null
                 };
                 var entry = _context.Configuration.Add(configuration);
+                _context.Channels.Add(new Channel()
+                {
+                    Name = "general",
+                    ChannelType = Library.Enums.ChannelType.Text,
+                    Bitrate = 0,
+                    MaxClients = 999999,
+                    Order = 0,
+                });
+                _context.Channels.Add(new Channel()
+                {
+                    Name = "General",
+                    ChannelType = Library.Enums.ChannelType.Voice,
+                    Bitrate = 64000,
+                    MaxClients = 999999,
+                    Order = 1,
+                });
                 await _context.SaveChangesAsync();
                 entry.State = EntityState.Detached;
                 await _context.SaveChangesAsync();
