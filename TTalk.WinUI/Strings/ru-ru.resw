@@ -259,4 +259,25 @@
   <data name="Settings_Language.Text" xml:space="preserve">
     <value>Язык</value>
   </data>
+  <data name="Settings_Capture_EnableRNNoiseSuppresion" xml:space="preserve">
+    <value>Включить шумоподавление</value>
+  </data>
+  <data name="Settings_KeyBindingsFailed" xml:space="preserve">
+    <value>Кнопка, которую ты нажал уже занята</value>
+  </data>
+  <data name="Settings_KeyBindings_ActionInputPlaceholder" xml:space="preserve">
+    <value>Выбери действие</value>
+  </data>
+  <data name="Settings_KeyBindings_AddButton" xml:space="preserve">
+    <value>Добавить гарячую клавишу</value>
+  </data>
+  <data name="Settings_KeyBindings_DialogTitle" xml:space="preserve">
+    <value>Создание гарячей клавиши</value>
+  </data>
+  <data name="Settings_KeyBindings_Header" xml:space="preserve">
+    <value>Гарячие клавиши</value>
+  </data>
+  <data name="Settings_KeyBindings_KeyInputPlaceholder" xml:space="preserve">
+    <value>Нажми любую кнопку</value>
+  </data>
 </root>

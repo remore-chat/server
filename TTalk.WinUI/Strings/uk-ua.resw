@@ -259,4 +259,25 @@
   <data name="Settings_Language.Text" xml:space="preserve">
     <value>Мова</value>
   </data>
+  <data name="Settings_Capture_EnableRNNoiseSuppresion" xml:space="preserve">
+    <value>Ввімкнути заглушення шуму</value>
+  </data>
+  <data name="Settings_KeyBindingsFailed" xml:space="preserve">
+    <value>Кнопка, яку ти натиснув вже занята</value>
+  </data>
+  <data name="Settings_KeyBindings_ActionInputPlaceholder" xml:space="preserve">
+    <value>Виберіть дію</value>
+  </data>
+  <data name="Settings_KeyBindings_AddButton" xml:space="preserve">
+    <value>Додати</value>
+  </data>
+  <data name="Settings_KeyBindings_DialogTitle" xml:space="preserve">
+    <value>Налаштування гарячої клавіші</value>
+  </data>
+  <data name="Settings_KeyBindings_Header" xml:space="preserve">
+    <value>Гарячі клавіші</value>
+  </data>
+  <data name="Settings_KeyBindings_KeyInputPlaceholder" xml:space="preserve">
+    <value>Натисни будь-яку кнопку</value>
+  </data>
 </root>
