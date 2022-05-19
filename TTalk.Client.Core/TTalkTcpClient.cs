@@ -36,18 +36,19 @@ namespace TTalk.Client.Core
         protected override async void OnConnected()
         {
             Initialize();
-
         }
 
-        private async Task Initialize()
+		private async Task Initialize()
         {
             await Task.Delay(100);
             State = SessionState.VersionExchange;
             this.Send(new VersionExchangePacket(Version));
+            ReceiveAsync();
         }
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
+            ReceiveAsync();
             using var reader = new ByteReaderWriter(buffer);
             int lengthOfPacket = reader.ReadInt();
             int id = reader.ReadInt(false);
@@ -81,7 +82,7 @@ namespace TTalk.Client.Core
                 State = state;
                 if (state == SessionState.Authenticating)
                 {
-                    this.Send(new AuthenticationDataPacket(Username, PrivilegeKey));
+                    this.Send(new AuthenticationDataPacket(Username, PrivilegeKey ?? ""));
                 }
                 else if (state == SessionState.Connected)
                 {

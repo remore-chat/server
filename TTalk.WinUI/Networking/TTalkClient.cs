@@ -41,6 +41,7 @@ namespace TTalk.WinUI.Networking.ClientCode
         protected override async void OnConnected()
         {
             Initialize();
+            ReceiveAsync();
             
         }
 
@@ -74,8 +75,9 @@ namespace TTalk.WinUI.Networking.ClientCode
                     lengthOfPacket = reader.ReadInt();
                     id = reader.ReadInt(false);
 
-                } while (_offset + lengthOfPacket  < size);
+                } while (_offset + lengthOfPacket < size);
             }
+            ReceiveAsync();
         }
 
         private void HandlePacket(byte[] buffer)
