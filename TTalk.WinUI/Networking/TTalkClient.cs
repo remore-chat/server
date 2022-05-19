@@ -17,7 +17,7 @@ namespace TTalk.WinUI.Networking.ClientCode
 {
     internal class TTalkClient : TcpClient
     {
-        
+
         public TTalkClient(string address, int port) : base(address, port)
         {
             TcpId = null;
@@ -42,7 +42,7 @@ namespace TTalk.WinUI.Networking.ClientCode
         {
             Initialize();
             ReceiveAsync();
-            
+
         }
 
         private async Task Initialize()
@@ -55,28 +55,30 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            using var reader = new ByteReaderWriter(buffer);
-            int lengthOfPacket = reader.ReadInt();
-            int id = reader.ReadInt(false);
-            if (lengthOfPacket == size - 4)
-            {
-                HandlePacket(buffer);
-                return;
-            }
-            else
-            {
-                int _offset = 0;
-                do
-                {
-                    var packet = buffer.Slice(_offset, lengthOfPacket + 4);
-                    HandlePacket(packet);
-                    _offset += lengthOfPacket + 4;
-                    reader.Position = _offset;
-                    lengthOfPacket = reader.ReadInt();
-                    id = reader.ReadInt(false);
+            HandlePacket(buffer);
 
-                } while (_offset + lengthOfPacket < size);
-            }
+            // using var reader = new ByteReaderWriter(buffer);
+            // int lengthOfPacket = reader.ReadInt();
+            // int id = reader.ReadInt(false);
+            // if (lengthOfPacket == size - 4)
+            // {
+            //     HandlePacket(buffer);
+            //     return;
+            // }
+            // else
+            // {
+            //     int _offset = 0;
+            //     do
+            //     {
+            //         var packet = buffer.Slice(_offset, lengthOfPacket + 4);
+            //         HandlePacket(packet);
+            //         _offset += lengthOfPacket + 4;
+            //         reader.Position = _offset;
+            //         lengthOfPacket = reader.ReadInt();
+            //         id = reader.ReadInt(false);
+            //
+            //     } while (_offset + lengthOfPacket < size);
+            // }
             ReceiveAsync();
         }
 
@@ -128,6 +130,6 @@ namespace TTalk.WinUI.Networking.ClientCode
 
 
         private bool _stop;
-        
+
     }
 }
