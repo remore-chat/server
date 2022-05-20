@@ -472,22 +472,13 @@ namespace TTalk.WinUI.ViewModels
 
         private async Task SendAudio()
         {
-            bool delay = true;
             while (true)
             {
                 try
                 {
                     _microphoneQueueSlim.Wait();
                     var chunk = _microphoneAudioQueue.Dequeue();
-                    
-                    if (delay)
-                    {
-                        delay = false;
-                        await Task.Delay(2000);
-                    }
-
-                    _audioQueue.Enqueue(chunk);
-                    _audioQueueSlim.Release();
+                    _udpClient.Send(new VoiceDataPacket() { ClientUsername = Username, VoiceData = chunk });
                 }
                 catch (Exception)
                 {
@@ -495,8 +486,10 @@ namespace TTalk.WinUI.ViewModels
                 }
             }
         }
+
         private async Task PlayAudio()
         {
+            bool delay = true;
             while (true)
             {
                 try
@@ -505,6 +498,13 @@ namespace TTalk.WinUI.ViewModels
                     var chunk = _audioQueue.Dequeue();
                     if (_playBuffer == null)
                         continue;
+
+                    if (delay)
+                    {
+                        delay = false;
+                        await Task.Delay(2000);
+                    }
+
                     _playBuffer.AddSamples(chunk, 0, chunk.Length);
                 }
                 catch (Exception)
