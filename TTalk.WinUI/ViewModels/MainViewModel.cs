@@ -472,15 +472,22 @@ namespace TTalk.WinUI.ViewModels
 
         private async Task SendAudio()
         {
+            bool delay = true;
             while (true)
             {
                 try
                 {
                     _microphoneQueueSlim.Wait();
                     var chunk = _microphoneAudioQueue.Dequeue();
-                    _udpClient.Send(new VoiceDataPacket() { ClientUsername = Username, VoiceData = chunk });
-                    //_audioQueue.Enqueue(chunk);
-                    //_audioQueueSlim.Release();
+                    
+                    if (delay)
+                    {
+                        delay = false;
+                        await Task.Delay(2000);
+                    }
+
+                    _audioQueue.Enqueue(chunk);
+                    _audioQueueSlim.Release();
                 }
                 catch (Exception)
                 {
