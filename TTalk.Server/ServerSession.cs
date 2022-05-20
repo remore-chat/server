@@ -15,11 +15,13 @@ public class ServerSession : TcpSession
     public SessionState State { get; set; }
     public string PrivilegeKey { get; set; }
     public string Username { get; set; }
+    public long LatestHeartbeatReceivedAt { get; set; }
     public Channel CurrentChannel { get; set; }
     public ServerSession(TTalkServer server) : base(server.TCP)
     {
         Server = server;
         State = SessionState.VersionExchange;
+        LatestHeartbeatReceivedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
     }
 
     protected override void OnConnected()
@@ -141,6 +143,11 @@ public class ServerSession : TcpSession
             {
                 Logger.LogWarn($"Invalid packet received at state {State} from client {Id}");
                 this.Disconnect();
+            }
+            else if (packet is TcpHeartbeatPacket)
+            {
+                LatestHeartbeatReceivedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
+                Logger.LogInfo($"TCP heartbeat {this.Username}");
             }
             else if (packet is CreateChannelMessagePacket channelMessage)
             {

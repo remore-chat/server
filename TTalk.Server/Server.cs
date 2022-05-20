@@ -49,8 +49,7 @@ public class TTalkServer
     {
         Ip = ip;
         Port = port;
-        TCP = new(this, ip, port);
-        UDP = new(this, IPAddress.Any, port);
+        Clients = new();
         _configurationService = ServiceContainer.GetService<ConfigurationService>();
         Context = ServiceContainer.GetService<ServerDbContext>();
         Channels = Context.Channels.ToList();
@@ -58,9 +57,11 @@ public class TTalkServer
         {
             if (channel.Messages == null)
                 channel.Messages = new();
-            channel.Messages.AddRange(Context.ChannelMessages.Where(x => x.ChannelId == channel.Id).OrderByDescending(x=>x.CreatedAt).Take(20).ToList());
+            channel.Messages.AddRange(Context.ChannelMessages.Where(x => x.ChannelId == channel.Id).OrderByDescending(x => x.CreatedAt).Take(20).ToList());
         }
-        Clients = new();
+        TCP = new(this, ip, port);
+        UDP = new(this, IPAddress.Any, port);
+        
     }
 
     public class UDPServer : UdpServer
@@ -185,6 +186,31 @@ public class TTalkServer
         public TCPServer(TTalkServer server, IPAddress address, int port) : base(address, port)
         {
             Server = server;
+            _ = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    try
+                    {
+                        foreach (var session in server.Clients.ToList())
+                        {
+                            if (DateTimeOffset.Now.ToUnixTimeSeconds() - session.LatestHeartbeatReceivedAt > 15 && session.State == SessionState.Connected)
+                            {
+                                session.Send(new DisconnectPacket("Server haven't received heartbeat from your client more than 15 seconds"));
+                                session.Disconnect();
+                                return;
+                            }
+                            session.Send(new TcpHeartbeatPacket());
+                            Logger.LogInfo($"Sent heartbeat to {session.Username}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ;
+                    }
+                    await Task.Delay(10 * 1000);
+                }
+            });
         }
 
         public TTalkServer Server { get; }

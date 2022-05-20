@@ -103,6 +103,11 @@ namespace TTalk.WinUI.Networking.ClientCode
             }
             else if (State == SessionState.Connected)
             {
+                if (packet is TcpHeartbeatPacket)
+                {
+                    this.Send(new TcpHeartbeatPacket());
+                    return;
+                }
                 PacketReceived?.Invoke(this, new() { Packet = packet });
             }
         }
