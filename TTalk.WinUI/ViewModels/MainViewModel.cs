@@ -78,6 +78,7 @@ namespace TTalk.WinUI.ViewModels
                 }
             });
             CreateChannelDialogCommand = new RelayCommand(CreateChannelDialog);
+            DeleteChannelDialogCommand = new RelayCommand<string>(DeleteChannelDialog);
             ShowUpdatePriviligeKeyDialog = new RelayCommand(async () =>
             {
                 var address = $"{ip}:{port}";
@@ -113,6 +114,23 @@ namespace TTalk.WinUI.ViewModels
             });
         }
 
+        private async void DeleteChannelDialog(string obj)
+        {
+            var channel = Channels.FirstOrDefault(x => x.Id == obj);
+            var result = await new ContentDialog()
+            {
+                Title = "Main_DeleteChannelDialog_Title".GetLocalized(),
+                Content = string.Format("Main_DeleteChannelDialog_Content".GetLocalized(), channel.Name),
+                XamlRoot = App.MainWindow.Content.XamlRoot,
+                PrimaryButtonText = "Main_DeleteChannelDialog_Confirm".GetLocalized(),
+                CloseButtonText = "Main_PrivilegeKey_Close.Text".GetLocalized()
+            }.ShowAsync(ContentDialogPlacement.InPlace);
+            if (result == ContentDialogResult.Primary)
+            {
+                _client.Send(new DeleteChannelPacket() { ChannelId = channel.Id });
+            }
+        }
+
         private async void CreateChannelDialog()
         {
             var stack = new StackPanel()
@@ -120,8 +138,8 @@ namespace TTalk.WinUI.ViewModels
                 Spacing = 8,
             };
             var radioButtons = new RadioButtons();
-            radioButtons.Items.Add(new RadioButton() { Content = "Main_CreateChannelDialog_TextChannel".GetLocalized() });
-            radioButtons.Items.Add(new RadioButton() { Content = "Main_CreateChannelDialog_VoiceChannel".GetLocalized() });
+            radioButtons.Items.Add(new RadioButton() { Tag = "Text", Content = "Main_CreateChannelDialog_TextChannel".GetLocalized() });
+            radioButtons.Items.Add(new RadioButton() { Tag = "Voice", Content = "Main_CreateChannelDialog_VoiceChannel".GetLocalized() });
             radioButtons.SelectedIndex = 0;
             stack.Children.Add(radioButtons);
             var channelNameInput = new TextBox()
@@ -130,6 +148,23 @@ namespace TTalk.WinUI.ViewModels
                 MaxLength = 32
             };
             stack.Children.Add(channelNameInput);
+            var bitrateSlider = new Slider()
+            {
+                Minimum = 8,
+                StepFrequency = 1,
+                Maximum = 480,
+                Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
+                Header = "Main_CreateChannelDialog_Bitrate".GetLocalized(),
+            };
+            stack.Children.Add(bitrateSlider);
+            radioButtons.SelectionChanged += (s, e) =>
+            {
+                var item = e.AddedItems.FirstOrDefault();
+                if (item != null)
+                {
+                    bitrateSlider.Visibility = (item as RadioButton).Tag.ToString() == "Voice" ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
+                }
+            };
             var dialog = new ContentDialog()
             {
                 Title = "Main_CreateChannelDialog_Title".GetLocalized(),
@@ -148,7 +183,7 @@ namespace TTalk.WinUI.ViewModels
                 this._client.Send(new CreateChannelPacket()
                 {
                     Name = channelNameInput.Text,
-                    Bitrate = 48000,
+                    Bitrate = (int)bitrateSlider.Value * 1000,
                     ChannelType = radioButtons.SelectedIndex == 0 ? Library.Enums.ChannelType.Text : Library.Enums.ChannelType.Voice,
                     MaxClients = 999999,
                 });
@@ -315,6 +350,7 @@ namespace TTalk.WinUI.ViewModels
         public RelayCommand LeaveChannel { get; }
         public RelayCommand ToggleMute { get; }
         public RelayCommand CreateChannelDialogCommand { get; }
+        public RelayCommand<string> DeleteChannelDialogCommand { get; }
         public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
 
         private Denoiser _denoiser;
@@ -881,6 +917,18 @@ namespace TTalk.WinUI.ViewModels
                     //Make it look like we're doing something important xD
                     await Task.Delay(1000);
                     IsNegotiationFinished = true;
+                }
+                else if (packet is ChannelDeletedPacket deletedChannel)
+                {
+                    var channel = Channels.FirstOrDefault(x => x.Id == deletedChannel.ChannelId);
+                    if (channel == null)
+                        return;
+                    if (channel.Id == currentTextChannel.Id)
+                    {
+                        currentTextChannel.Messages.Clear();
+                        CurrentTextChannel = null;
+                    }
+                    Channels.Remove(channel);
                 }
             });
         }

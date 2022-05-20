@@ -54,6 +54,12 @@ public class TTalkServer
         _configurationService = ServiceContainer.GetService<ConfigurationService>();
         Context = ServiceContainer.GetService<ServerDbContext>();
         Channels = Context.Channels.ToList();
+        foreach (var channel in Channels)
+        {
+            if (channel.Messages == null)
+                channel.Messages = new();
+            channel.Messages.AddRange(Context.ChannelMessages.Where(x => x.ChannelId == channel.Id).OrderByDescending(x=>x.CreatedAt).Take(20).ToList());
+        }
         Clients = new();
     }
 

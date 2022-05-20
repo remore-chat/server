@@ -40,9 +40,7 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         protected override async void OnConnected()
         {
-            Initialize();
-            ReceiveAsync();
-            
+            Initialize();            
         }
 
         private async Task Initialize()
@@ -77,7 +75,6 @@ namespace TTalk.WinUI.Networking.ClientCode
 
                 } while (_offset + lengthOfPacket < size);
             }
-            ReceiveAsync();
         }
 
         private void HandlePacket(byte[] buffer)
