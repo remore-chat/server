@@ -24,7 +24,7 @@ namespace TTalk.WinUI.Networking
 
         protected override void OnConnected()
         {
-            base.OnConnected();
+            ReceiveAsync();
         }
 
         public async Task<ServerQueryResponsePacket> GetServerInfo()

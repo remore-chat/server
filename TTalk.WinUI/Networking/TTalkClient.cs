@@ -40,7 +40,7 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         protected override async void OnConnected()
         {
-            Initialize();            
+            Initialize();
         }
 
         private async Task Initialize()
@@ -106,9 +106,11 @@ namespace TTalk.WinUI.Networking.ClientCode
                 if (packet is TcpHeartbeatPacket)
                 {
                     this.Send(new TcpHeartbeatPacket());
-                    return;
                 }
-                PacketReceived?.Invoke(this, new() { Packet = packet });
+                else
+                {
+                    PacketReceived?.Invoke(this, new() { Packet = packet });
+                }
             }
         }
 

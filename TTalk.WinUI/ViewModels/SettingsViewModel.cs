@@ -205,7 +205,7 @@ namespace TTalk.WinUI.ViewModels
                             await SettingsService.SaveSettingAsync<string>(UsernameSettingsKey, value);
                         });
                     });
-                    
+
 
                 }
             }
@@ -296,7 +296,7 @@ namespace TTalk.WinUI.ViewModels
             Main = mainViewModel;
             InputDevices = new();
             OutputDevices = new();
-            Actions = typeof(KeyBindingAction).GetEnumNames().Select(x=> Regex.Replace(x.ToString(), "[a-z][A-Z]", m => $"{m.Value[0]} {char.ToLower(m.Value[1])}")).ToList();
+            Actions = typeof(KeyBindingAction).GetEnumNames().Select(x => Regex.Replace(x.ToString(), "[a-z][A-Z]", m => $"{m.Value[0]} {char.ToLower(m.Value[1])}")).ToList();
             KeyBindings = new(_keyBindingsService.KeyBindings.ToList());
             AddKeyBinding = new RelayCommand(async () =>
             {
@@ -313,8 +313,8 @@ namespace TTalk.WinUI.ViewModels
                 PInvoke.User32.VirtualKey pinvokeKey = PInvoke.User32.VirtualKey.VK_NO_KEY;
                 textBox.KeyDown += (s, e) =>
                 {
-                    if (e.Key == Windows.System.VirtualKey.LeftButton  || 
-                        e.Key == Windows.System.VirtualKey.RightButton || 
+                    if (e.Key == Windows.System.VirtualKey.LeftButton ||
+                        e.Key == Windows.System.VirtualKey.RightButton ||
                         e.Key == Windows.System.VirtualKey.MiddleButton)
                         return;
                     textBox.Text = e.Key.ToString();
@@ -381,14 +381,15 @@ namespace TTalk.WinUI.ViewModels
             Task.Run(() =>
             {
                 // Protection from unfriendly devices that throw exception when you try to access their name :((
-                try
+
+                var enumerator = new MMDeviceEnumerator();
+                int waveOutDevices = WaveOut.DeviceCount;
+                for (int waveOutDevice = 0; waveOutDevice < waveOutDevices; waveOutDevice++)
                 {
-                    var enumerator = new MMDeviceEnumerator();
-                    int waveOutDevices = WaveOut.DeviceCount;
-                    for (int waveOutDevice = 0; waveOutDevice < waveOutDevices; waveOutDevice++)
+                    WaveOutCapabilities deviceInfo = WaveOut.GetCapabilities(waveOutDevice);
+                    foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All))
                     {
-                        WaveOutCapabilities deviceInfo = WaveOut.GetCapabilities(waveOutDevice);
-                        foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All))
+                        try
                         {
                             if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
                             {
@@ -396,16 +397,20 @@ namespace TTalk.WinUI.ViewModels
                                 break;
                             }
                         }
+                        catch { }
                     }
+                }
 
-                    if (WaveOut.DeviceCount > 0)
-                        App.MainWindow.DispatcherQueue.TryEnqueue(async () => OutputDevice = await SettingsService.ReadSettingAsync<int>(OutputDeviceSettingsKey));
+                if (WaveOut.DeviceCount > 0)
+                    App.MainWindow.DispatcherQueue.TryEnqueue(async () => OutputDevice = await SettingsService.ReadSettingAsync<int>(OutputDeviceSettingsKey));
 
-                    int waveInDevices = WaveIn.DeviceCount;
-                    for (int waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
+                int waveInDevices = WaveIn.DeviceCount;
+                for (int waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
+                {
+                    WaveInCapabilities deviceInfo = WaveIn.GetCapabilities(waveInDevice);
+                    foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.All))
                     {
-                        WaveInCapabilities deviceInfo = WaveIn.GetCapabilities(waveInDevice);
-                        foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.All))
+                        try
                         {
                             if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
                             {
@@ -413,12 +418,9 @@ namespace TTalk.WinUI.ViewModels
                                 break;
                             }
                         }
-
+                        catch { }
                     }
-                }
-                catch (Exception)
-                {
-                    ;
+
                 }
 
                 if (WaveIn.DeviceCount > 0)

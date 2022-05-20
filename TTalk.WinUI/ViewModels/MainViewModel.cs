@@ -109,7 +109,9 @@ namespace TTalk.WinUI.ViewModels
             _denoiser = new Denoiser();
             App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
             {
+                IsConnected = true;
                 await ReadSettings();
+                IsConnected = false;
                 StartAudioPlayback();
             });
         }
@@ -477,6 +479,8 @@ namespace TTalk.WinUI.ViewModels
                     _microphoneQueueSlim.Wait();
                     var chunk = _microphoneAudioQueue.Dequeue();
                     _udpClient.Send(new VoiceDataPacket() { ClientUsername = Username, VoiceData = chunk });
+                    //_audioQueue.Enqueue(chunk);
+                    //_audioQueueSlim.Release();
                 }
                 catch (Exception)
                 {

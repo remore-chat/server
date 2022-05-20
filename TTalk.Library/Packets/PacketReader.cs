@@ -44,7 +44,7 @@ namespace TTalk.Library.Packets
             if (!_packets.TryGetValue(id, out var type))
                 throw new Exception($"Unknown packet id received 0x{id}");
 
-            if (BinaryConvert.Deserialize(_data.AsSpan(8, length).ToArray(), type) is not IPacket instance)
+            if (BinaryConvert.Deserialize(_data.AsSpan(8, length - 4).ToArray(), type) is not IPacket instance)
                 throw new InvalidOperationException("Packet should not be null");
 
             return instance;
