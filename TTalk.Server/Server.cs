@@ -194,11 +194,14 @@ public class TTalkServer
                     {
                         foreach (var session in server.Clients.ToList())
                         {
+                            if (!session.IsNegotationCompleted)
+                               continue;
+
                             if (DateTimeOffset.Now.ToUnixTimeSeconds() - session.LatestHeartbeatReceivedAt > 15 && session.State == SessionState.Connected)
                             {
                                 session.Send(new DisconnectPacket("Server haven't received heartbeat from your client more than 15 seconds"));
                                 session.Disconnect();
-                                return;
+                                continue;
                             }
                             session.Send(new TcpHeartbeatPacket());
                             Logger.LogInfo($"Sent heartbeat to {session.Username}");

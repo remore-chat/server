@@ -17,6 +17,8 @@ public class ServerSession : TcpSession
     public string Username { get; set; }
     public long LatestHeartbeatReceivedAt { get; set; }
     public Channel CurrentChannel { get; set; }
+    public bool IsNegotationCompleted { get; private set; }
+
     public ServerSession(TTalkServer server) : base(server.TCP)
     {
         Server = server;
@@ -134,6 +136,8 @@ public class ServerSession : TcpSession
             if (PrivilegeKey == Server.Configuration.PrivilegeKey?.Key)
                 this.Send(new ClientPermissionsUpdatedPacket() { HasAllPermissions = true });
             this.Send(new ServerToClientNegotatiationFinished());
+            LatestHeartbeatReceivedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
+            IsNegotationCompleted = true;
 
         }
         else if (State == SessionState.Connected)
