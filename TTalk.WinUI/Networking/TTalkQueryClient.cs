@@ -57,28 +57,7 @@ namespace TTalk.WinUI.Networking
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            using var reader = new ByteReaderWriter(buffer);
-            int lengthOfPacket = reader.ReadInt();
-            int id = reader.ReadInt(false);
-            if (lengthOfPacket == size - 4)
-            {
-                HandlePacket(buffer);
-                return;
-            }
-            else
-            {
-                int _offset = 0;
-                do
-                {
-                    var packet = buffer.Slice(_offset, lengthOfPacket + 4);
-                    HandlePacket(packet);
-                    _offset += lengthOfPacket + 4;
-                    reader.Position = _offset;
-                    lengthOfPacket = reader.ReadInt();
-                    id = reader.ReadInt(false);
-
-                } while (_offset + lengthOfPacket < size);
-            }
+            HandlePacket(buffer);
         }
 
         private void HandlePacket(byte[] buffer)

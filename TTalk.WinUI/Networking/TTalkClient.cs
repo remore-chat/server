@@ -17,7 +17,7 @@ namespace TTalk.WinUI.Networking.ClientCode
 {
     internal class TTalkClient : TcpClient
     {
-        
+
         public TTalkClient(string address, int port) : base(address, port)
         {
             TcpId = null;
@@ -125,6 +125,6 @@ namespace TTalk.WinUI.Networking.ClientCode
 
 
         private bool _stop;
-        
+
     }
 }
