@@ -18,8 +18,6 @@ namespace TTalk.Library.Packets
     public sealed class PacketReader
     {
         private byte[] _data;
-
-
         private static Dictionary<int, Type> _packets;
 
 
@@ -37,7 +35,6 @@ namespace TTalk.Library.Packets
                 throw new InvalidOperationException("Invalid packet received");
             _data = data;
         }
-        public int Id { get; set; }
 
         public IPacket Read()
         {

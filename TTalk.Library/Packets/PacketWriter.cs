@@ -25,12 +25,11 @@ namespace TTalk.Library.Packets
             var packetData = BinaryConvert.Serialize(_packet);
 
             Span<byte> buf = stackalloc byte[8];
-            BinaryPrimitives.WriteInt32LittleEndian(buf, packetData.Length);
+            BinaryPrimitives.WriteInt32LittleEndian(buf, packetData.Length + 4);
             BinaryPrimitives.WriteInt32LittleEndian(buf[4..], _packet.Id);
 
             var allData = new byte[packetData.Length + 8];
-            buf.CopyTo(allData.AsSpan(0, 4));
-            buf.CopyTo(allData.AsSpan(4, 4));
+            buf.CopyTo(allData);  
             packetData.CopyTo(allData, 8);
 
             return allData;

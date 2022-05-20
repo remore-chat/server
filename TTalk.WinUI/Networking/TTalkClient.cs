@@ -49,6 +49,7 @@ namespace TTalk.WinUI.Networking.ClientCode
             PrivilegeKey = (await _settingsService.ReadSettingAsync<string>($"{Address}:{Port}PrivilegeKey")) ?? "";
             State = SessionState.VersionExchange;
             this.Send(new VersionExchangePacket(SettingsViewModel.ClientVersion));
+            ReceiveAsync();
         }
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
@@ -75,6 +76,7 @@ namespace TTalk.WinUI.Networking.ClientCode
 
                 } while (_offset + lengthOfPacket < size);
             }
+            ReceiveAsync();
         }
 
         private void HandlePacket(byte[] buffer)
