@@ -55,22 +55,23 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Grid Grid.Row="1" Grid.Column="0" MinWidth="172">
+                    <Grid Grid.Row="1" Grid.Column="0" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" MinWidth="172">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ListView Margin="0" Grid.Row="0" MinWidth="172" x:Name="ChannelsListBox"  SelectionChanged="MessagesListBox_SelectionChanged" SelectionMode="None" IsMultiSelectCheckBoxEnabled="False" ItemsSource="{x:Bind ViewModel.Channels}">
+                        <ListView Margin="0 12 0 0" Grid.Row="0" MinWidth="172" x:Name="ChannelsListBox"  SelectionChanged="MessagesListBox_SelectionChanged" SelectionMode="None" IsMultiSelectCheckBoxEnabled="False" ItemsSource="{x:Bind ViewModel.Channels}">
                             <ListView.ContextFlyout>
-                                <Flyout>
+                                <MenuFlyout>
                                     <MenuFlyoutItem Text="{l10n:Localize Key=Main_CreateChannelDialog_Title}" Command="{x:Bind ViewModel.CreateChannelDialogCommand}"
-                                                    >
+                                                    Visibility="{x:Bind ViewModel.CanEditServerSettings, Converter={StaticResource boolToVis}, Mode=OneWay}">
                                         <MenuFlyoutItem.Icon>
-                                            <SymbolIcon Symbol="Add" Height="16" Width="16" />
+                                            <fluent:FluentIconElement Symbol="Add16" Width="16" Height="16"/>
                                         </MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
-                                </Flyout>
+                                </MenuFlyout>
                             </ListView.ContextFlyout>
+
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <ListViewItem x:Name="innerColumn" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
@@ -80,6 +81,16 @@
                                                 <ColumnDefinition Width="3" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
+                                            <Grid.ContextFlyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem Text="{l10n:Localize Key=Main_DeleteChannelDialog_Title}" CommandParameter="{Binding Id}" Command="{Binding Parent.DeleteChannelDialogCommand}"
+                                                    Visibility="{Binding Parent.CanEditServerSettings, Converter={StaticResource boolToVis}, Mode=OneWay}">
+                                                        <MenuFlyoutItem.Icon>
+                                                            <fluent:FluentIconElement Symbol="Delete16Filled" Width="16" Height="16"/>
+                                                        </MenuFlyoutItem.Icon>
+                                                    </MenuFlyoutItem>
+                                                </MenuFlyout>
+                                            </Grid.ContextFlyout>
                                             <Border Visibility="{Binding IsSelected, Mode=OneWay, Converter={StaticResource boolToVis}}" 
                                                 VerticalAlignment="Center" Height="48" Margin="0 6 0 6" CornerRadius="6" Background="{ThemeResource SystemAccentColorLight2}"
                                                 Width="3"/>

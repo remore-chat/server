@@ -158,7 +158,8 @@ public class ServerSession : TcpSession
                     Id = Guid.NewGuid().ToString(),
                     ChannelId = id,
                     Username = this.Username,
-                    Message = text
+                    Message = text,
+                    CreatedAt = DateTime.UtcNow
                 };
                 channel.Messages.Add(message);
                 TCP.Multicast(new ChannelMessageAddedPacket()
@@ -168,6 +169,8 @@ public class ServerSession : TcpSession
                     SenderName = message.Username,
                     Text = message.Message
                 });
+                Server.Context.ChannelMessages.Add(message);
+                await Server.Context.SaveChangesAsync();
             }
             else if (packet is RequestChannelMessagesPacket messagesPacket)
             {
@@ -248,6 +251,12 @@ public class ServerSession : TcpSession
             }
             else if (packet is CreateChannelPacket createChannel)
             {
+                if (this.PrivilegeKey != Server.Configuration?.PrivilegeKey?.Key)
+                {
+                    this.Send(new DisconnectPacket("No access."));
+                    this.Disconnect();
+                    return;
+                }
                 if (string.IsNullOrEmpty(createChannel.Name))
                 {
                     this.Send(new DisconnectPacket("Server received invalid packet"));
@@ -289,7 +298,42 @@ public class ServerSession : TcpSession
                 });
                 await Server.Context.Channels.AddAsync(channel);
                 await Server.Context.SaveChangesAsync();
+            }
+            else if (packet is DeleteChannelPacket deleteChannel)
+            {
+                if (this.PrivilegeKey != Server.Configuration?.PrivilegeKey?.Key)
+                {
+                    this.Send(new DisconnectPacket("No access."));
+                    this.Disconnect();
+                    return;
+                }
+                var channel = Server.Channels.FirstOrDefault(x => x.Id == deleteChannel.ChannelId);
+                if (channel == null)
+                {
+                    this.Send(new DisconnectPacket("Server received invalid packet"));
+                    this.Disconnect();
+                    return;
+                }
 
+                foreach (var client in channel.ConnectedClients.ToList())
+                {
+                    TCP.Multicast(new ChannelUserDisconnected() { Username = client.Username, ChannelId = channel.Id });
+                    channel.ConnectedClients.Remove(client);
+                }
+                Server.Channels.Remove(channel);
+                TCP.Multicast(new ChannelDeletedPacket() { ChannelId = channel.Id });
+                if (channel.ChannelType == TTalk.Library.Enums.ChannelType.Text)
+                {
+                    if (channel.Messages.Count > 0)
+                    {
+                        foreach (var message in channel.Messages)
+                        {
+                            Server.Context.Remove(message);
+                        }
+                    }
+                }
+                Server.Context.Channels.Remove(channel);
+                await Server.Context.SaveChangesAsync();
             }
         }
     }

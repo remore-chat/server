@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TTalk.Library.Models;
 using TTalk.Server.Services;
 
 namespace TTalk.Server.EF
@@ -16,6 +17,7 @@ namespace TTalk.Server.EF
 
         public DbSet<ServerConfiguration> Configuration { get; set; }
         public DbSet<Channel> Channels { get; set; }
+        public DbSet<ChannelMessage> ChannelMessages { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

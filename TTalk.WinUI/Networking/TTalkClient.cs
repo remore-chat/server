@@ -40,9 +40,7 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         protected override async void OnConnected()
         {
-            Initialize();
-            ReceiveAsync();
-
+            Initialize();            
         }
 
         private async Task Initialize()
@@ -55,31 +53,28 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            HandlePacket(buffer);
+            using var reader = new ByteReaderWriter(buffer);
+            int lengthOfPacket = reader.ReadInt();
+            int id = reader.ReadInt(false);
+            if (lengthOfPacket == size - 4)
+            {
+                HandlePacket(buffer);
+                return;
+            }
+            else
+            {
+                int _offset = 0;
+                do
+                {
+                    var packet = buffer.Slice(_offset, lengthOfPacket + 4);
+                    HandlePacket(packet);
+                    _offset += lengthOfPacket + 4;
+                    reader.Position = _offset;
+                    lengthOfPacket = reader.ReadInt();
+                    id = reader.ReadInt(false);
 
-            // using var reader = new ByteReaderWriter(buffer);
-            // int lengthOfPacket = reader.ReadInt();
-            // int id = reader.ReadInt(false);
-            // if (lengthOfPacket == size - 4)
-            // {
-            //     HandlePacket(buffer);
-            //     return;
-            // }
-            // else
-            // {
-            //     int _offset = 0;
-            //     do
-            //     {
-            //         var packet = buffer.Slice(_offset, lengthOfPacket + 4);
-            //         HandlePacket(packet);
-            //         _offset += lengthOfPacket + 4;
-            //         reader.Position = _offset;
-            //         lengthOfPacket = reader.ReadInt();
-            //         id = reader.ReadInt(false);
-            //
-            //     } while (_offset + lengthOfPacket < size);
-            // }
-            ReceiveAsync();
+                } while (_offset + lengthOfPacket < size);
+            }
         }
 
         private void HandlePacket(byte[] buffer)
