@@ -67,14 +67,6 @@ namespace TTalk.WinUI.ViewModels
                 if (CurrentChannelClient != null)
                 {
                     CurrentChannelClient.IsMuted = !CurrentChannelClient.IsMuted;
-                    if (CurrentChannelClient.IsMuted)
-                    {
-                        Speak("Microphone muted");
-                    }
-                    else
-                    {
-                        Speak("Microphone activated");
-                    }
                 }
             });
             CreateChannelDialogCommand = new RelayCommand(CreateChannelDialog);
@@ -189,41 +181,6 @@ namespace TTalk.WinUI.ViewModels
                     ChannelType = radioButtons.SelectedIndex == 0 ? Library.Enums.ChannelType.Text : Library.Enums.ChannelType.Voice,
                     MaxClients = 999999,
                 });
-            }
-        }
-
-        private static void Speak(string textToSpeech, bool wait = false)
-        {
-            // Command to execute PS  
-            Execute($@"Add-Type -AssemblyName System.speech;  
-            $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;                           
-            $speak.Speak(""{textToSpeech}"");"); // Embedd text  
-
-            void Execute(string command)
-            {
-                // create a temp file with .ps1 extension  
-                var cFile = System.IO.Path.GetTempPath() + Guid.NewGuid() + ".ps1";
-
-                //Write the .ps1  
-                using var tw = new System.IO.StreamWriter(cFile, false, Encoding.UTF8);
-                tw.Write(command);
-
-                // Setup the PS  
-                var start =
-                    new System.Diagnostics.ProcessStartInfo()
-                    {
-                        FileName = "C:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",  // CHUPA MICROSOFT 02-10-2019 23:45                    
-                        LoadUserProfile = false,
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                        Arguments = $"-executionpolicy bypass -File {cFile}",
-                        WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
-                    };
-
-                //Init the Process  
-                var p = System.Diagnostics.Process.Start(start);
-                // The wait may not work! :(  
-                if (wait) p.WaitForExit();
             }
         }
         private void OnKeybindingExecuted(object sender, KeyBindingExecutedEventArgs e)
@@ -397,6 +354,7 @@ namespace TTalk.WinUI.ViewModels
             _waveOut.PlaybackStopped += OnWaveOutPlaybackStopped;
             _waveOut.DeviceNumber = OutputDevice;
             _playBuffer = new BufferedWaveProvider(new NAudio.Wave.WaveFormat(48000, 16, 1));
+            _waveOut.DesiredLatency = 300;
             _waveOut.Init(_playBuffer);
             _waveOut.Play();
         }
@@ -479,8 +437,6 @@ namespace TTalk.WinUI.ViewModels
                     _microphoneQueueSlim.Wait();
                     var chunk = _microphoneAudioQueue.Dequeue();
                     _udpClient.Send(new VoiceDataPacket() { ClientUsername = Username, VoiceData = chunk });
-                    //_audioQueue.Enqueue(chunk);
-                    //_audioQueueSlim.Release();
                 }
                 catch (Exception)
                 {
@@ -488,6 +444,10 @@ namespace TTalk.WinUI.ViewModels
                 }
             }
         }
+
+
+        private long lastTimeReceivedAudio = 0;
+        private int delay = 500;
         private async Task PlayAudio()
         {
             while (true)
@@ -498,6 +458,9 @@ namespace TTalk.WinUI.ViewModels
                     var chunk = _audioQueue.Dequeue();
                     if (_playBuffer == null)
                         continue;
+                    if (DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastTimeReceivedAudio > delay)
+                        await Task.Delay(delay);
+                    lastTimeReceivedAudio = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                     _playBuffer.AddSamples(chunk, 0, chunk.Length);
                 }
                 catch (Exception)
