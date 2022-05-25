@@ -17,6 +17,7 @@ using DebounceThrottle;
 using FragLabs.Audio.Codecs;
 using Microsoft.UI.Xaml.Controls;
 using NAudio.Wave;
+using NWaves.Filters;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.WinUI.Contracts.Services;
@@ -101,9 +102,7 @@ namespace TTalk.WinUI.ViewModels
                 }
             });
             _denoiser = new Denoiser();
-            //var normalizerAsm = Assembly.Load("DynamicAudioNormalizerNET.dll");
-            //var types = normalizerAsm.GetTypes();
-            //_normalizer = new AudioNormalizer.AudioNormalizer();
+            filter = new PreEmphasisFilter(0.97, true);
             App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
             {
                 IsConnected = true;
@@ -442,7 +441,9 @@ namespace TTalk.WinUI.ViewModels
                 {
                     _microphoneQueueSlim.Wait();
                     var chunk = _microphoneAudioQueue.Dequeue();
-                    _udpClient.Send(new VoiceDataPacket() { ClientUsername = Username, VoiceData = chunk });
+                    _audioQueue.Enqueue(chunk);
+                    _audioQueueSlim.Release();
+                    //_udpClient.Send(new VoiceDataPacket() { ClientUsername = Username, VoiceData = chunk });
                 }
                 catch (Exception)
                 {
@@ -499,37 +500,7 @@ namespace TTalk.WinUI.ViewModels
             return result;
         }
 
-
-        private const float MinRms = 0.05f;
-
-        private const float MaxRms = 1.5f;
-
-        public void NormalizeInPlace(float[] samples)
-        {
-            double squares = samples.AsParallel().Aggregate<float, double>(0, (current, t) => current + (t * t));
-
-            float rms = (float)Math.Sqrt(squares / samples.Length) * 10;
-
-            if (rms < MinRms)
-            {
-                rms = MinRms;
-            }
-
-            if (rms > MaxRms)
-            {
-                rms = MaxRms;
-            }
-
-            for (int i = 0; i < samples.Length; i++)
-            {
-                samples[i] /= rms;
-                samples[i] = Math.Min(samples[i], 1);
-                samples[i] = Math.Max(samples[i], -1);
-            } //FOR
-        }
-
-
-
+        private PreEmphasisFilter filter;
         private void OnWaveInDataAvailable(object? sender, WaveInEventArgs a)
         {
 
@@ -557,10 +528,11 @@ namespace TTalk.WinUI.ViewModels
                             return;
                         byte[] bytes = a.Buffer;
                         var floats = GetFloatsFromBytes(a.Buffer, a.BytesRecorded);
-                        NormalizeInPlace(floats);
+                        //NormalizeInPlace(floats);
                         var floatsSpan = floats.AsSpan();
                         _denoiser.Denoise(floatsSpan, false);
-                        bytes = GetSamplesWaveData(floatsSpan.ToArray(), floatsSpan.Length);
+                        var filtered = filter.ProcessAllSamples(floatsSpan.ToArray());
+                        bytes = GetSamplesWaveData(filtered, floatsSpan.Length);
                         byte[] soundBuffer = new byte[a.BytesRecorded + _notEncodedBuffer.Length];
                         for (int i = 0; i < _notEncodedBuffer.Length; i++)
                             soundBuffer[i] = _notEncodedBuffer[i];
