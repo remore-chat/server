@@ -151,8 +151,8 @@ public class TTalkServer
                         Parallel.ForEach(tcp.CurrentChannel.ConnectedClients.ToList(), (vClient) =>
                           {
                               //Do not send voice data back to sender
-                              //if (vClient.Username == session.Username)
-                              //    return;
+                              if (vClient.Username == session.Username)
+                                  return;
                               var actualSent = this.Send(vClient.EndPoint, new VoiceDataMulticastPacket() { Username = session.Username, VoiceData = voiceData.VoiceData });
                           });
                     }
