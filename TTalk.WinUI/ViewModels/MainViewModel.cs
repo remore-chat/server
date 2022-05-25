@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +17,7 @@ using DebounceThrottle;
 using FragLabs.Audio.Codecs;
 using Microsoft.UI.Xaml.Controls;
 using NAudio.Wave;
+using NWaves.Filters;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.WinUI.Contracts.Services;
@@ -24,7 +27,7 @@ using TTalk.WinUI.Models;
 using TTalk.WinUI.Networking;
 using TTalk.WinUI.Networking.ClientCode;
 using TTalk.WinUI.Networking.EventArgs;
-using TTalk.WinUI.NoiseReducer;
+using TTalk.WinUI.AudioProcessing;
 using TTalk.WinUI.Services;
 using Windows.ApplicationModel.Resources.Core;
 using Windows.Media.SpeechSynthesis;
@@ -250,6 +253,7 @@ namespace TTalk.WinUI.ViewModels
             set { this.SetProperty(ref channels, value); }
         }
 
+        private int _segmentFrames;
         private bool isConnected;
         private string ip;
         private int port;
@@ -325,6 +329,7 @@ namespace TTalk.WinUI.ViewModels
         public int OutputDevice { get; private set; }
 
         private Channel _channel;
+        private int _bytesPerSegment;
 
 
         #endregion
@@ -334,9 +339,6 @@ namespace TTalk.WinUI.ViewModels
         private BufferedWaveProvider _playBuffer;
         private OpusEncoder _encoder;
         private OpusDecoder _decoder;
-        private int _segmentFrames;
-        private int _bytesPerSegment;
-        private byte[] _notEncodedBuffer = new byte[0];
         private TTalkUdpClient _udpClient;
 
         private Queue<byte[]> _microphoneAudioQueue;
@@ -349,12 +351,12 @@ namespace TTalk.WinUI.ViewModels
         {
 
             _decoder = OpusDecoder.Create(48000, 1);
+            _decoder.ForwardErrorCorrection = true;
 
             _waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback());
             _waveOut.PlaybackStopped += OnWaveOutPlaybackStopped;
             _waveOut.DeviceNumber = OutputDevice;
             _playBuffer = new BufferedWaveProvider(new NAudio.Wave.WaveFormat(48000, 16, 1));
-            _waveOut.DesiredLatency = 300;
             _waveOut.Init(_playBuffer);
             _waveOut.Play();
         }
@@ -381,7 +383,7 @@ namespace TTalk.WinUI.ViewModels
             _bytesPerSegment = _encoder.FrameByteCount(_segmentFrames);
 
             _waveIn = new WaveIn(WaveCallbackInfo.FunctionCallback());
-            _waveIn.BufferMilliseconds = 50;
+            _waveIn.BufferMilliseconds = 40;
             _waveIn.DeviceNumber = InputDevice;
             _waveIn.DataAvailable += OnWaveInDataAvailable;
             _waveIn.WaveFormat = new NAudio.Wave.WaveFormat(48000, 16, 1);
@@ -447,9 +449,10 @@ namespace TTalk.WinUI.ViewModels
 
 
         private long lastTimeReceivedAudio = 0;
-        private int delay = 500;
+        private int delay = 200;
         private async Task PlayAudio()
         {
+            
             while (true)
             {
                 try
@@ -461,7 +464,8 @@ namespace TTalk.WinUI.ViewModels
                     if (DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastTimeReceivedAudio > delay)
                         await Task.Delay(delay);
                     lastTimeReceivedAudio = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                    _playBuffer.AddSamples(chunk, 0, chunk.Length);
+                    var decoded = _decoder.Decode(chunk, chunk.Length, out var length);
+                    _playBuffer.AddSamples(decoded, 0, length);
                 }
                 catch (Exception)
                 {
@@ -493,7 +497,6 @@ namespace TTalk.WinUI.ViewModels
             return result;
         }
 
-
         private void OnWaveInDataAvailable(object? sender, WaveInEventArgs a)
         {
 
@@ -509,103 +512,17 @@ namespace TTalk.WinUI.ViewModels
                     CurrentChannelClient.IsSpeaking = false;
                 return;
             }
-            try
+
+            if (App.MainWindow.DispatcherQueue == null)
+                return;
+            var chunks = AudioProcessor.ProcessAudio(a.Buffer, a.BytesRecorded, _bytesPerSegment, _encoder, EnableRNNoiseSuppression);
+            foreach (var chunk in chunks)
             {
-                if (App.MainWindow.DispatcherQueue == null)
-                    return;
-                App.MainWindow.DispatcherQueue.TryEnqueue(() =>
-                {
-                    try
-                    {
-                        if (_encoder == null)
-                            return;
-                        byte[] bytes = a.Buffer;
-                        if (EnableRNNoiseSuppression)
-                        {
-                            //I dunno, it works, small delay and low cpu usage
-                            var floats = GetFloatsFromBytes(a.Buffer, a.BytesRecorded);
-                            var floatsSpan = floats.AsSpan();
-                            _denoiser.Denoise(floatsSpan, false);
-
-                            bytes = GetSamplesWaveData(floatsSpan.ToArray(), floatsSpan.Length);
-                        }
-                        byte[] soundBuffer = new byte[a.BytesRecorded + _notEncodedBuffer.Length];
-                        for (int i = 0; i < _notEncodedBuffer.Length; i++)
-                            soundBuffer[i] = _notEncodedBuffer[i];
-                        for (int i = 0; i < a.BytesRecorded; i++)
-                            soundBuffer[i + _notEncodedBuffer.Length] = bytes[i];
-
-                        int byteCap = _bytesPerSegment;
-                        int segmentCount = (int)Math.Floor((decimal)soundBuffer.Length / byteCap);
-                        int segmentsEnd = segmentCount * byteCap;
-                        int notEncodedCount = soundBuffer.Length - segmentsEnd;
-                        _notEncodedBuffer = new byte[notEncodedCount];
-                        for (int i = 0; i < notEncodedCount; i++)
-                        {
-                            _notEncodedBuffer[i] = soundBuffer[segmentsEnd + i];
-                        }
-
-                        for (int i = 0; i < segmentCount; i++)
-                        {
-                            byte[] segment = new byte[byteCap];
-                            for (int j = 0; j < segment.Length; j++)
-                                segment[j] = soundBuffer[(i * byteCap) + j];
-                            int len;
-                            byte[] buff = _encoder.Encode(segment, segment.Length, out len);
-                            buff = _decoder.Decode(buff, len, out len);
-                            _microphoneAudioQueue.Enqueue(buff.Slice(0, len));
-                            _microphoneQueueSlim.Release();
-                            if (CurrentChannelClient != null)
-                                CurrentChannelClient.IsSpeaking = true;
-                        }
-                    }
-                    catch (Exception)
-                    {
-
-                        ;
-                    }
-                });
+                _microphoneAudioQueue.Enqueue(chunk);
+                _microphoneQueueSlim.Release();
             }
-            catch (Exception)
-            {
-                ;
-            }
+
         }
-
-        public static float[] GetFloatsFromBytes(byte[] buffer, int length)
-        {
-            float[] floats = new float[length / 2];
-            int floatIndex = 0;
-            for (int index = 0; index < length; index += 2)
-            {
-                short sample = (short)((buffer[index + 1] << 8) |
-                                        buffer[index + 0]);
-                // to floating point
-                floats[floatIndex] = sample / 32768f;
-                floatIndex++;
-            }
-            return floats;
-        }
-
-        public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
-        {
-            var pcm = new byte[samplesCount * 2];
-            int sampleIndex = 0,
-                pcmIndex = 0;
-
-            while (sampleIndex < samplesCount)
-            {
-                var outsample = (short)(samples[sampleIndex] * short.MaxValue);
-                pcm[pcmIndex] = (byte)(outsample & 0xff);
-                pcm[pcmIndex + 1] = (byte)((outsample >> 8) & 0xff);
-
-                sampleIndex++;
-                pcmIndex += 2;
-            }
-
-            return pcm;
-        }
-
         #endregion
         #region Networking
         private void Connect()
@@ -618,6 +535,10 @@ namespace TTalk.WinUI.ViewModels
             Task.Run(async () =>
             {
                 ip = address.Split(":")[0];
+                if (!IPAddress.TryParse(ip, out _))
+                {
+                    ip = Dns.GetHostAddresses(ip)[0].ToString();
+                }
                 port = Convert.ToInt32(address.Split(":")[1]);
                 try
                 {

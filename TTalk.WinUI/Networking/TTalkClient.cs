@@ -60,7 +60,6 @@ namespace TTalk.WinUI.Networking.ClientCode
             if (lengthOfPacket == size - 4)
             {
                 HandlePacket(buffer);
-                return;
             }
             else
             {

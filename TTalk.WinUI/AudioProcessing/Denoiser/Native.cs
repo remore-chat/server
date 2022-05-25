@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TTalk.WinUI.NoiseReducer
+namespace TTalk.WinUI.AudioProcessing
 {
     internal class Native
     {

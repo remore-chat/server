@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using TTalk.Library.Packets;
 using TTalk.WinUI.Activation;
@@ -93,9 +94,66 @@ namespace TTalk.WinUI
 
         public App()
         {
+            AppDomain.CurrentDomain.AssemblyResolve += LoadFromCurrentFolder;
             InitializeComponent();
             UnhandledException += App_UnhandledException;
             PacketReader.Init();
+        }
+
+        private System.Reflection.Assembly LoadFromCurrentFolder(object sender, ResolveEventArgs args)
+        {
+            string name = args.Name;
+
+            bool bCheckVersion = false;
+            int idx = name.IndexOf(',');
+            if (idx != -1)
+            {
+                name = name.Substring(0, idx);
+                bCheckVersion = true;
+            }
+
+            string sCurrentDir = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+
+            if (!name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) && !name.EndsWith(".exe"))
+            {
+                string[] exts = { ".dll", ".exe" };
+                foreach (string ext in exts)
+                {
+                    string tryPath = Path.Combine(sCurrentDir, name + ext);
+                    if (File.Exists(tryPath))
+                    {
+                        name = name += ext;
+                        break;
+                    }
+                }
+            }
+
+            string path = Path.Combine(sCurrentDir, name);
+            if (!string.IsNullOrEmpty(path) && File.Exists(path))
+            {
+                Assembly assembly = Assembly.LoadFrom(path);
+                if (assembly != null & bCheckVersion)
+                {
+                    if (assembly.FullName != args.Name)
+                        return null;
+                }
+                return assembly;
+            }
+            else
+            {
+                var reqAsm = args.RequestingAssembly;
+
+                if (reqAsm != null)
+                {
+                    string requestingName = reqAsm.GetName().FullName;
+                    Console.WriteLine($"Could not resolve {name}, {path}, requested by {requestingName}");
+                }
+                else
+                {
+                    Console.WriteLine($"Could not resolve {args.Name}, {path}");
+                }
+            }
+            return null;
         }
 
         public static void ResetMainViewModel()
