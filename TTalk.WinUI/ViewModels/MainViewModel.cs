@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -99,6 +101,9 @@ namespace TTalk.WinUI.ViewModels
                 }
             });
             _denoiser = new Denoiser();
+            //var normalizerAsm = Assembly.Load("DynamicAudioNormalizerNET.dll");
+            //var types = normalizerAsm.GetTypes();
+            //_normalizer = new AudioNormalizer.AudioNormalizer();
             App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
             {
                 IsConnected = true;
@@ -313,6 +318,7 @@ namespace TTalk.WinUI.ViewModels
         public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
 
         private Denoiser _denoiser;
+        private AudioNormalizer.AudioNormalizer _normalizer;
 
         public ILocalSettingsService SettingsService { get; }
         public SoundService Sounds { get; }
@@ -494,6 +500,36 @@ namespace TTalk.WinUI.ViewModels
         }
 
 
+        private const float MinRms = 0.05f;
+
+        private const float MaxRms = 1.5f;
+
+        public void NormalizeInPlace(float[] samples)
+        {
+            double squares = samples.AsParallel().Aggregate<float, double>(0, (current, t) => current + (t * t));
+
+            float rms = (float)Math.Sqrt(squares / samples.Length) * 10;
+
+            if (rms < MinRms)
+            {
+                rms = MinRms;
+            }
+
+            if (rms > MaxRms)
+            {
+                rms = MaxRms;
+            }
+
+            for (int i = 0; i < samples.Length; i++)
+            {
+                samples[i] /= rms;
+                samples[i] = Math.Min(samples[i], 1);
+                samples[i] = Math.Max(samples[i], -1);
+            } //FOR
+        }
+
+
+
         private void OnWaveInDataAvailable(object? sender, WaveInEventArgs a)
         {
 
@@ -520,15 +556,11 @@ namespace TTalk.WinUI.ViewModels
                         if (_encoder == null)
                             return;
                         byte[] bytes = a.Buffer;
-                        if (EnableRNNoiseSuppression)
-                        {
-                            //I dunno, it works, small delay and low cpu usage
-                            var floats = GetFloatsFromBytes(a.Buffer, a.BytesRecorded);
-                            var floatsSpan = floats.AsSpan();
-                            _denoiser.Denoise(floatsSpan, false);
-
-                            bytes = GetSamplesWaveData(floatsSpan.ToArray(), floatsSpan.Length);
-                        }
+                        var floats = GetFloatsFromBytes(a.Buffer, a.BytesRecorded);
+                        NormalizeInPlace(floats);
+                        var floatsSpan = floats.AsSpan();
+                        _denoiser.Denoise(floatsSpan, false);
+                        bytes = GetSamplesWaveData(floatsSpan.ToArray(), floatsSpan.Length);
                         byte[] soundBuffer = new byte[a.BytesRecorded + _notEncodedBuffer.Length];
                         for (int i = 0; i < _notEncodedBuffer.Length; i++)
                             soundBuffer[i] = _notEncodedBuffer[i];
@@ -618,6 +650,10 @@ namespace TTalk.WinUI.ViewModels
             Task.Run(async () =>
             {
                 ip = address.Split(":")[0];
+                if (!IPAddress.TryParse(ip, out _))
+                {
+                    ip = Dns.GetHostAddresses(ip)[0].ToString();
+                }
                 port = Convert.ToInt32(address.Split(":")[1]);
                 try
                 {

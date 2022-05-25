@@ -61,7 +61,7 @@ public class TTalkServer
         }
         TCP = new(this, ip, port);
         UDP = new(this, IPAddress.Any, port);
-        
+
     }
 
     public class UDPServer : UdpServer
@@ -144,13 +144,15 @@ public class TTalkServer
                         //Logger.LogWarn("Got invalid voice data packet");
                     }
                     else
+                    {
                         Parallel.ForEach(tcp.CurrentChannel.ConnectedClients.ToList(), (vClient) =>
-                        {
-                            //Do not send voice data back to sender
-                            if (vClient.Username == session.Username)
-                                return;
-                            var actualSent = this.Send(vClient.EndPoint, new VoiceDataMulticastPacket() { Username = session.Username, VoiceData = voiceData.VoiceData });
-                        });
+                          {
+                              //Do not send voice data back to sender
+                              if (vClient.Username == session.Username)
+                                  return;
+                              var actualSent = this.Send(vClient.EndPoint, new VoiceDataMulticastPacket() { Username = session.Username, VoiceData = voiceData.VoiceData });
+                          });
+                    }
                 }
             }
             else if (packet is UdpDisconnectPacket disconnectPacket)
@@ -195,7 +197,7 @@ public class TTalkServer
                         foreach (var session in server.Clients.ToList())
                         {
                             if (!session.IsNegotationCompleted)
-                               continue;
+                                continue;
 
                             if (DateTimeOffset.Now.ToUnixTimeSeconds() - session.LatestHeartbeatReceivedAt > 15 && session.State == SessionState.Connected)
                             {

@@ -12,7 +12,7 @@
 		<UseWinUI>true</UseWinUI>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<!--Uncomment next line to build in unpackaged mode-->
-		<!--<WindowsPackageType>None</WindowsPackageType>-->
+		<WindowsPackageType>None</WindowsPackageType>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	
 		<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
@@ -81,6 +81,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="DynamicAudioNormalizerNET.dll">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Icons\Themes\Generic.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</None>
@@ -108,6 +111,7 @@
 	<ItemGroup>
 		<PRIResource Remove="Strings\uk-ua.resw" />
 	</ItemGroup>
+
 
 	<ItemGroup>
 		<Resource Include="Assets\sounds\mic_muted_user.wav" />
