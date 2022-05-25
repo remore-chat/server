@@ -1,4 +1,5 @@
 ﻿using NetCoreServer;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using TTalk.Library.Packets;
@@ -136,6 +137,8 @@ public class TTalkServer
             }
             else if (packet is VoiceDataPacket voiceData)
             {
+                var sw = new Stopwatch();
+                sw.Start();
                 if (ValidateClient(endpoint, voiceData.ClientUsername, out var session))
                 {
                     var tcp = session.TcpSession;
@@ -148,12 +151,14 @@ public class TTalkServer
                         Parallel.ForEach(tcp.CurrentChannel.ConnectedClients.ToList(), (vClient) =>
                           {
                               //Do not send voice data back to sender
-                              if (vClient.Username == session.Username)
-                                  return;
+                              //if (vClient.Username == session.Username)
+                              //    return;
                               var actualSent = this.Send(vClient.EndPoint, new VoiceDataMulticastPacket() { Username = session.Username, VoiceData = voiceData.VoiceData });
                           });
                     }
                 }
+                sw.Stop();
+                Console.WriteLine(sw.ElapsedTicks);
             }
             else if (packet is UdpDisconnectPacket disconnectPacket)
             {

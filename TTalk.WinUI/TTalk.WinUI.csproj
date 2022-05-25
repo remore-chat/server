@@ -117,4 +117,9 @@
 	<ItemGroup>
 		<Resource Include="Assets\sounds\mic_muted_user.wav" />
 	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="NoiseReducer\" />
+	</ItemGroup>
 </Project>
