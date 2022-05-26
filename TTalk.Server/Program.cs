@@ -11,6 +11,8 @@ var databaseExists = File.Exists("server_database.db");
 ServiceContainer.GetService<ServerDbContext>().Database.Migrate();
 Logger.Init();
 
+
+
 int port = 9831;
 if (args.Length > 0)
 {
@@ -25,7 +27,6 @@ if (args.Length > 0)
         Logger.LogInfo($"Save it, as it is shown only once");
         return;
     }
-    port = int.Parse(args[0]);
 }
 bool isStopping = false;
 var cts = new CancellationTokenSource();
@@ -44,7 +45,6 @@ Console.CancelKeyPress += Console_CancelKeyPress;
 try
 {
     await Task.Delay(-1, cts.Token);
-
 }
 catch (Exception)
 {

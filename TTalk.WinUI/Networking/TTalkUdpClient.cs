@@ -60,7 +60,7 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         protected override void OnSent(EndPoint endpoint, long sent)
         {
-            ReceiveAsync();
+            
         }
         protected override void OnDisconnected()
         {

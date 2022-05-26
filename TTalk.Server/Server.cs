@@ -28,8 +28,12 @@ public class TTalkServer
 
     public ServerDbContext Context { get; }
 
+    private static readonly bool isVoiceDebugModeEnabled = Environment.GetCommandLineArgs().Contains("--voice-debug");
     public void Start()
     {
+        if (isVoiceDebugModeEnabled)
+            Logger.LogInfo($"Voice debug mode enabled");
+
         Task.Run(async () =>
         {
             Configuration = await _configurationService.GetServerConfigurationAsync();
@@ -137,8 +141,7 @@ public class TTalkServer
             }
             else if (packet is VoiceDataPacket voiceData)
             {
-                var sw = new Stopwatch();
-                sw.Start();
+
                 if (ValidateClient(endpoint, voiceData.ClientUsername, out var session))
                 {
                     var tcp = session.TcpSession;
@@ -150,15 +153,13 @@ public class TTalkServer
                     {
                         Parallel.ForEach(tcp.CurrentChannel.ConnectedClients.ToList(), (vClient) =>
                           {
-                              //Do not send voice data back to sender
-                              if (vClient.Username == session.Username)
+                              //Do not send voice data back to sender unless voice debug mode enabled
+                              if (!isVoiceDebugModeEnabled && vClient.Username == session.Username)
                                   return;
                               var actualSent = this.Send(vClient.EndPoint, new VoiceDataMulticastPacket() { Username = session.Username, VoiceData = voiceData.VoiceData });
                           });
                     }
                 }
-                sw.Stop();
-                Console.WriteLine(sw.ElapsedTicks);
             }
             else if (packet is UdpDisconnectPacket disconnectPacket)
             {

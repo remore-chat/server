@@ -25,6 +25,12 @@
 		
 	</PropertyGroup>
 	<ItemGroup>
+	  <Compile Remove="NoiseReducer\**" />
+	  <EmbeddedResource Remove="NoiseReducer\**" />
+	  <None Remove="NoiseReducer\**" />
+	  <Page Remove="NoiseReducer\**" />
+	</ItemGroup>
+	<ItemGroup>
 	  <Content Remove="Assets\Fonts\e-Ukraine-Bold.otf" />
 	  <Content Remove="Assets\Fonts\e-Ukraine-Light.otf" />
 	  <Content Remove="Assets\Fonts\e-Ukraine-Medium.otf" />
@@ -120,6 +126,6 @@
 
 
 	<ItemGroup>
-	  <Folder Include="NoiseReducer\" />
+	  <PRIResource Remove="NoiseReducer\**" />
 	</ItemGroup>
 </Project>

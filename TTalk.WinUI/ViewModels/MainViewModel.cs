@@ -47,6 +47,7 @@ namespace TTalk.WinUI.ViewModels
             _audioQueueSlim = new(0);
             _audioQueue = new();
             _throttleDispatcher = new DebounceThrottle.ThrottleDispatcher(1000);
+            _throttleDispatcherForSpeech = new DebounceThrottle.ThrottleDispatcher(200);
             SettingsService = settingsService;
             SettingsService.SettingsUpdated += OnSettingsUpdated;
 
@@ -67,10 +68,13 @@ namespace TTalk.WinUI.ViewModels
             });
             ToggleMute = new RelayCommand(async () =>
             {
-                if (CurrentChannelClient != null)
+                _throttleDispatcher.Throttle(() =>
                 {
-                    CurrentChannelClient.IsMuted = !CurrentChannelClient.IsMuted;
-                }
+                    if (CurrentChannelClient != null)
+                    {
+                        CurrentChannelClient.IsMuted = !CurrentChannelClient.IsMuted;
+                    }
+                });
             });
             CreateChannelDialogCommand = new RelayCommand(CreateChannelDialog);
             DeleteChannelDialogCommand = new RelayCommand<string>(DeleteChannelDialog);
@@ -193,10 +197,8 @@ namespace TTalk.WinUI.ViewModels
             {
                 case KeyBindingAction.ToggleMute:
                     {
-                        _throttleDispatcher.Throttle(() =>
-                        {
-                            ToggleMute.Execute(null);
-                        });
+                        ToggleMute.Execute(null);
+
 
                         break;
                     }
@@ -344,6 +346,7 @@ namespace TTalk.WinUI.ViewModels
         private Queue<byte[]> _microphoneAudioQueue;
         private Queue<byte[]> _audioQueue;
         private ThrottleDispatcher _throttleDispatcher;
+        private ThrottleDispatcher _throttleDispatcherForSpeech;
         private SemaphoreSlim _microphoneQueueSlim;
         private SemaphoreSlim _audioQueueSlim;
 
@@ -411,10 +414,22 @@ namespace TTalk.WinUI.ViewModels
             var channelClient = CurrentChannel?.ConnectedClients?.FirstOrDefault(x => x.Username == voiceDataMulticast.Username);
             if (channelClient == null)
                 return;
-            channelClient.IsSpeaking = true;
+            var chunk = _decoder.Decode(voiceDataMulticast.VoiceData, voiceDataMulticast.VoiceData.Length, out var length);
+            chunk = chunk.Slice(0, length);
+            _throttleDispatcherForSpeech.Throttle(() =>
+            {
+                if (CurrentChannelClient == null)
+                    return;
+                var isSpeech = ProcessData(voiceDataMulticast.VoiceData, voiceDataMulticast.VoiceData.Length, 0.015);
+                if (!isSpeech)
+                    CurrentChannelClient.IsSpeaking = false;
+                else
+                    CurrentChannelClient.IsSpeaking = true;
+            });
+
             channelClient.LastTimeVoiceDataReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-            _audioQueue.Enqueue(voiceDataMulticast.VoiceData);
+            _audioQueue.Enqueue(chunk);
             _audioQueueSlim.Release();
         }
         private async Task StartAudioStreaming()
@@ -452,7 +467,7 @@ namespace TTalk.WinUI.ViewModels
         private int delay = 200;
         private async Task PlayAudio()
         {
-            
+
             while (true)
             {
                 try
@@ -464,8 +479,7 @@ namespace TTalk.WinUI.ViewModels
                     if (DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastTimeReceivedAudio > delay)
                         await Task.Delay(delay);
                     lastTimeReceivedAudio = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                    var decoded = _decoder.Decode(chunk, chunk.Length, out var length);
-                    _playBuffer.AddSamples(decoded, 0, length);
+                    _playBuffer.AddSamples(chunk, 0, chunk.Length);
                 }
                 catch (Exception)
                 {
@@ -474,16 +488,17 @@ namespace TTalk.WinUI.ViewModels
             }
         }
 
-        private bool ProcessData(WaveInEventArgs e)
+        private bool ProcessData(byte[] buffer, int bytesRecorded, double? threshold = null)
         {
-            double threshold = VoiceActivityDetectionThreshold;
+            if (threshold == null)
+                threshold = VoiceActivityDetectionThreshold;
             bool result = false;
             bool Tr = false;
             double Sum2 = 0;
-            int Count = e.BytesRecorded / 2;
-            for (int index = 0; index < e.BytesRecorded; index += 2)
+            int Count = bytesRecorded / 2;
+            for (int index = 0; index < bytesRecorded; index += 2)
             {
-                double Tmp = (short)((e.Buffer[index + 1] << 8) | e.Buffer[index + 0]);
+                double Tmp = (short)((buffer[index + 1] << 8) | buffer[index + 0]);
                 Tmp /= 32768.0;
                 Sum2 += Tmp * Tmp;
                 if (Tmp > threshold)
@@ -499,6 +514,12 @@ namespace TTalk.WinUI.ViewModels
 
         private void OnWaveInDataAvailable(object? sender, WaveInEventArgs a)
         {
+            if (App.MainWindow.DispatcherQueue == null)
+                return;
+            if (_encoder == null)
+                return;
+            if (CurrentChannelClient == null)
+                return;
 
             if (CurrentChannelClient?.IsMuted ?? false)
             {
@@ -506,16 +527,28 @@ namespace TTalk.WinUI.ViewModels
                 return;
             }
 
-            if (UseVoiceActivityDetection && !ProcessData(a))
+            App.MainWindow.DispatcherQueue.TryEnqueue(() =>
             {
-                if (CurrentChannelClient != null)
-                    CurrentChannelClient.IsSpeaking = false;
-                return;
-            }
+                _throttleDispatcherForSpeech.Throttle(() =>
+                {
+                    if (CurrentChannelClient == null)
+                        return;
+                    var isSpeech = ProcessData(a.Buffer, a.BytesRecorded, 0.015);
+                    if (!isSpeech)
+                        CurrentChannelClient.IsSpeaking = false;
+                    else
+                        CurrentChannelClient.IsSpeaking = true;
+                });
+            });
 
-            if (App.MainWindow.DispatcherQueue == null)
-                return;
             var chunks = AudioProcessor.ProcessAudio(a.Buffer, a.BytesRecorded, _bytesPerSegment, _encoder, EnableRNNoiseSuppression);
+            if (chunks == null)
+            {
+                App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+                {
+                    CurrentChannelClient.IsSpeaking = false;
+                });
+            }
             foreach (var chunk in chunks)
             {
                 _microphoneAudioQueue.Enqueue(chunk);
