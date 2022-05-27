@@ -48,7 +48,6 @@ namespace TTalk.WinUI.ViewModels
             _audioQueueSlim = new(0);
             _audioQueue = new();
             _throttleDispatcher = new DebounceThrottle.ThrottleDispatcher(1000);
-            _throttleDispatcherForSpeech = new DebounceThrottle.ThrottleDispatcher(200);
             SettingsService = settingsService;
             SettingsService.SettingsUpdated += OnSettingsUpdated;
 
@@ -447,16 +446,7 @@ namespace TTalk.WinUI.ViewModels
                 return;
             var chunk = _decoder.Decode(voiceDataMulticast.VoiceData, voiceDataMulticast.VoiceData.Length, out var length);
             chunk = chunk.Slice(0, length);
-            _throttleDispatcherForSpeech.Throttle(() =>
-            {
-                if (CurrentChannelClient == null)
-                    return;
-                var isSpeech = ProcessData(voiceDataMulticast.VoiceData, voiceDataMulticast.VoiceData.Length, 0.015);
-                if (!isSpeech)
-                    CurrentChannelClient.IsSpeaking = false;
-                else
-                    CurrentChannelClient.IsSpeaking = true;
-            });
+            channelClient.IsSpeaking = true;
 
             channelClient.LastTimeVoiceDataReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
 
@@ -560,16 +550,9 @@ namespace TTalk.WinUI.ViewModels
 
             App.MainWindow.DispatcherQueue.TryEnqueue(() =>
             {
-                _throttleDispatcherForSpeech.Throttle(() =>
-                {
-                    if (CurrentChannelClient == null)
-                        return;
-                    var isSpeech = ProcessData(a.Buffer, a.BytesRecorded, 0.015);
-                    if (!isSpeech)
-                        CurrentChannelClient.IsSpeaking = false;
-                    else
-                        CurrentChannelClient.IsSpeaking = true;
-                });
+                if (CurrentChannelClient == null)
+                    return;
+                CurrentChannelClient.IsSpeaking = true;
             });
 
             var chunks = AudioProcessor.ProcessAudio(a.Buffer, a.BytesRecorded, _bytesPerSegment, _encoder, EnableRNNoiseSuppression);
