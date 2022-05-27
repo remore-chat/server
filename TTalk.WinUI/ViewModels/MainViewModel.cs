@@ -31,10 +31,11 @@ using TTalk.WinUI.AudioProcessing;
 using TTalk.WinUI.Services;
 using Windows.ApplicationModel.Resources.Core;
 using Windows.Media.SpeechSynthesis;
+using TTalk.WinUI.Views;
 
 namespace TTalk.WinUI.ViewModels
 {
-    public class MainViewModel : ObservableRecipient
+    public partial class MainViewModel : ObservableObject
     {
         public MainViewModel(ILocalSettingsService settingsService, SoundService sounds, KeyBindingsService bindingsService)
         {
@@ -76,6 +77,10 @@ namespace TTalk.WinUI.ViewModels
                     }
                 });
             });
+            OpenServerSettingsViewCommand = new RelayCommand(() =>
+            {
+                OpenServerSettings();
+            });
             CreateChannelDialogCommand = new RelayCommand(CreateChannelDialog);
             DeleteChannelDialogCommand = new RelayCommand<string>(DeleteChannelDialog);
             ShowUpdatePriviligeKeyDialog = new RelayCommand(async () =>
@@ -113,6 +118,24 @@ namespace TTalk.WinUI.ViewModels
                 IsConnected = false;
                 StartAudioPlayback();
             });
+        }
+
+        private void OpenServerSettings()
+        {
+
+            var navService = App.GetService<INavigationService>();
+
+            var viewModel = new ServerSettingsViewModel();
+            viewModel.Init((name, maxClients) =>
+                {
+                    this._client.Send(new UpdateServerInfoPacket()
+                    {
+                        Name = name,
+                        MaxClients = maxClients
+                    });
+                }, ServerName, ServerMaxClients);
+            navService.NavigateTo(typeof(ServerSettingsViewModel).FullName, viewModel);
+
         }
 
         private async void DeleteChannelDialog(string obj)
@@ -231,6 +254,13 @@ namespace TTalk.WinUI.ViewModels
         private bool? voiceAllowed = null;
 
         #region Reactive Properties
+
+        [ObservableProperty]
+        private string serverName;
+
+        [ObservableProperty]
+        private int serverMaxClients;
+
         private string address;
 
         public string Address
@@ -314,6 +344,7 @@ namespace TTalk.WinUI.ViewModels
         public RelayCommand DisconnectCommand { get; }
         public RelayCommand LeaveChannel { get; }
         public RelayCommand ToggleMute { get; }
+        public RelayCommand OpenServerSettingsViewCommand { get; }
         public RelayCommand CreateChannelDialogCommand { get; }
         public RelayCommand<string> DeleteChannelDialogCommand { get; }
         public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
@@ -689,7 +720,7 @@ namespace TTalk.WinUI.ViewModels
                         }
                         await new ContentDialog()
                         {
-                            Title = "You was disconnected from the server",
+                            Title = "You were disconnected from the server",
                             Content = $"Reason: {disconnect.Reason}",
                             XamlRoot = App.MainWindow.Content.XamlRoot,
                             CloseButtonText = "Close"
@@ -790,6 +821,11 @@ namespace TTalk.WinUI.ViewModels
                     }
                     var channelClient = channel.ConnectedClients.FirstOrDefault(x => x.Username == userDisconnected.Username);
                     channel.ConnectedClients.Remove(channelClient);
+                }
+                else if (packet is ServerInfoUpdatedPacket infoUpdate)
+                {
+                    ServerName = infoUpdate.Name;
+                    ServerMaxClients = infoUpdate.MaxClients;
                 }
                 else if (packet is VoiceEstablishResponsePacket voiceEstablishResponse)
                 {
@@ -969,7 +1005,6 @@ namespace TTalk.WinUI.ViewModels
                     };
                     _ = Task.Run(async () =>
                     {
-                        await Task.Delay(1500);
                         var query = await new TTalkQueryClient(_ip, _port).GetServerInfo();
                         App.MainWindow.DispatcherQueue.TryEnqueue(() =>
                         {

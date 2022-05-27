@@ -46,6 +46,8 @@
 	  <None Remove="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
 	  <None Remove="Assets\StoreLogo.png" />
 	  <None Remove="Assets\Wide310x150Logo.scale-200.png" />
+	  <None Remove="Views\ServerSettingsPage.xaml" />
+	  <None Remove="Views\ServerSettings\ServerSettingsOverviewView.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -112,6 +114,12 @@
 	<ItemGroup>
 		<Page Update="Icons\Themes\Generic.xaml">
 			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
+		<Page Update="Views\ServerSettingsPage.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
+		<Page Update="Views\ServerSettings\ServerSettingsOverviewView.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		</Page>
 	</ItemGroup>
 

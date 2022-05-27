@@ -24,7 +24,7 @@ public class TTalkServer
     public int MaxClients => Configuration.MaxClients;
     public ServerConfiguration Configuration { get; set; }
 
-    private ConfigurationService _configurationService;
+    public ConfigurationService ConfigurationService { get; private set; }
 
     public ServerDbContext Context { get; }
 
@@ -36,7 +36,7 @@ public class TTalkServer
 
         Task.Run(async () =>
         {
-            Configuration = await _configurationService.GetServerConfigurationAsync();
+            Configuration = await ConfigurationService.GetServerConfigurationAsync();
         }).GetAwaiter().GetResult();
         TCP.Start();
         UDP.Start();
@@ -55,7 +55,7 @@ public class TTalkServer
         Ip = ip;
         Port = port;
         Clients = new();
-        _configurationService = ServiceContainer.GetService<ConfigurationService>();
+        ConfigurationService = ServiceContainer.GetService<ConfigurationService>();
         Context = ServiceContainer.GetService<ServerDbContext>();
         Channels = Context.Channels.ToList();
         foreach (var channel in Channels)

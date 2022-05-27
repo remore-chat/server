@@ -23,10 +23,11 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Right" HorizontalAlignment="Left">
+            <AppBarButton Margin="-4 0 0 0" Label="{x:Bind ViewModel.ServerName, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}}" />
             <AppBarButton Icon="Add"  Label="{l10n:Localize Key=Main_Connect.Label}" Command="{x:Bind ViewModel.ShowConnectDialog}" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
             <AppBarButton Icon="Remove" Label="{l10n:Localize Key=Main_Disconnect.Label}" Command="{x:Bind ViewModel.DisconnectCommand}" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}}" />
             <CommandBar.SecondaryCommands>
-                <AppBarButton Label="{l10n:Localize Key=Main_ServerSettings.Label}" Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}" IsEnabled="{x:Bind ViewModel.CanEditServerSettings, Mode=OneWay}" Icon="Setting">
+                <AppBarButton Command="{x:Bind ViewModel.OpenServerSettingsViewCommand}" Label="{l10n:Localize Key=Main_ServerSettings.Label}" Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}" IsEnabled="{x:Bind ViewModel.CanEditServerSettings, Mode=OneWay}" Icon="Setting">
                 </AppBarButton>
                 <AppBarButton Label="{l10n:Localize Key=Main_SetPrivilegeKey.Label}" Command="{x:Bind ViewModel.ShowUpdatePriviligeKeyDialog}" Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}" Icon="Admin">
                 </AppBarButton>

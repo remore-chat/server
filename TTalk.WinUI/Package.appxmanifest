@@ -11,7 +11,7 @@ xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   <Identity
     Name="32781Roxxel.TTalk"
     Publisher="CN=53F8928B-8EC1-42E7-A4D8-5B8E26077BDB"
-    Version="1.0.3.0" />
+    Version="1.0.5.0" />
 
 	<mp:PhoneIdentity PhoneProductId="c159737a-686d-48f4-a685-872724475656" PhonePublisherId="1decb601-e64f-4088-bc00-0e28637c9926" />
 

@@ -128,11 +128,17 @@ public class ServerSession : TcpSession
             Logger.LogInfo($"Client {Id} connected with username {auth.Username}");
             Username = auth.Username;
             TCP.Multicast(new ClientConnectedPacket(auth.Username));
+            this.Send(new ServerInfoUpdatedPacket()
+            {
+                MaxClients = Server.MaxClients,
+                Name = Server.Name
+            });
             foreach (var channel in Server.Channels)
             {
                 this.Send(new ChannelAddedPacket(channel.Id, channel.Name, channel.ConnectedClients.Select(x => x.Username).ToList(), channel.Bitrate, channel.Order, channel.ChannelType, channel.MaxClients));
                 await Task.Delay(10);
             }
+
             if (PrivilegeKey == Server.Configuration.PrivilegeKey?.Key)
                 this.Send(new ClientPermissionsUpdatedPacket() { HasAllPermissions = true });
             this.Send(new ServerToClientNegotatiationFinished());
@@ -259,6 +265,39 @@ public class ServerSession : TcpSession
                         }
                     }
                 }
+            }
+            else if (packet is UpdateServerInfoPacket updateServerInfo)
+            {
+                if (this.PrivilegeKey != Server.Configuration?.PrivilegeKey?.Key)
+                {
+                    this.Send(new DisconnectPacket("No access."));
+                    this.Disconnect();
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(updateServerInfo.Name) || updateServerInfo.Name.Length > 64)
+                {
+                    this.Send(new DisconnectPacket("Server received invalid packet"));
+                    this.Disconnect();
+                    return;
+                }
+                if (updateServerInfo.MaxClients <= 0 || updateServerInfo.MaxClients > 32000)
+                {
+                    this.Send(new DisconnectPacket("Server received invalid packet"));
+                    this.Disconnect();
+                    return;
+                }
+                Server.Configuration.MaxClients = updateServerInfo.MaxClients;
+                Server.Configuration.Name = updateServerInfo.Name;
+                this.TCP.Multicast(new ServerInfoUpdatedPacket()
+                {
+                    MaxClients = Server.MaxClients,
+                    Name = Server.Name
+                });
+                _ = Task.Run(async () =>
+                {
+                    await Server.ConfigurationService.UpdateServerConfigurationAsync(Server.Configuration);
+                });
+
             }
             else if (packet is CreateChannelPacket createChannel)
             {

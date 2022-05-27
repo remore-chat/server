@@ -20,6 +20,7 @@ namespace TTalk.WinUI.Services
         {
             Configure<MainViewModel, MainPage>();
             Configure<SettingsViewModel, SettingsPage>();
+            Configure<ServerSettingsViewModel, ServerSettingsPage>();
         }
 
         public Type GetPageType(string key)

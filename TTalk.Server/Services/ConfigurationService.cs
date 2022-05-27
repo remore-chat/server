@@ -29,7 +29,7 @@ namespace TTalk.Server.Services
 
         public async Task<ServerConfiguration> GetServerConfigurationAsync()
         {
-            var configuration = await _context.Configuration.Include(x=>x.PrivilegeKey).AsNoTracking().FirstOrDefaultAsync();
+            var configuration = await _context.Configuration.Include(x => x.PrivilegeKey).AsNoTracking().FirstOrDefaultAsync();
             if (configuration == null)
             {
                 configuration = new ServerConfiguration()
@@ -65,7 +65,9 @@ namespace TTalk.Server.Services
 
         public async Task<ServerConfiguration> UpdateServerConfigurationAsync(ServerConfiguration updatedConfiguration)
         {
-            await _context.AddAsync(updatedConfiguration.PrivilegeKey);
+            var config = await GetServerConfigurationAsync();
+            if (config?.PrivilegeKey?.Id != updatedConfiguration?.PrivilegeKey?.Id)
+                await _context.AddAsync(updatedConfiguration.PrivilegeKey);
             var configuration = _mapper.Map<ServerConfiguration>(_mapper.Map<ServerConfigurationUpdateDto>(updatedConfiguration));
             var entry = _context.Configuration.Update(configuration);
             await _context.SaveChangesAsync();
