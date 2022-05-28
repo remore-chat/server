@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using System;
 using System.Globalization;
@@ -21,6 +22,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Resources;
 using Windows.ApplicationModel.Resources.Core;
 using Windows.Globalization;
+using Windows.Storage;
 
 // To learn more about WinUI3, see: https://docs.microsoft.com/windows/apps/winui/winui3/.
 namespace TTalk.WinUI
@@ -34,6 +36,18 @@ namespace TTalk.WinUI
         // https://docs.microsoft.com/dotnet/core/extensions/logging
         private static IHost _host = Host
             .CreateDefaultBuilder()
+            .ConfigureLogging((context, logging) => {
+                var env = context.HostingEnvironment;
+                var config = context.Configuration.GetSection("Logging");
+                logging.AddFile($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}/TTalk/logs/" + 
+                    string.Format("app_{0:yyyy}-{0:MM}-{0:dd}-{0:hh}-{0:mm}.log", DateTime.Now), fileLoggerOpts => {
+                });
+                logging.AddConsole();
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", Microsoft.Extensions.Logging.LogLevel.None);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", Microsoft.Extensions.Logging.LogLevel.None);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Infrastructure", Microsoft.Extensions.Logging.LogLevel.None);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Query", Microsoft.Extensions.Logging.LogLevel.None);
+            })
             .ConfigureServices((context, services) =>
             {
                 // Default Activation Handler
@@ -94,77 +108,21 @@ namespace TTalk.WinUI
 
         public App()
         {
-            AppDomain.CurrentDomain.AssemblyResolve += LoadFromCurrentFolder;
+            GetService<ILogger<App>>().LogInformation($"Application launched");
             InitializeComponent();
             UnhandledException += App_UnhandledException;
             PacketReader.Init();
         }
 
-        private System.Reflection.Assembly LoadFromCurrentFolder(object sender, ResolveEventArgs args)
-        {
-            string name = args.Name;
-
-            bool bCheckVersion = false;
-            int idx = name.IndexOf(',');
-            if (idx != -1)
-            {
-                name = name.Substring(0, idx);
-                bCheckVersion = true;
-            }
-
-            string sCurrentDir = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
-
-            if (!name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) && !name.EndsWith(".exe"))
-            {
-                string[] exts = { ".dll", ".exe" };
-                foreach (string ext in exts)
-                {
-                    string tryPath = Path.Combine(sCurrentDir, name + ext);
-                    if (File.Exists(tryPath))
-                    {
-                        name = name += ext;
-                        break;
-                    }
-                }
-            }
-
-            string path = Path.Combine(sCurrentDir, name);
-            if (!string.IsNullOrEmpty(path) && File.Exists(path))
-            {
-                Assembly assembly = Assembly.LoadFrom(path);
-                if (assembly != null & bCheckVersion)
-                {
-                    if (assembly.FullName != args.Name)
-                        return null;
-                }
-                return assembly;
-            }
-            else
-            {
-                var reqAsm = args.RequestingAssembly;
-
-                if (reqAsm != null)
-                {
-                    string requestingName = reqAsm.GetName().FullName;
-                    Console.WriteLine($"Could not resolve {name}, {path}, requested by {requestingName}");
-                }
-                else
-                {
-                    Console.WriteLine($"Could not resolve {args.Name}, {path}");
-                }
-            }
-            return null;
-        }
-
+        
         public static void ResetMainViewModel()
         {
-            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<SoundService>(), GetService<KeyBindingsService>());
+            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<ILogger<MainViewModel>>(), GetService<SoundService>(), GetService<KeyBindingsService>());
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            // TODO: Log and handle exceptions as appropriate.
-            // For more details, see https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.unhandledexceptioneventargs.
+            GetService<ILogger<App>>().LogCritical($"Application crashed:\n{e.Exception}");
         }
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)

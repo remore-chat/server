@@ -32,12 +32,13 @@ using TTalk.WinUI.Services;
 using Windows.ApplicationModel.Resources.Core;
 using Windows.Media.SpeechSynthesis;
 using TTalk.WinUI.Views;
+using Microsoft.Extensions.Logging;
 
 namespace TTalk.WinUI.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
-        public MainViewModel(ILocalSettingsService settingsService, SoundService sounds, KeyBindingsService bindingsService)
+        public MainViewModel(ILocalSettingsService settingsService, ILogger<MainViewModel> logger, SoundService sounds, KeyBindingsService bindingsService)
         {
             Process.GetCurrentProcess().Exited += OnExited;
             Channels = new();
@@ -47,6 +48,10 @@ namespace TTalk.WinUI.ViewModels
             _microphoneQueueSlim = new(0);
             _audioQueueSlim = new(0);
             _audioQueue = new();
+
+            _logger = logger;
+            _logger.LogInformation("\n\n");
+            _logger.LogInformation(new string('=', 100));
             _throttleDispatcher = new DebounceThrottle.ThrottleDispatcher(1000);
             SettingsService = settingsService;
             SettingsService.SettingsUpdated += OnSettingsUpdated;
@@ -220,8 +225,6 @@ namespace TTalk.WinUI.ViewModels
                 case KeyBindingAction.ToggleMute:
                     {
                         ToggleMute.Execute(null);
-
-
                         break;
                     }
                 case KeyBindingAction.ToggleDeafen:
@@ -375,6 +378,7 @@ namespace TTalk.WinUI.ViewModels
 
         private Queue<byte[]> _microphoneAudioQueue;
         private Queue<byte[]> _audioQueue;
+        private ILogger<MainViewModel> _logger;
         private ThrottleDispatcher _throttleDispatcher;
         private ThrottleDispatcher _throttleDispatcherForSpeech;
         private SemaphoreSlim _microphoneQueueSlim;
@@ -382,7 +386,7 @@ namespace TTalk.WinUI.ViewModels
 
         public void StartAudioPlayback()
         {
-
+            _logger.LogInformation("Starting audio playback");
             _decoder = OpusDecoder.Create(48000, 1);
             _decoder.ForwardErrorCorrection = true;
 
@@ -392,6 +396,7 @@ namespace TTalk.WinUI.ViewModels
             _playBuffer = new BufferedWaveProvider(new NAudio.Wave.WaveFormat(48000, 16, 1));
             _waveOut.Init(_playBuffer);
             _waveOut.Play();
+            _logger.LogInformation("Audio playback initialized");
         }
 
         private void OnWaveOutPlaybackStopped(object? sender, StoppedEventArgs e)
@@ -406,10 +411,13 @@ namespace TTalk.WinUI.ViewModels
             _playBuffer = null;
             _waveOut = null;
             _decoder = null;
+            _logger.LogInformation("Audio playback stopped");
+
         }
 
         public void StartEncoding(int bitRate)
         {
+            _logger.LogInformation("Initializing OPUS encoder");
 
             _encoder = OpusEncoder.Create(48000, 1, FragLabs.Audio.Codecs.Opus.Application.Voip);
             _encoder.Bitrate = bitRate;
@@ -423,6 +431,7 @@ namespace TTalk.WinUI.ViewModels
             _microphoneAudioQueue = new();
 
             _waveIn.StartRecording();
+            _logger.LogInformation("Recording started");
         }
 
         public void StopEncoding()
@@ -437,6 +446,7 @@ namespace TTalk.WinUI.ViewModels
             _waveIn = null;
             _encoder?.Dispose();
             _encoder = null;
+            _logger.LogInformation("Encoding stopped");
         }
 
         private async Task HandleVoiceData(VoiceDataMulticastPacket voiceDataMulticast)
@@ -464,6 +474,7 @@ namespace TTalk.WinUI.ViewModels
                 return;
             StartEncoding(CurrentChannel.Bitrate);
             IsNotConnectingToChannel = true;
+            _logger.LogInformation("Audio streaming started");
         }
 
         private async Task SendAudio()
@@ -574,6 +585,8 @@ namespace TTalk.WinUI.ViewModels
         #region Networking
         private void Connect()
         {
+            _logger.LogInformation($"Connecting to {Address}");
+
             if (_client?.IsConnected ?? false)
                 _client.DisconnectAndStop();
             if (_cts != null)
@@ -584,7 +597,9 @@ namespace TTalk.WinUI.ViewModels
                 ip = address.Split(":")[0];
                 if (!IPAddress.TryParse(ip, out _))
                 {
+                    _logger.LogInformation("IP parse failed. Using DNS to find server's IP");
                     ip = Dns.GetHostAddresses(ip)[0].ToString();
+
                 }
                 port = Convert.ToInt32(address.Split(":")[1]);
                 try
@@ -599,6 +614,8 @@ namespace TTalk.WinUI.ViewModels
                     UdpConnect(ip, port);
                     while (!_udpClient?.IsConnectedToServer ?? false)
                         await Task.Delay(100);
+                    _logger.LogInformation($"Connected to {Address}");
+
                     await Task.Delay(-1, _cts.Token);
                 }
                 catch (TaskCanceledException)
@@ -616,6 +633,8 @@ namespace TTalk.WinUI.ViewModels
             _udpClient = new TTalkUdpClient(_client.TcpId, IPAddress.Parse(ip), port);
             _udpClient.VoiceDataAvailable += OnVoiceDataAvailable;
             _udpClient.Connect();
+            _logger.LogInformation("UDP connected");
+
         }
 
         public async Task JoinChannel(Channel channel)
@@ -884,6 +903,8 @@ namespace TTalk.WinUI.ViewModels
                 _udpClient.Send(new UdpDisconnectPacket() { ClientUsername = Username });
                 _udpClient.DisconnectAndStop();
                 _udpClient = null;
+                _logger.LogInformation("UDP client disconnected");
+
             }
         }
         #endregion
