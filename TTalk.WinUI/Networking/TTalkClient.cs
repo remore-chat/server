@@ -96,6 +96,12 @@ namespace TTalk.WinUI.Networking.ClientCode
                     lastTimeReceivedHeartbeat = DateTimeOffset.Now.ToUnixTimeSeconds();
                     heartbeatTimer = new Timer((_) =>
                     {
+                        if (_stop)
+                        {
+                            heartbeatTimer.Dispose();
+                            heartbeatTimer = null;
+                            return;
+                        }
                         if (DateTimeOffset.Now.ToUnixTimeSeconds() - lastTimeReceivedHeartbeat > 10)
                         {
                             PacketReceived?.Invoke(this, new() { Packet = new DisconnectPacket() { Reason = "Timed out" } });
