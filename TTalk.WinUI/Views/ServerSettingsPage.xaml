@@ -11,23 +11,31 @@
     Style="{StaticResource PageStyle}">
 
 
-	<Page.Resources>
+    <Page.Resources>
         <converters:StringFormatConverter x:Key="format" />
-		<converters:MathConverter x:Key="math" />
+        <converters:MathConverter x:Key="math" />
         <converters:BooleanToVisibilityConverter x:Key="boolToVis" />
-	</Page.Resources>
+    </Page.Resources>
 
     <Grid x:Name="ContentArea">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <NavigationView x:Name="navigation" IsSettingsVisible="False" IsBackButtonVisible="Collapsed" PaneDisplayMode="Top" SelectionChanged="OnNavigationViewSelectionChanged">
+        <NavigationView x:Name="navigation" BorderBrush="Transparent" Background="Transparent" BorderThickness="0" IsSettingsVisible="False" IsBackButtonVisible="Collapsed" PaneDisplayMode="Top" SelectionChanged="OnNavigationViewSelectionChanged">
             <NavigationView.MenuItems>
                 <NavigationViewItem Tag="overview" Content="{l10n:Localize Key=ServerSettings_Overview}" />
             </NavigationView.MenuItems>
+            <NavigationView.HeaderTemplate>
+                <DataTemplate>
+                    <StackPanel></StackPanel>
+                </DataTemplate>
+            </NavigationView.HeaderTemplate>
+            <NavigationView.ContentOverlay>
+                <Border></Border>
+            </NavigationView.ContentOverlay>
         </NavigationView>
-        <Frame Padding="16" x:Name="content" Grid.Row="1" />
+        <Frame MaxWidth="1200" HorizontalAlignment="Center" Grid.Row="1" HorizontalContentAlignment="Center" Padding="16 16 16 16" x:Name="content"  />
         <Grid CornerRadius="8" MinWidth="640" Visibility="{x:Bind IsSettingsChanged, Converter={StaticResource boolToVis}, Mode=OneWay}"  Padding="16" Background="#2b2b2b" Margin="0 0 0 24" HorizontalAlignment="Center"  Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Bottom">
             <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Text="{l10n:Localize Key=ServerSettings_UnsavedChanges}" />
             <StackPanel Spacing="8" Orientation="Horizontal" HorizontalAlignment="Right">

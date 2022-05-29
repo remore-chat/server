@@ -10,7 +10,6 @@ using Windows.System;
 
 namespace TTalk.WinUI.Views
 {
-    // TODO: Change the icons and titles for all NavigationViewItems in ShellPage.xaml.
     public sealed partial class ShellPage : Page
     {
         private readonly KeyboardAccelerator _altLeftKeyboardAccelerator = BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu);
@@ -19,9 +18,6 @@ namespace TTalk.WinUI.Views
         public ShellViewModel ViewModel { get; }
         public ILocalSettingsService Settings { get; }
         public LocalizationService Localization { get; }
-
-        //MainViewModel should always be the same
-        public MainViewModel MainViewModel { get; }
 
         public ShellPage(ShellViewModel viewModel, ILocalSettingsService settings, LocalizationService localization)
         {
@@ -46,7 +42,8 @@ namespace TTalk.WinUI.Views
 
         private void OnNavigationViewItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            
+           
+
         }
 
         private void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

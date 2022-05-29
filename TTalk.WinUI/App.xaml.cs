@@ -29,11 +29,6 @@ namespace TTalk.WinUI
 {
     public partial class App : Application
     {
-        // The .NET Generic Host provides dependency injection, configuration, logging, and other services.
-        // https://docs.microsoft.com/dotnet/core/extensions/generic-host
-        // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
-        // https://docs.microsoft.com/dotnet/core/extensions/configuration
-        // https://docs.microsoft.com/dotnet/core/extensions/logging
         private static IHost _host = Host
             .CreateDefaultBuilder()
             .ConfigureLogging((context, logging) => {
@@ -77,8 +72,10 @@ namespace TTalk.WinUI
                 services.AddSingleton<SoundService>();
                 services.AddSingleton<KeyBindingsService>();
                 // Views and ViewModels
-                services.AddTransient<SettingsViewModel>();
-                services.AddTransient<SettingsViewModel>();
+                services.AddTransient<SettingsViewModel>((_) =>
+                {
+                    return _settingsViewModel;
+                });
                 services.AddSingleton<LocalizationService>();
                 services.AddTransient<MainViewModel>((_) =>
                 {
@@ -104,6 +101,7 @@ namespace TTalk.WinUI
         public static Window MainWindow { get; set; }
 
         private static MainViewModel _mainViewModel;
+        private static SettingsViewModel _settingsViewModel;
         private static Mutex mutex = new Mutex(true, "TTALKSINGLEINSTANCEAPPLICATIONMUTEX");
 
         public App()
@@ -118,11 +116,19 @@ namespace TTalk.WinUI
         public static void ResetMainViewModel()
         {
             _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<ILogger<MainViewModel>>(), GetService<SoundService>(), GetService<KeyBindingsService>());
+            _settingsViewModel = new SettingsViewModel(App.GetService<IThemeSelectorService>(),
+                   App.GetService<ILogger<SettingsViewModel>>(),
+                   GetService<KeyBindingsService>(),
+                   GetService<LocalizationService>(),
+                   GetService<MainViewModel>(),
+                   GetService<ILocalSettingsService>());
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            GetService<ILogger<App>>().LogCritical($"Application crashed:\n{e.Exception}");
+            GetService<ILogger<App>>().LogCritical($"Application crashed");
+            GetService<ILogger<App>>().LogCritical(e.Exception.Message);
+            GetService<ILogger<App>>().LogCritical(e.Exception.StackTrace);
         }
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
