@@ -40,7 +40,7 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         public void DisconnectAndStop()
         {
-            //_stop = true;
+            _stop = true;
             Disconnect();
             while (IsConnected)
                 Thread.Yield();
