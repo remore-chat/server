@@ -14,6 +14,7 @@ using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.WinUI.Contracts.Services;
 using TTalk.WinUI.ViewModels;
+using Microsoft.Extensions.Logging;
 
 namespace TTalk.WinUI.Networking.ClientCode
 {
@@ -24,11 +25,13 @@ namespace TTalk.WinUI.Networking.ClientCode
             TcpId = tcpId;
             _settingsService = App.GetService<ILocalSettingsService>();
             _username = _settingsService.ReadSettingAsync<string>(SettingsViewModel.UsernameSettingsKey).GetAwaiter().GetResult();
+            _logger = App.GetService<ILogger<TTalkUdpClient>>();
         }
         public string TcpId { get;}
 
         private ILocalSettingsService _settingsService;
         private string _username;
+        private ILogger<TTalkUdpClient> _logger;
 
         public EndPoint LastSenderEndpoint { get; set; }
         public bool IsConnectedToServer { get; set; }
@@ -37,7 +40,7 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         public void DisconnectAndStop()
         {
-            _stop = true;
+            //_stop = true;
             Disconnect();
             while (IsConnected)
                 Thread.Yield();
@@ -65,10 +68,13 @@ namespace TTalk.WinUI.Networking.ClientCode
         protected override void OnDisconnected()
         {
             Thread.Sleep(1000);
-
-            // Try to connect again
+            _logger.LogInformation(_stop ? $"Udp disconnected" : "UDP connection lost");
+            
             if (!_stop)
+            {
+                _logger.LogInformation("Trying to restore UDP connection");
                 Connect();
+            }
         }
 
         protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
