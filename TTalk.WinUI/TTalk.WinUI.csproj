@@ -60,6 +60,7 @@
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Media" Version="7.1.2" />
 		<PackageReference Include="DebounceThrottle" Version="1.0.0" />
+		<PackageReference Include="DnsClient" Version="1.6.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />

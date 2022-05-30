@@ -33,12 +33,13 @@ using Windows.ApplicationModel.Resources.Core;
 using Windows.Media.SpeechSynthesis;
 using TTalk.WinUI.Views;
 using Microsoft.Extensions.Logging;
+using DnsClient;
 
 namespace TTalk.WinUI.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
-        public MainViewModel(ILocalSettingsService settingsService, ILogger<MainViewModel> logger, SoundService sounds, KeyBindingsService bindingsService)
+        public MainViewModel(ILocalSettingsService settingsService, ILogger<MainViewModel> logger, SoundService sounds, KeyBindingsService bindingsService, ILookupClient lookupClient)
         {
             Process.GetCurrentProcess().Exited += OnExited;
             Channels = new();
@@ -59,6 +60,8 @@ namespace TTalk.WinUI.ViewModels
             BindingsService = bindingsService;
             BindingsService.KeyBindingExecuted += OnKeybindingExecuted;
             Sounds = sounds;
+
+            LookupClient = lookupClient;
 
             Task.Run(SendAudio);
             Task.Run(PlayAudio);
@@ -353,6 +356,7 @@ namespace TTalk.WinUI.ViewModels
 
         private Denoiser _denoiser;
 
+        public ILookupClient LookupClient { get; }
         public ILocalSettingsService SettingsService { get; }
         public SoundService Sounds { get; }
         public KeyBindingsService BindingsService { get; }
@@ -981,8 +985,17 @@ namespace TTalk.WinUI.ViewModels
                 var listView = new ListView() { SelectionMode = ListViewSelectionMode.None, MaxHeight = 560 };
                 foreach (var address in list)
                 {
-                    var _ip = address.Split(":")[0];
-                    var _port = Convert.ToInt32(address.Split(":")[1]);
+                    string _ip;
+                    int _port;
+                    if (address.Contains(':'))
+                    {
+                        _ip = address.Split(":")[0];
+                        _port = Convert.ToInt32(address.Split(":")[1]);
+                    }
+                    else
+                    {
+                        (_ip, _port) = GetEndpointForHostname(address);
+                    }
                     var progress = new ProgressRing() { IsIndeterminate = true, Width = 16, Height = 16, IsActive = true };
                     var _stackPanel = new StackPanel()
                     {
@@ -1051,7 +1064,13 @@ namespace TTalk.WinUI.ViewModels
                     CloseButtonText = "Main_ConnectToServer_CloseButton".GetLocalized(),
                     PrimaryButtonText = "Main_ConnectToServer_ConnectButton".GetLocalized(),
                 }.ShowAsync(ContentDialogPlacement.InPlace);
-                Address = textBox.Text;
+                if (textBox.Text.Contains(':'))
+                    Address = textBox.Text;
+                else
+                {
+                    var ep = GetEndpointForHostname(textBox.Text);
+                    Address = ep.Address + ':' + ep.Port.ToString();
+                }
                 if (result == ContentDialogResult.Primary)
                 {
                     Connect();
@@ -1066,6 +1085,33 @@ namespace TTalk.WinUI.ViewModels
                     }
                 }
             };
+        }
+
+        private (string Address, int Port) GetEndpointForHostname(string hostname)
+        {
+            var result = LookupClient.ResolveService(hostname, "ttalk", ProtocolType.Tcp);
+            var entry = result.FirstOrDefault();
+            if (entry is null)
+                return new("0.0.0.0", 0);
+
+            if (entry.AddressList.Any())
+                return new(entry.AddressList.First().ToString(), entry.Port);
+
+            var entryAddressAnswers = LookupClient.Query(entry.HostName, QueryType.A).Answers;
+            if (entryAddressAnswers.Any())
+            {
+                var aTarget = entryAddressAnswers.ARecords().First();
+                return new(aTarget.Address.ToString(), entry.Port);
+            }
+
+            entryAddressAnswers = LookupClient.Query(entry.HostName, QueryType.AAAA).Answers;
+            if (entryAddressAnswers.Any())
+            {
+                var aaaaTarget = entryAddressAnswers.AaaaRecords().First();
+                return new(aaaaTarget.Address.ToString(), entry.Port);
+            }
+
+            return new("0.0.0.0", 0);
         }
     }
 }
