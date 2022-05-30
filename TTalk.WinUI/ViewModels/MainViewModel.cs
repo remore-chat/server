@@ -1079,8 +1079,8 @@ namespace TTalk.WinUI.ViewModels
                         var addresses = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
                         if (addresses == null)
                             addresses = new();
-                        if (!addresses.Contains(address))
-                            addresses.Add(address);
+                        if (!addresses.Contains(textBox.Text))
+                            addresses.Add(textBox.Text);
                         await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, addresses);
                     }
                 }
