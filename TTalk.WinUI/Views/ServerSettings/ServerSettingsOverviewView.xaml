@@ -18,19 +18,19 @@
         <converters:BooleanToVisibilityConverter x:Key="boolToVis" />
     </Page.Resources>
 
-    <Grid x:Name="ContentArea">
-        <st:SettingsGroup Header="{l10n:Localize Key=ServerSettings_Overview_Title}">
+    <Grid  x:Name="ContentArea" Background="Transparent">
+        <st:SettingsGroup Background="Transparent" Header="{l10n:Localize Key=ServerSettings_Overview_Title}">
             <st:Setting Header="{l10n:Localize Key=ServerSettings_Overview_ServerName}">
                 <st:Setting.Icon>
                     <fluent:FluentSymbolIcon Symbol="Rename20Filled" Width="20" Height="20" />
                 </st:Setting.Icon>
-                <TextBox Text="{x:Bind ViewModel.Name, Mode=OneTime}" TextChanged="TextBox_TextChanged" PlaceholderText="{l10n:Localize Key=ServerSettings_Overview_ServerNamePlaceholder}" MinWidth="450" MaxLength="64" />
+                <TextBox Text="{x:Bind ViewModel.Name, Mode=OneTime}" TextChanged="TextBox_TextChanged" PlaceholderText="{l10n:Localize Key=ServerSettings_Overview_ServerNamePlaceholder}" MinWidth="250" MaxLength="64" />
             </st:Setting>
             <st:Setting Header="{l10n:Localize Key=ServerSettings_Overview_ServerMaxClients}" Description="{l10n:Localize Key=ServerSettings_Overview_ServerMaxClients_Tip}">
                 <st:Setting.Icon>
                     <fluent:FluentSymbolIcon Symbol="NumberRow20Filled" Width="20" Height="20" />
                 </st:Setting.Icon>
-                <NumberBox Text="{x:Bind ViewModel.MaxClients, Mode=OneTime}" SpinButtonPlacementMode="Inline" SmallChange="10" LargeChange="100"  ValueChanged="NumberBox_ValueChanged" MinWidth="450" Maximum="32000" />
+                <NumberBox Text="{x:Bind ViewModel.MaxClients, Mode=OneTime}" SpinButtonPlacementMode="Inline" SmallChange="10" LargeChange="100"  ValueChanged="NumberBox_ValueChanged" MinWidth="250" Maximum="32000" />
             </st:Setting>
         </st:SettingsGroup>
     </Grid>

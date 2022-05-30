@@ -11,6 +11,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DebounceThrottle;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.VisualBasic.Devices;
@@ -30,6 +31,7 @@ namespace TTalk.WinUI.ViewModels
         private readonly KeyBindingsService _keyBindingsService;
         private readonly LocalizationService _localizationService;
         private ElementTheme _elementTheme;
+        private ILogger<SettingsViewModel> _logger;
         private ThrottleDispatcher _throttleDispatcher;
         public const string InputDeviceSettingsKey = "InputDeviceSettingsKey";
         public const string OutputDeviceSettingsKey = "OutputDeviceSettingsKey";
@@ -283,12 +285,13 @@ namespace TTalk.WinUI.ViewModels
         public MainViewModel Main { get; }
         public ILocalSettingsService SettingsService { get; }
 
-        public SettingsViewModel(IThemeSelectorService themeSelectorService, KeyBindingsService keyBindingsService, LocalizationService localizationService, MainViewModel mainViewModel, ILocalSettingsService settingsService)
+        public SettingsViewModel(IThemeSelectorService themeSelectorService, ILogger<SettingsViewModel> logger, KeyBindingsService keyBindingsService, LocalizationService localizationService, MainViewModel mainViewModel, ILocalSettingsService settingsService)
         {
             _themeSelectorService = themeSelectorService;
             _keyBindingsService = keyBindingsService;
             _localizationService = localizationService;
             _elementTheme = _themeSelectorService.Theme;
+            _logger = logger;
             _throttleDispatcher = new DebounceThrottle.ThrottleDispatcher(500);
 
             VersionDescription = GetVersionDescription();
@@ -381,48 +384,55 @@ namespace TTalk.WinUI.ViewModels
             Task.Run(() =>
             {
                 // Protection from unfriendly devices that throw exception when you try to access their name :((
-
-                var enumerator = new MMDeviceEnumerator();
-                int waveOutDevices = WaveOut.DeviceCount;
-                for (int waveOutDevice = 0; waveOutDevice < waveOutDevices; waveOutDevice++)
+                try
                 {
-                    WaveOutCapabilities deviceInfo = WaveOut.GetCapabilities(waveOutDevice);
-                    foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All))
-                    {
-                        try
-                        {
-                            if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
-                            {
-                                App.MainWindow.DispatcherQueue.TryEnqueue(() => OutputDevices.Add(device.FriendlyName));
-                                break;
-                            }
-                        }
-                        catch { }
-                    }
-                }
 
-                if (WaveOut.DeviceCount > 0)
-                    App.MainWindow.DispatcherQueue.TryEnqueue(async () => OutputDevice = await SettingsService.ReadSettingAsync<int>(OutputDeviceSettingsKey));
 
-                int waveInDevices = WaveIn.DeviceCount;
-                for (int waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
-                {
-                    WaveInCapabilities deviceInfo = WaveIn.GetCapabilities(waveInDevice);
-                    foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.All))
+                    var enumerator = new MMDeviceEnumerator();
+                    int waveOutDevices = WaveOut.DeviceCount;
+                    for (int waveOutDevice = 0; waveOutDevice < waveOutDevices; waveOutDevice++)
                     {
-                        try
+                        WaveOutCapabilities deviceInfo = WaveOut.GetCapabilities(waveOutDevice);
+                        foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All))
                         {
-                            if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
+                            try
                             {
-                                App.MainWindow.DispatcherQueue.TryEnqueue(() => InputDevices.Add(device.FriendlyName));
-                                break;
+                                if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
+                                {
+                                    App.MainWindow.DispatcherQueue.TryEnqueue(() => OutputDevices.Add(device.FriendlyName));
+                                    break;
+                                }
                             }
+                            catch { }
                         }
-                        catch { }
                     }
 
-                }
+                    if (WaveOut.DeviceCount > 0)
+                        App.MainWindow.DispatcherQueue.TryEnqueue(async () => OutputDevice = await SettingsService.ReadSettingAsync<int>(OutputDeviceSettingsKey));
 
+                    int waveInDevices = WaveIn.DeviceCount;
+                    for (int waveInDevice = 0; waveInDevice < waveInDevices; waveInDevice++)
+                    {
+                        WaveInCapabilities deviceInfo = WaveIn.GetCapabilities(waveInDevice);
+                        foreach (MMDevice device in enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.All))
+                        {
+                            try
+                            {
+                                if (device.FriendlyName.StartsWith(deviceInfo.ProductName))
+                                {
+                                    App.MainWindow.DispatcherQueue.TryEnqueue(() => InputDevices.Add(device.FriendlyName));
+                                    break;
+                                }
+                            }
+                            catch { }
+                        }
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex.ToString());
+                }
                 if (WaveIn.DeviceCount > 0)
                     App.MainWindow.DispatcherQueue.TryEnqueue(async () => InputDevice = await SettingsService.ReadSettingAsync<int>(InputDeviceSettingsKey));
                 App.MainWindow.DispatcherQueue.TryEnqueue(() => IsDevicesLoaded = true);
