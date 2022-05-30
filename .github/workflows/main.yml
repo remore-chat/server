@@ -44,27 +44,28 @@ jobs:
         Configuration: ${{ matrix.configuration }}
 
     - name: Set unpackaged
+      shell: pwsh
       run: |
-        $id = get-random
-        $code = @"
-        using System;
-        using System.IO;
-        using System.Collections.Generic;
-        using System.Linq;
-        namespace HelloWorld
-        {
-          public class Program$id
-          {
-            public static void Main(){
-              List<string> lines = File.ReadAllLines(Path.Combine(@"$pwd", "TTalk.WinUI.csproj")).ToList();
-              lines.Insert(5, "<WindowsPackageType>None</WindowsPackageType>");
-              File.WriteAllText(Path.Combine(@"$pwd", "TTalk.WinUI.csproj"), string.Join("\n", lines.ToArray()));
-            }
-          }
-        }
-      "@;
-      Add-Type -TypeDefinition $code -Language CSharp;
-      iex "[HelloWorld.Program$id]::Main()";
+       $id = get-random
+       $code = @"
+       using System;
+       using System.IO;
+       using System.Collections.Generic;
+       using System.Linq;
+       namespace HelloWorld
+       {
+         public class Program$id
+         {
+           public static void Main(){
+             List<string> lines = File.ReadAllLines(Path.Combine(@"$pwd", "TTalk.WinUI.csproj")).ToList();
+             lines.Insert(5, "<WindowsPackageType>None</WindowsPackageType>");
+             File.WriteAllText(Path.Combine(@"$pwd", "TTalk.WinUI.csproj"), string.Join("\n", lines.ToArray()));
+           }
+         }
+       }
+       "@
+       Add-Type -TypeDefinition $code -Language CSharp
+       iex "[HelloWorld.Program$id]::Main()"
 
     # Create the app by building and publishing the project
     - name: Create the app
