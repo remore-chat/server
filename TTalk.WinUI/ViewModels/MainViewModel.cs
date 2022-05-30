@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -1064,7 +1064,7 @@ namespace TTalk.WinUI.ViewModels
                     CloseButtonText = "Main_ConnectToServer_CloseButton".GetLocalized(),
                     PrimaryButtonText = "Main_ConnectToServer_ConnectButton".GetLocalized(),
                 }.ShowAsync(ContentDialogPlacement.InPlace);
-                if (textBox.Text.Contains(':'))
+                if (textBox.Text.Contains(':') || string.IsNullOrEmpty(textBox.Text))
                     Address = textBox.Text;
                 else
                 {
