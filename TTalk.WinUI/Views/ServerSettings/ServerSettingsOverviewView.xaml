@@ -1,0 +1,37 @@
+﻿<Page
+    x:Class="TTalk.WinUI.Views.ServerSettingsOverviewView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:fluent="using:Fluent.Icons"
+    xmlns:l10n="using:TTalk.WinUI.Helpers"
+    xmlns:st="using:SettingsUI.Controls"
+    xmlns:converters="using:TTalk.WinUI.Converters"
+    Style="{StaticResource PageStyle}">
+
+
+    <Page.Resources>
+        <converters:StringFormatConverter x:Key="format" />
+        <converters:MathConverter x:Key="math" />
+        <converters:BooleanToVisibilityConverter x:Key="boolToVis" />
+    </Page.Resources>
+
+    <Grid  x:Name="ContentArea" Background="Transparent">
+        <st:SettingsGroup Background="Transparent" Header="{l10n:Localize Key=ServerSettings_Overview_Title}">
+            <st:Setting Header="{l10n:Localize Key=ServerSettings_Overview_ServerName}">
+                <st:Setting.Icon>
+                    <fluent:FluentSymbolIcon Symbol="Rename20Filled" Width="20" Height="20" />
+                </st:Setting.Icon>
+                <TextBox Text="{x:Bind ViewModel.Name, Mode=OneTime}" TextChanged="TextBox_TextChanged" PlaceholderText="{l10n:Localize Key=ServerSettings_Overview_ServerNamePlaceholder}" MinWidth="250" MaxLength="64" />
+            </st:Setting>
+            <st:Setting Header="{l10n:Localize Key=ServerSettings_Overview_ServerMaxClients}" Description="{l10n:Localize Key=ServerSettings_Overview_ServerMaxClients_Tip}">
+                <st:Setting.Icon>
+                    <fluent:FluentSymbolIcon Symbol="NumberRow20Filled" Width="20" Height="20" />
+                </st:Setting.Icon>
+                <NumberBox Text="{x:Bind ViewModel.MaxClients, Mode=OneTime}" SpinButtonPlacementMode="Inline" SmallChange="10" LargeChange="100"  ValueChanged="NumberBox_ValueChanged" MinWidth="250" Maximum="32000" />
+            </st:Setting>
+        </st:SettingsGroup>
+    </Grid>
+</Page>

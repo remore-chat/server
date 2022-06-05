@@ -35,6 +35,8 @@ namespace TTalk.WinUI.Networking.ClientCode
         public SessionState State { get; set; }
         public string TcpId { get; private set; }
 
+        private long lastTimeReceivedHeartbeat;
+        private Timer heartbeatTimer;
         private ILocalSettingsService _settingsService;
         private string _username;
 
@@ -60,7 +62,6 @@ namespace TTalk.WinUI.Networking.ClientCode
             if (lengthOfPacket == size - 4)
             {
                 HandlePacket(buffer);
-                return;
             }
             else
             {
@@ -92,6 +93,22 @@ namespace TTalk.WinUI.Networking.ClientCode
                 }
                 else if (state == SessionState.Connected)
                 {
+                    lastTimeReceivedHeartbeat = DateTimeOffset.Now.ToUnixTimeSeconds();
+                    heartbeatTimer = new Timer((_) =>
+                    {
+                        if (_stop)
+                        {
+                            heartbeatTimer.Dispose();
+                            heartbeatTimer = null;
+                            return;
+                        }
+                        if (DateTimeOffset.Now.ToUnixTimeSeconds() - lastTimeReceivedHeartbeat > 10)
+                        {
+                            PacketReceived?.Invoke(this, new() { Packet = new DisconnectPacket() { Reason = "Timed out" } });
+                            heartbeatTimer.Dispose();
+                            heartbeatTimer = null;
+                        }
+                    }, null, 0, 10000);
                     OnClientReady?.Invoke(this, null);
                     TcpId = stateChanged.ClientId;
                 }
@@ -105,6 +122,7 @@ namespace TTalk.WinUI.Networking.ClientCode
             {
                 if (packet is TcpHeartbeatPacket)
                 {
+                    lastTimeReceivedHeartbeat = DateTimeOffset.Now.ToUnixTimeSeconds();
                     this.Send(new TcpHeartbeatPacket());
                 }
                 else

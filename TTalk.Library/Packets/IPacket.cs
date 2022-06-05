@@ -16,12 +16,10 @@ namespace TTalk.Library.Packets
         {
             try
             {
-                
                 return new PacketReader(data).Read();
             }
             catch (Exception ex)
             {
-
                 return null;
             }
         }

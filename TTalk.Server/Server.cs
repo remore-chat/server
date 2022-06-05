@@ -1,4 +1,5 @@
 ﻿using NetCoreServer;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using TTalk.Library.Packets;
@@ -23,15 +24,19 @@ public class TTalkServer
     public int MaxClients => Configuration.MaxClients;
     public ServerConfiguration Configuration { get; set; }
 
-    private ConfigurationService _configurationService;
+    public ConfigurationService ConfigurationService { get; private set; }
 
     public ServerDbContext Context { get; }
 
+    private static readonly bool isVoiceDebugModeEnabled = Environment.GetCommandLineArgs().Contains("--voice-debug");
     public void Start()
     {
+        if (isVoiceDebugModeEnabled)
+            Logger.LogInfo($"Voice debug mode enabled");
+
         Task.Run(async () =>
         {
-            Configuration = await _configurationService.GetServerConfigurationAsync();
+            Configuration = await ConfigurationService.GetServerConfigurationAsync();
         }).GetAwaiter().GetResult();
         TCP.Start();
         UDP.Start();
@@ -50,7 +55,7 @@ public class TTalkServer
         Ip = ip;
         Port = port;
         Clients = new();
-        _configurationService = ServiceContainer.GetService<ConfigurationService>();
+        ConfigurationService = ServiceContainer.GetService<ConfigurationService>();
         Context = ServiceContainer.GetService<ServerDbContext>();
         Channels = Context.Channels.ToList();
         foreach (var channel in Channels)
@@ -61,7 +66,7 @@ public class TTalkServer
         }
         TCP = new(this, ip, port);
         UDP = new(this, IPAddress.Any, port);
-        
+
     }
 
     public class UDPServer : UdpServer
@@ -125,47 +130,75 @@ public class TTalkServer
                     }
                 }
             }
-            else if (packet is UdpHeartbeatPacket heartbeat)
+            else
             {
-                if (ValidateClient(endpoint, heartbeat.ClientUsername, out var session))
+                if (packet is UdpAuthenticationPacket udpAuthentication)
                 {
-                    //Logger.LogInfo($"Heartbeat {session.TcpSession.Id} ({session.Username})");
-                    session.HeartbeatReceivedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
-
-                }
-            }
-            else if (packet is VoiceDataPacket voiceData)
-            {
-                if (ValidateClient(endpoint, voiceData.ClientUsername, out var session))
-                {
-                    var tcp = session.TcpSession;
-                    if (tcp.CurrentChannel == null)
+                    Clients.Remove(client);
+                    Logger.LogInfo($"Reconnecting client {udpAuthentication.ClientUsername}");
+                    var tcpSession = Server.Clients.FirstOrDefault(x => x.Id.ToString() == udpAuthentication.TcpId);
+                    if (tcpSession != null && tcpSession.Username == udpAuthentication.ClientUsername)
                     {
-                        //Logger.LogWarn("Got invalid voice data packet");
-                    }
-                    else
-                        Parallel.ForEach(tcp.CurrentChannel.ConnectedClients.ToList(), (vClient) =>
+
+                        var session = new UdpSession()
                         {
-                            //Do not send voice data back to sender
-                            if (vClient.Username == session.Username)
-                                return;
-                            var actualSent = this.Send(vClient.EndPoint, new VoiceDataMulticastPacket() { Username = session.Username, VoiceData = voiceData.VoiceData });
-                        });
-                }
-            }
-            else if (packet is UdpDisconnectPacket disconnectPacket)
-            {
-                if (ValidateClient(endpoint, disconnectPacket.ClientUsername, out var session))
-                {
-                    var currentChannel = session.TcpSession.CurrentChannel;
-                    if (currentChannel != null)
-                    {
-                        if (currentChannel.ConnectedClients.Remove(session))
-                            this.Server.TCP.Multicast(new ChannelUserDisconnected() { ChannelId = currentChannel.Id, Username = session.Username });
+                            EndPoint = endpoint,
+                            HeartbeatReceivedAt = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                            Server = this,
+                            TcpSession = tcpSession,
+                            Username = udpAuthentication.ClientUsername,
+                        };
+                        Clients.Add(session);
+                        Logger.LogInfo($"New UDP client {tcpSession.Id} ({udpAuthentication.ClientUsername}) connected");
+                        this.Send(endpoint, new UdpNotifyConnectedPacket() { ClientUsername = udpAuthentication.ClientUsername });
+                        Logger.LogInfo($"Reconnected client {udpAuthentication.ClientUsername} {endpoint}");
                     }
-                    session.TcpSession.CurrentChannel = null;
+                }
+                else if (packet is UdpHeartbeatPacket heartbeat)
+                {
+                    if (ValidateClient(endpoint, heartbeat.ClientUsername, out var session))
+                    {
+                        //Logger.LogInfo($"Heartbeat {session.TcpSession.Id} ({session.Username})");
+                        session.HeartbeatReceivedAt = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-                    Clients.Remove(session);
+                    }
+                }
+                else if (packet is VoiceDataPacket voiceData)
+                {
+
+                    if (ValidateClient(endpoint, voiceData.ClientUsername, out var session))
+                    {
+                        var tcp = session.TcpSession;
+                        if (tcp.CurrentChannel == null)
+                        {
+                            //Logger.LogWarn("Got invalid voice data packet");
+                        }
+                        else
+                        {
+                            Parallel.ForEach(tcp.CurrentChannel.ConnectedClients.ToList(), (vClient) =>
+                              {
+                                  //Do not send voice data back to sender unless voice debug mode enabled
+                                  if (!isVoiceDebugModeEnabled && vClient.Username == session.Username)
+                                      return;
+                                  var actualSent = this.Send(vClient.EndPoint, new VoiceDataMulticastPacket() { Username = session.Username, VoiceData = voiceData.VoiceData });
+                              });
+                        }
+                    }
+                }
+                else if (packet is UdpDisconnectPacket disconnectPacket)
+                {
+                    if (ValidateClient(endpoint, disconnectPacket.ClientUsername, out var session))
+                    {
+                        var currentChannel = session.TcpSession.CurrentChannel;
+                        if (currentChannel != null)
+                        {
+                            if (currentChannel.ConnectedClients.Remove(session))
+                                this.Server.TCP.Multicast(new ChannelUserDisconnected() { ChannelId = currentChannel.Id, Username = session.Username });
+                        }
+                        session.TcpSession.CurrentChannel = null;
+
+                        Clients.Remove(session);
+                    }
                 }
             }
             ReceiveAsync();
@@ -195,7 +228,7 @@ public class TTalkServer
                         foreach (var session in server.Clients.ToList())
                         {
                             if (!session.IsNegotationCompleted)
-                               continue;
+                                continue;
 
                             if (DateTimeOffset.Now.ToUnixTimeSeconds() - session.LatestHeartbeatReceivedAt > 15 && session.State == SessionState.Connected)
                             {

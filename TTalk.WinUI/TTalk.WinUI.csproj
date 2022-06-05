@@ -12,7 +12,7 @@
 		<UseWinUI>true</UseWinUI>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<!--Uncomment next line to build in unpackaged mode-->
-		<!--<WindowsPackageType>None</WindowsPackageType>-->
+		<WindowsPackageType>None</WindowsPackageType>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	
 		<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
@@ -24,6 +24,12 @@
 		<AppxBundlePlatforms>x64</AppxBundlePlatforms>
 		
 	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="NoiseReducer\**" />
+	  <EmbeddedResource Remove="NoiseReducer\**" />
+	  <None Remove="NoiseReducer\**" />
+	  <Page Remove="NoiseReducer\**" />
+	</ItemGroup>
 	<ItemGroup>
 	  <Content Remove="Assets\Fonts\e-Ukraine-Bold.otf" />
 	  <Content Remove="Assets\Fonts\e-Ukraine-Light.otf" />
@@ -40,6 +46,8 @@
 	  <None Remove="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
 	  <None Remove="Assets\StoreLogo.png" />
 	  <None Remove="Assets\Wide310x150Logo.scale-200.png" />
+	  <None Remove="Views\ServerSettingsPage.xaml" />
+	  <None Remove="Views\ServerSettings\ServerSettingsOverviewView.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -52,8 +60,10 @@
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Media" Version="7.1.2" />
 		<PackageReference Include="DebounceThrottle" Version="1.0.0" />
+		<PackageReference Include="DnsClient" Version="1.6.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Toolkit" Version="7.1.2" />
 		<PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls" Version="7.1.2" />
 		<PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.7" />
@@ -65,6 +75,8 @@
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.8" />
 		<PackageReference Include="NAudio" Version="2.0.1" />
 		<PackageReference Include="NetCoreServer" Version="6.2.0" />
+		<PackageReference Include="NReco.Logging.File" Version="1.1.5" />
+		<PackageReference Include="NWaves" Version="0.9.6" />
 		<PackageReference Include="PInvoke.User32" Version="0.7.104" />
 		<PackageReference Include="SettingsUI" Version="2.0.0" />
 	</ItemGroup>
@@ -80,6 +92,9 @@
 		</None>
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="DynamicAudioNormalizerNET.dll">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Update="Icons\Themes\Generic.xaml">
 			<Generator>MSBuild:Compile</Generator>
@@ -103,13 +118,25 @@
 		<Page Update="Icons\Themes\Generic.xaml">
 			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		</Page>
+		<Page Update="Views\ServerSettingsPage.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
+		<Page Update="Views\ServerSettings\ServerSettingsOverviewView.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
 	</ItemGroup>
 
 	<ItemGroup>
 		<PRIResource Remove="Strings\uk-ua.resw" />
 	</ItemGroup>
 
+
 	<ItemGroup>
 		<Resource Include="Assets\sounds\mic_muted_user.wav" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <PRIResource Remove="NoiseReducer\**" />
 	</ItemGroup>
 </Project>

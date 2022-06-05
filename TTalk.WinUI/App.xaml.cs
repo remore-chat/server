@@ -1,10 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DnsClient;
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using TTalk.Library.Packets;
 using TTalk.WinUI.Activation;
@@ -20,19 +24,27 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Resources;
 using Windows.ApplicationModel.Resources.Core;
 using Windows.Globalization;
+using Windows.Storage;
 
 // To learn more about WinUI3, see: https://docs.microsoft.com/windows/apps/winui/winui3/.
 namespace TTalk.WinUI
 {
     public partial class App : Application
     {
-        // The .NET Generic Host provides dependency injection, configuration, logging, and other services.
-        // https://docs.microsoft.com/dotnet/core/extensions/generic-host
-        // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
-        // https://docs.microsoft.com/dotnet/core/extensions/configuration
-        // https://docs.microsoft.com/dotnet/core/extensions/logging
         private static IHost _host = Host
             .CreateDefaultBuilder()
+            .ConfigureLogging((context, logging) => {
+                var env = context.HostingEnvironment;
+                var config = context.Configuration.GetSection("Logging");
+                logging.AddFile($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}/TTalk/logs/" + 
+                    string.Format("app_{0:yyyy}-{0:MM}-{0:dd}-{0:hh}-{0:mm}.log", DateTime.Now), fileLoggerOpts => {
+                });
+                logging.AddConsole();
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", Microsoft.Extensions.Logging.LogLevel.None);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", Microsoft.Extensions.Logging.LogLevel.None);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Infrastructure", Microsoft.Extensions.Logging.LogLevel.None);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Query", Microsoft.Extensions.Logging.LogLevel.None);
+            })
             .ConfigureServices((context, services) =>
             {
                 // Default Activation Handler
@@ -62,8 +74,10 @@ namespace TTalk.WinUI
                 services.AddSingleton<SoundService>();
                 services.AddSingleton<KeyBindingsService>();
                 // Views and ViewModels
-                services.AddTransient<SettingsViewModel>();
-                services.AddTransient<SettingsViewModel>();
+                services.AddTransient<SettingsViewModel>((_) =>
+                {
+                    return _settingsViewModel;
+                });
                 services.AddSingleton<LocalizationService>();
                 services.AddTransient<MainViewModel>((_) =>
                 {
@@ -78,7 +92,7 @@ namespace TTalk.WinUI
                 // Configuration
                 services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
 
-
+                services.AddSingleton<ILookupClient>(new LookupClient());
             })
             .Build();
 
@@ -89,24 +103,34 @@ namespace TTalk.WinUI
         public static Window MainWindow { get; set; }
 
         private static MainViewModel _mainViewModel;
+        private static SettingsViewModel _settingsViewModel;
         private static Mutex mutex = new Mutex(true, "TTALKSINGLEINSTANCEAPPLICATIONMUTEX");
 
         public App()
         {
+            GetService<ILogger<App>>().LogInformation($"Application launched");
             InitializeComponent();
             UnhandledException += App_UnhandledException;
             PacketReader.Init();
         }
 
+        
         public static void ResetMainViewModel()
         {
-            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<SoundService>(), GetService<KeyBindingsService>());
+            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<ILogger<MainViewModel>>(), GetService<SoundService>(), GetService<KeyBindingsService>(), GetService<ILookupClient>());
+            _settingsViewModel = new SettingsViewModel(App.GetService<IThemeSelectorService>(),
+                   App.GetService<ILogger<SettingsViewModel>>(),
+                   GetService<KeyBindingsService>(),
+                   GetService<LocalizationService>(),
+                   GetService<MainViewModel>(),
+                   GetService<ILocalSettingsService>());
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            // TODO: Log and handle exceptions as appropriate.
-            // For more details, see https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.unhandledexceptioneventargs.
+            GetService<ILogger<App>>().LogCritical($"Application crashed");
+            GetService<ILogger<App>>().LogCritical(e.Exception.Message);
+            GetService<ILogger<App>>().LogCritical(e.Exception.StackTrace);
         }
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)

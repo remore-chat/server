@@ -307,4 +307,34 @@ App version (v{1}) doesn't match server's version (v{2})</value>
   <data name="Main_DeleteChannelDialog_Title" xml:space="preserve">
     <value>Delete channel</value>
   </data>
+  <data name="Application_Already_Running" xml:space="preserve">
+    <value>Application already running</value>
+  </data>
+  <data name="ServerSettings_Overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerMaxClients" xml:space="preserve">
+    <value>Maximum clients</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerMaxClients_Tip" xml:space="preserve">
+    <value>Sets the maximum number of simultaneously connected users to this server</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerName" xml:space="preserve">
+    <value>Server name</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerNamePlaceholder" xml:space="preserve">
+    <value>My awesome server!</value>
+  </data>
+  <data name="ServerSettings_Overview_Title" xml:space="preserve">
+    <value>Server overview</value>
+  </data>
+  <data name="ServerSettings_UnsavedChanges" xml:space="preserve">
+    <value>You have unsaved changes</value>
+  </data>
+  <data name="ServerSettings_UnsavedChanges_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="ServerSettings_UnsavedChanges_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
 </root>

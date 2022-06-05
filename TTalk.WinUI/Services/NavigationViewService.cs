@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using TTalk.WinUI.Contracts.Services;
 using TTalk.WinUI.Helpers;
 using TTalk.WinUI.ViewModels;
+using TTalk.WinUI.Views;
 
 namespace TTalk.WinUI.Services
 {
@@ -51,7 +52,7 @@ namespace TTalk.WinUI.Services
         {
             if (args.IsSettingsInvoked)
             {
-                _navigationService.NavigateTo(typeof(SettingsViewModel).FullName);
+                _navigationService.NavigateTo(typeof(SettingsPage));
             }
             else
             {

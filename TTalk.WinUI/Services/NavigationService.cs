@@ -1,7 +1,8 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
-
+using System;
 using TTalk.WinUI.Contracts.Services;
 using TTalk.WinUI.Contracts.ViewModels;
 using TTalk.WinUI.Helpers;
@@ -79,15 +80,20 @@ namespace TTalk.WinUI.Services
             return false;
         }
 
-        public bool NavigateTo(string pageKey, object parameter = null, bool clearNavigation = false)
+        public bool NavigateTo(string pageKey, object parameter = null, bool clearNavigation = false, NavigationTransitionInfo navigationTransitionInfo = null)
         {
             var pageType = _pageService.GetPageType(pageKey);
 
+            return NavigateTo(pageType, parameter, clearNavigation, navigationTransitionInfo);
+        }
+
+        public bool NavigateTo(Type pageType, object parameter = null, bool clearNavigation = false, NavigationTransitionInfo navigationTransitionInfo = null)
+        {
             if (_frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(_lastParameterUsed)))
             {
                 _frame.Tag = clearNavigation;
                 var vmBeforeNavigation = _frame.GetPageViewModel();
-                var navigated = _frame.Navigate(pageType, parameter);
+                var navigated = _frame.Navigate(pageType, parameter, navigationTransitionInfo ?? new DrillInNavigationTransitionInfo());
                 if (navigated)
                 {
                     _lastParameterUsed = parameter;

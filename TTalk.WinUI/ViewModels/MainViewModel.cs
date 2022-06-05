@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +17,7 @@ using DebounceThrottle;
 using FragLabs.Audio.Codecs;
 using Microsoft.UI.Xaml.Controls;
 using NAudio.Wave;
+using NWaves.Filters;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.WinUI.Contracts.Services;
@@ -24,16 +27,19 @@ using TTalk.WinUI.Models;
 using TTalk.WinUI.Networking;
 using TTalk.WinUI.Networking.ClientCode;
 using TTalk.WinUI.Networking.EventArgs;
-using TTalk.WinUI.NoiseReducer;
+using TTalk.WinUI.AudioProcessing;
 using TTalk.WinUI.Services;
 using Windows.ApplicationModel.Resources.Core;
 using Windows.Media.SpeechSynthesis;
+using TTalk.WinUI.Views;
+using Microsoft.Extensions.Logging;
+using DnsClient;
 
 namespace TTalk.WinUI.ViewModels
 {
-    public class MainViewModel : ObservableRecipient
+    public partial class MainViewModel : ObservableObject
     {
-        public MainViewModel(ILocalSettingsService settingsService, SoundService sounds, KeyBindingsService bindingsService)
+        public MainViewModel(ILocalSettingsService settingsService, ILogger<MainViewModel> logger, SoundService sounds, KeyBindingsService bindingsService, ILookupClient lookupClient)
         {
             Process.GetCurrentProcess().Exited += OnExited;
             Channels = new();
@@ -43,6 +49,10 @@ namespace TTalk.WinUI.ViewModels
             _microphoneQueueSlim = new(0);
             _audioQueueSlim = new(0);
             _audioQueue = new();
+
+            _logger = logger;
+            _logger.LogInformation("\n\n");
+            _logger.LogInformation(new string('=', 100));
             _throttleDispatcher = new DebounceThrottle.ThrottleDispatcher(1000);
             SettingsService = settingsService;
             SettingsService.SettingsUpdated += OnSettingsUpdated;
@@ -50,6 +60,8 @@ namespace TTalk.WinUI.ViewModels
             BindingsService = bindingsService;
             BindingsService.KeyBindingExecuted += OnKeybindingExecuted;
             Sounds = sounds;
+
+            LookupClient = lookupClient;
 
             Task.Run(SendAudio);
             Task.Run(PlayAudio);
@@ -64,10 +76,17 @@ namespace TTalk.WinUI.ViewModels
             });
             ToggleMute = new RelayCommand(async () =>
             {
-                if (CurrentChannelClient != null)
+                _throttleDispatcher.Throttle(() =>
                 {
-                    CurrentChannelClient.IsMuted = !CurrentChannelClient.IsMuted;
-                }
+                    if (CurrentChannelClient != null)
+                    {
+                        CurrentChannelClient.IsMuted = !CurrentChannelClient.IsMuted;
+                    }
+                });
+            });
+            OpenServerSettingsViewCommand = new RelayCommand(() =>
+            {
+                OpenServerSettings();
             });
             CreateChannelDialogCommand = new RelayCommand(CreateChannelDialog);
             DeleteChannelDialogCommand = new RelayCommand<string>(DeleteChannelDialog);
@@ -106,6 +125,24 @@ namespace TTalk.WinUI.ViewModels
                 IsConnected = false;
                 StartAudioPlayback();
             });
+        }
+
+        private void OpenServerSettings()
+        {
+
+            var navService = App.GetService<INavigationService>();
+
+            var viewModel = new ServerSettingsViewModel();
+            viewModel.Init((name, maxClients) =>
+                {
+                    this._client.Send(new UpdateServerInfoPacket()
+                    {
+                        Name = name,
+                        MaxClients = maxClients
+                    });
+                }, ServerName, ServerMaxClients);
+            navService.NavigateTo(typeof(ServerSettingsViewModel).FullName, viewModel);
+
         }
 
         private async void DeleteChannelDialog(string obj)
@@ -190,11 +227,7 @@ namespace TTalk.WinUI.ViewModels
             {
                 case KeyBindingAction.ToggleMute:
                     {
-                        _throttleDispatcher.Throttle(() =>
-                        {
-                            ToggleMute.Execute(null);
-                        });
-
+                        ToggleMute.Execute(null);
                         break;
                     }
                 case KeyBindingAction.ToggleDeafen:
@@ -226,6 +259,13 @@ namespace TTalk.WinUI.ViewModels
         private bool? voiceAllowed = null;
 
         #region Reactive Properties
+
+        [ObservableProperty]
+        private string serverName;
+
+        [ObservableProperty]
+        private int serverMaxClients;
+
         private string address;
 
         public string Address
@@ -250,6 +290,7 @@ namespace TTalk.WinUI.ViewModels
             set { this.SetProperty(ref channels, value); }
         }
 
+        private int _segmentFrames;
         private bool isConnected;
         private string ip;
         private int port;
@@ -308,12 +349,14 @@ namespace TTalk.WinUI.ViewModels
         public RelayCommand DisconnectCommand { get; }
         public RelayCommand LeaveChannel { get; }
         public RelayCommand ToggleMute { get; }
+        public RelayCommand OpenServerSettingsViewCommand { get; }
         public RelayCommand CreateChannelDialogCommand { get; }
         public RelayCommand<string> DeleteChannelDialogCommand { get; }
         public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
 
         private Denoiser _denoiser;
 
+        public ILookupClient LookupClient { get; }
         public ILocalSettingsService SettingsService { get; }
         public SoundService Sounds { get; }
         public KeyBindingsService BindingsService { get; }
@@ -325,6 +368,7 @@ namespace TTalk.WinUI.ViewModels
         public int OutputDevice { get; private set; }
 
         private Channel _channel;
+        private int _bytesPerSegment;
 
 
         #endregion
@@ -334,29 +378,29 @@ namespace TTalk.WinUI.ViewModels
         private BufferedWaveProvider _playBuffer;
         private OpusEncoder _encoder;
         private OpusDecoder _decoder;
-        private int _segmentFrames;
-        private int _bytesPerSegment;
-        private byte[] _notEncodedBuffer = new byte[0];
         private TTalkUdpClient _udpClient;
 
         private Queue<byte[]> _microphoneAudioQueue;
         private Queue<byte[]> _audioQueue;
+        private ILogger<MainViewModel> _logger;
         private ThrottleDispatcher _throttleDispatcher;
+        private ThrottleDispatcher _throttleDispatcherForSpeech;
         private SemaphoreSlim _microphoneQueueSlim;
         private SemaphoreSlim _audioQueueSlim;
 
         public void StartAudioPlayback()
         {
-
+            _logger.LogInformation("Starting audio playback");
             _decoder = OpusDecoder.Create(48000, 1);
+            _decoder.ForwardErrorCorrection = true;
 
             _waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback());
             _waveOut.PlaybackStopped += OnWaveOutPlaybackStopped;
             _waveOut.DeviceNumber = OutputDevice;
             _playBuffer = new BufferedWaveProvider(new NAudio.Wave.WaveFormat(48000, 16, 1));
-            _waveOut.DesiredLatency = 300;
             _waveOut.Init(_playBuffer);
             _waveOut.Play();
+            _logger.LogInformation("Audio playback initialized");
         }
 
         private void OnWaveOutPlaybackStopped(object? sender, StoppedEventArgs e)
@@ -371,23 +415,27 @@ namespace TTalk.WinUI.ViewModels
             _playBuffer = null;
             _waveOut = null;
             _decoder = null;
+            _logger.LogInformation("Audio playback stopped");
+
         }
 
         public void StartEncoding(int bitRate)
         {
+            _logger.LogInformation("Initializing OPUS encoder");
 
             _encoder = OpusEncoder.Create(48000, 1, FragLabs.Audio.Codecs.Opus.Application.Voip);
             _encoder.Bitrate = bitRate;
             _bytesPerSegment = _encoder.FrameByteCount(_segmentFrames);
 
             _waveIn = new WaveIn(WaveCallbackInfo.FunctionCallback());
-            _waveIn.BufferMilliseconds = 50;
+            _waveIn.BufferMilliseconds = 40;
             _waveIn.DeviceNumber = InputDevice;
             _waveIn.DataAvailable += OnWaveInDataAvailable;
             _waveIn.WaveFormat = new NAudio.Wave.WaveFormat(48000, 16, 1);
             _microphoneAudioQueue = new();
 
             _waveIn.StartRecording();
+            _logger.LogInformation("Recording started");
         }
 
         public void StopEncoding()
@@ -402,6 +450,7 @@ namespace TTalk.WinUI.ViewModels
             _waveIn = null;
             _encoder?.Dispose();
             _encoder = null;
+            _logger.LogInformation("Encoding stopped");
         }
 
         private async Task HandleVoiceData(VoiceDataMulticastPacket voiceDataMulticast)
@@ -409,10 +458,13 @@ namespace TTalk.WinUI.ViewModels
             var channelClient = CurrentChannel?.ConnectedClients?.FirstOrDefault(x => x.Username == voiceDataMulticast.Username);
             if (channelClient == null)
                 return;
+            var chunk = _decoder.Decode(voiceDataMulticast.VoiceData, voiceDataMulticast.VoiceData.Length, out var length);
+            chunk = chunk.Slice(0, length);
             channelClient.IsSpeaking = true;
+
             channelClient.LastTimeVoiceDataReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-            _audioQueue.Enqueue(voiceDataMulticast.VoiceData);
+            _audioQueue.Enqueue(chunk);
             _audioQueueSlim.Release();
         }
         private async Task StartAudioStreaming()
@@ -426,6 +478,7 @@ namespace TTalk.WinUI.ViewModels
                 return;
             StartEncoding(CurrentChannel.Bitrate);
             IsNotConnectingToChannel = true;
+            _logger.LogInformation("Audio streaming started");
         }
 
         private async Task SendAudio()
@@ -447,9 +500,10 @@ namespace TTalk.WinUI.ViewModels
 
 
         private long lastTimeReceivedAudio = 0;
-        private int delay = 500;
+        private int delay = 200;
         private async Task PlayAudio()
         {
+
             while (true)
             {
                 try
@@ -470,16 +524,17 @@ namespace TTalk.WinUI.ViewModels
             }
         }
 
-        private bool ProcessData(WaveInEventArgs e)
+        private bool ProcessData(byte[] buffer, int bytesRecorded, double? threshold = null)
         {
-            double threshold = VoiceActivityDetectionThreshold;
+            if (threshold == null)
+                threshold = VoiceActivityDetectionThreshold;
             bool result = false;
             bool Tr = false;
             double Sum2 = 0;
-            int Count = e.BytesRecorded / 2;
-            for (int index = 0; index < e.BytesRecorded; index += 2)
+            int Count = bytesRecorded / 2;
+            for (int index = 0; index < bytesRecorded; index += 2)
             {
-                double Tmp = (short)((e.Buffer[index + 1] << 8) | e.Buffer[index + 0]);
+                double Tmp = (short)((buffer[index + 1] << 8) | buffer[index + 0]);
                 Tmp /= 32768.0;
                 Sum2 += Tmp * Tmp;
                 if (Tmp > threshold)
@@ -493,9 +548,14 @@ namespace TTalk.WinUI.ViewModels
             return result;
         }
 
-
         private void OnWaveInDataAvailable(object? sender, WaveInEventArgs a)
         {
+            if (App.MainWindow.DispatcherQueue == null)
+                return;
+            if (_encoder == null)
+                return;
+            if (CurrentChannelClient == null)
+                return;
 
             if (CurrentChannelClient?.IsMuted ?? false)
             {
@@ -503,113 +563,34 @@ namespace TTalk.WinUI.ViewModels
                 return;
             }
 
-            if (UseVoiceActivityDetection && !ProcessData(a))
+            App.MainWindow.DispatcherQueue.TryEnqueue(() =>
             {
-                if (CurrentChannelClient != null)
-                    CurrentChannelClient.IsSpeaking = false;
-                return;
-            }
-            try
-            {
-                if (App.MainWindow.DispatcherQueue == null)
+                if (CurrentChannelClient == null)
                     return;
+                CurrentChannelClient.IsSpeaking = true;
+            });
+
+            var chunks = AudioProcessor.ProcessAudio(a.Buffer, a.BytesRecorded, _bytesPerSegment, _encoder, EnableRNNoiseSuppression);
+            if (chunks == null)
+            {
                 App.MainWindow.DispatcherQueue.TryEnqueue(() =>
                 {
-                    try
-                    {
-                        if (_encoder == null)
-                            return;
-                        byte[] bytes = a.Buffer;
-                        if (EnableRNNoiseSuppression)
-                        {
-                            //I dunno, it works, small delay and low cpu usage
-                            var floats = GetFloatsFromBytes(a.Buffer, a.BytesRecorded);
-                            var floatsSpan = floats.AsSpan();
-                            _denoiser.Denoise(floatsSpan, false);
-
-                            bytes = GetSamplesWaveData(floatsSpan.ToArray(), floatsSpan.Length);
-                        }
-                        byte[] soundBuffer = new byte[a.BytesRecorded + _notEncodedBuffer.Length];
-                        for (int i = 0; i < _notEncodedBuffer.Length; i++)
-                            soundBuffer[i] = _notEncodedBuffer[i];
-                        for (int i = 0; i < a.BytesRecorded; i++)
-                            soundBuffer[i + _notEncodedBuffer.Length] = bytes[i];
-
-                        int byteCap = _bytesPerSegment;
-                        int segmentCount = (int)Math.Floor((decimal)soundBuffer.Length / byteCap);
-                        int segmentsEnd = segmentCount * byteCap;
-                        int notEncodedCount = soundBuffer.Length - segmentsEnd;
-                        _notEncodedBuffer = new byte[notEncodedCount];
-                        for (int i = 0; i < notEncodedCount; i++)
-                        {
-                            _notEncodedBuffer[i] = soundBuffer[segmentsEnd + i];
-                        }
-
-                        for (int i = 0; i < segmentCount; i++)
-                        {
-                            byte[] segment = new byte[byteCap];
-                            for (int j = 0; j < segment.Length; j++)
-                                segment[j] = soundBuffer[(i * byteCap) + j];
-                            int len;
-                            byte[] buff = _encoder.Encode(segment, segment.Length, out len);
-                            buff = _decoder.Decode(buff, len, out len);
-                            _microphoneAudioQueue.Enqueue(buff.Slice(0, len));
-                            _microphoneQueueSlim.Release();
-                            if (CurrentChannelClient != null)
-                                CurrentChannelClient.IsSpeaking = true;
-                        }
-                    }
-                    catch (Exception)
-                    {
-
-                        ;
-                    }
+                    CurrentChannelClient.IsSpeaking = false;
                 });
             }
-            catch (Exception)
+            foreach (var chunk in chunks)
             {
-                ;
-            }
-        }
-
-        public static float[] GetFloatsFromBytes(byte[] buffer, int length)
-        {
-            float[] floats = new float[length / 2];
-            int floatIndex = 0;
-            for (int index = 0; index < length; index += 2)
-            {
-                short sample = (short)((buffer[index + 1] << 8) |
-                                        buffer[index + 0]);
-                // to floating point
-                floats[floatIndex] = sample / 32768f;
-                floatIndex++;
-            }
-            return floats;
-        }
-
-        public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
-        {
-            var pcm = new byte[samplesCount * 2];
-            int sampleIndex = 0,
-                pcmIndex = 0;
-
-            while (sampleIndex < samplesCount)
-            {
-                var outsample = (short)(samples[sampleIndex] * short.MaxValue);
-                pcm[pcmIndex] = (byte)(outsample & 0xff);
-                pcm[pcmIndex + 1] = (byte)((outsample >> 8) & 0xff);
-
-                sampleIndex++;
-                pcmIndex += 2;
+                _microphoneAudioQueue.Enqueue(chunk);
+                _microphoneQueueSlim.Release();
             }
 
-            return pcm;
         }
-
         #endregion
         #region Networking
         private void Connect()
         {
+            _logger.LogInformation($"Connecting to {Address}");
+
             if (_client?.IsConnected ?? false)
                 _client.DisconnectAndStop();
             if (_cts != null)
@@ -618,6 +599,12 @@ namespace TTalk.WinUI.ViewModels
             Task.Run(async () =>
             {
                 ip = address.Split(":")[0];
+                if (!IPAddress.TryParse(ip, out _))
+                {
+                    _logger.LogInformation("IP parse failed. Using DNS to find server's IP");
+                    ip = Dns.GetHostAddresses(ip)[0].ToString();
+
+                }
                 port = Convert.ToInt32(address.Split(":")[1]);
                 try
                 {
@@ -631,6 +618,8 @@ namespace TTalk.WinUI.ViewModels
                     UdpConnect(ip, port);
                     while (!_udpClient?.IsConnectedToServer ?? false)
                         await Task.Delay(100);
+                    _logger.LogInformation($"Connected to {Address}");
+
                     await Task.Delay(-1, _cts.Token);
                 }
                 catch (TaskCanceledException)
@@ -648,6 +637,8 @@ namespace TTalk.WinUI.ViewModels
             _udpClient = new TTalkUdpClient(_client.TcpId, IPAddress.Parse(ip), port);
             _udpClient.VoiceDataAvailable += OnVoiceDataAvailable;
             _udpClient.Connect();
+            _logger.LogInformation("UDP connected");
+
         }
 
         public async Task JoinChannel(Channel channel)
@@ -735,7 +726,7 @@ namespace TTalk.WinUI.ViewModels
                         }
                         await new ContentDialog()
                         {
-                            Title = "You was disconnected from the server",
+                            Title = "You were disconnected from the server",
                             Content = $"Reason: {disconnect.Reason}",
                             XamlRoot = App.MainWindow.Content.XamlRoot,
                             CloseButtonText = "Close"
@@ -837,6 +828,11 @@ namespace TTalk.WinUI.ViewModels
                     var channelClient = channel.ConnectedClients.FirstOrDefault(x => x.Username == userDisconnected.Username);
                     channel.ConnectedClients.Remove(channelClient);
                 }
+                else if (packet is ServerInfoUpdatedPacket infoUpdate)
+                {
+                    ServerName = infoUpdate.Name;
+                    ServerMaxClients = infoUpdate.MaxClients;
+                }
                 else if (packet is VoiceEstablishResponsePacket voiceEstablishResponse)
                 {
                     voiceAllowed = voiceEstablishResponse.Allowed;
@@ -911,6 +907,8 @@ namespace TTalk.WinUI.ViewModels
                 _udpClient.Send(new UdpDisconnectPacket() { ClientUsername = Username });
                 _udpClient.DisconnectAndStop();
                 _udpClient = null;
+                _logger.LogInformation("UDP client disconnected");
+
             }
         }
         #endregion
@@ -987,8 +985,17 @@ namespace TTalk.WinUI.ViewModels
                 var listView = new ListView() { SelectionMode = ListViewSelectionMode.None, MaxHeight = 560 };
                 foreach (var address in list)
                 {
-                    var _ip = address.Split(":")[0];
-                    var _port = Convert.ToInt32(address.Split(":")[1]);
+                    string _ip;
+                    int _port;
+                    if (address.Contains(':'))
+                    {
+                        _ip = address.Split(":")[0];
+                        _port = Convert.ToInt32(address.Split(":")[1]);
+                    }
+                    else
+                    {
+                        (_ip, _port) = GetEndpointForHostname(address);
+                    }
                     var progress = new ProgressRing() { IsIndeterminate = true, Width = 16, Height = 16, IsActive = true };
                     var _stackPanel = new StackPanel()
                     {
@@ -1015,7 +1022,6 @@ namespace TTalk.WinUI.ViewModels
                     };
                     _ = Task.Run(async () =>
                     {
-                        await Task.Delay(1500);
                         var query = await new TTalkQueryClient(_ip, _port).GetServerInfo();
                         App.MainWindow.DispatcherQueue.TryEnqueue(() =>
                         {
@@ -1058,7 +1064,13 @@ namespace TTalk.WinUI.ViewModels
                     CloseButtonText = "Main_ConnectToServer_CloseButton".GetLocalized(),
                     PrimaryButtonText = "Main_ConnectToServer_ConnectButton".GetLocalized(),
                 }.ShowAsync(ContentDialogPlacement.InPlace);
-                Address = textBox.Text;
+                if (textBox.Text.Contains(':') || string.IsNullOrEmpty(textBox.Text))
+                    Address = textBox.Text;
+                else
+                {
+                    var ep = GetEndpointForHostname(textBox.Text);
+                    Address = ep.Address + ':' + ep.Port.ToString();
+                }
                 if (result == ContentDialogResult.Primary)
                 {
                     Connect();
@@ -1067,12 +1079,39 @@ namespace TTalk.WinUI.ViewModels
                         var addresses = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
                         if (addresses == null)
                             addresses = new();
-                        if (!addresses.Contains(address))
-                            addresses.Add(address);
+                        if (!addresses.Contains(textBox.Text))
+                            addresses.Add(textBox.Text);
                         await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, addresses);
                     }
                 }
             };
+        }
+
+        private (string Address, int Port) GetEndpointForHostname(string hostname)
+        {
+            var result = LookupClient.ResolveService(hostname, "ttalk", ProtocolType.Tcp);
+            var entry = result.FirstOrDefault();
+            if (entry is null)
+                return new("0.0.0.0", 0);
+
+            if (entry.AddressList.Any())
+                return new(entry.AddressList.First().ToString(), entry.Port);
+
+            var entryAddressAnswers = LookupClient.Query(entry.HostName, QueryType.A).Answers;
+            if (entryAddressAnswers.Any())
+            {
+                var aTarget = entryAddressAnswers.ARecords().First();
+                return new(aTarget.Address.ToString(), entry.Port);
+            }
+
+            entryAddressAnswers = LookupClient.Query(entry.HostName, QueryType.AAAA).Answers;
+            if (entryAddressAnswers.Any())
+            {
+                var aaaaTarget = entryAddressAnswers.AaaaRecords().First();
+                return new(aaaaTarget.Address.ToString(), entry.Port);
+            }
+
+            return new("0.0.0.0", 0);
         }
     }
 }
