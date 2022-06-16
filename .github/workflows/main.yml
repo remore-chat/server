@@ -50,8 +50,14 @@ jobs:
         Platform: ${{ matrix.platform }}
 
     # Upload the app
-    - name: Upload app
+    - name: Upload client app
       uses: actions/upload-artifact@v2
       with:
         name: Upload app
         path: TTalk.WinUI\\bin
+
+    - name: Upload server executable
+      uses: actions/upload-artifact@v2
+      with:
+        name: Upload server executable
+        path: TTalk.Server\\bin
