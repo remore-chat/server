@@ -16,6 +16,9 @@ namespace TTalk.Client.Core
     internal class TTalkTcpClient : TcpClient
     {
 
+        private long lastHeartbeatReceived = 0;
+        private Timer _heartbeatTimer;
+
         public TTalkTcpClient(string address, int port, string username, string? privilegeKey = null) : base(address, port)
         {
             TcpId = null;
@@ -80,8 +83,20 @@ namespace TTalk.Client.Core
                 }
                 else if (state == SessionState.Connected)
                 {
-                    Ready?.Invoke(this, null);
                     TcpId = stateChanged.ClientId;
+                    lastHeartbeatReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
+                    _heartbeatTimer = new Timer((_) =>
+                    {
+                        if (_stop)
+                            return;
+                        if (DateTimeOffset.Now.ToUnixTimeSeconds() - lastHeartbeatReceived > 10)
+                        {
+                            PacketReceived?.Invoke(this, new DisconnectPacket() { Reason = "TIMED_OUT" });
+                            this.DisconnectAndStop();
+                        }
+                    }, 
+                    null, 0, 10*1000);
+                    Ready?.Invoke(this, null);
                 }
             }
             else if (packet is DisconnectPacket disconnect)
@@ -94,6 +109,7 @@ namespace TTalk.Client.Core
                 if (packet is TcpHeartbeatPacket)
                 {
                     this.Send(new TcpHeartbeatPacket());
+                    lastHeartbeatReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                 }
                 else
                 {
