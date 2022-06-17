@@ -53,11 +53,11 @@ jobs:
     - name: Upload client app
       uses: actions/upload-artifact@v2
       with:
-        name: Upload app
+        name: App
         path: TTalk.WinUI\\bin
 
     - name: Upload server executable
       uses: actions/upload-artifact@v2
       with:
-        name: Upload server executable
+        name: Server
         path: TTalk.Server\\bin
