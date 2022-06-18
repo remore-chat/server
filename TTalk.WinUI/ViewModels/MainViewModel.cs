@@ -886,7 +886,7 @@ namespace TTalk.WinUI.ViewModels
                     var channel = Channels.FirstOrDefault(x => x.Id == deletedChannel.ChannelId);
                     if (channel == null)
                         return;
-                    if (channel.Id == currentTextChannel.Id)
+                    if (channel.Id == currentTextChannel?.Id)
                     {
                         currentTextChannel.Messages.Clear();
                         CurrentTextChannel = null;
