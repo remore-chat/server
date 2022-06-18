@@ -32,6 +32,8 @@ namespace TTalk.WinUI.Services
                 new("uk-UA"),
                 new("de-DE"),
                 new("cs-CZ"),
+                new("nl-NL"),
+                new("fr-FR"),
             };
         }
         public event EventHandler<object> LanguageUpdated;
