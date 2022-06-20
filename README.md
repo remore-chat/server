@@ -1,4 +1,4 @@
-# Remore (JP: Contact, Communication)
+# Remore 
 
 # Free and Open Source alternative to Team Speak.
 If you interested in this project you can join our discord
