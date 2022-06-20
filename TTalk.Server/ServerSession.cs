@@ -1,4 +1,5 @@
 ﻿using NetCoreServer;
+using System.Buffers.Binary;
 using System.Net.Sockets;
 using System.Text;
 using TTalk.Library.Models;
@@ -45,7 +46,9 @@ public class ServerSession : TcpSession
 
     protected override async void OnReceived(byte[] buffer, long offset, long size)
     {
-        var packet = IPacket.FromByteArray(buffer);
+        var packet = IPacket.FromByteArray(buffer, out var ex);
+        if (ex != null)
+            Logger.LogError($"Failed to read packet with ID {BinaryPrimitives.ReadInt32LittleEndian(buffer.AsSpan(4, 4))}:\n" + ex.ToString());
         if (State == SessionState.VersionExchange)
         {
             if (packet is ServerQueryPacket queryPacket)

@@ -4,7 +4,6 @@ using System.Text;
 
 namespace TTalk.Library.Models
 {
-    [Serializable]
     public class ChannelMessage
     {
         public string Id { get; set; }

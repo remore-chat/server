@@ -1,5 +1,7 @@
-﻿using NetCoreServer;
+﻿using Microsoft.Extensions.Logging;
+using NetCoreServer;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -62,7 +64,9 @@ namespace TTalk.WinUI.Networking
 
         private void HandlePacket(byte[] buffer)
         {
-            var packet = IPacket.FromByteArray(buffer);
+            var packet = IPacket.FromByteArray(buffer, out var ex);
+            if (ex != null)
+                App.GetService<ILogger<TTalkQueryClient>>().LogError($"Failed to read packet with ID {BinaryPrimitives.ReadInt32LittleEndian(buffer.AsSpan(4, 4))}:\n" + ex.ToString());
             if (packet is not ServerQueryResponsePacket response)
             {
                 _slim.Release();

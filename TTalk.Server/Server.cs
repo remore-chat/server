@@ -1,4 +1,5 @@
 ﻿using NetCoreServer;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -106,7 +107,9 @@ public class TTalkServer
 
         protected override async void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
         {
-            var packet = IPacket.FromByteArray(buffer);
+            var packet = IPacket.FromByteArray(buffer, out var ex);
+            if (ex != null)
+                Logger.LogError($"Failed to read packet with ID {BinaryPrimitives.ReadInt32LittleEndian(buffer.AsSpan(4, 4))}:\n" + ex.ToString());
             var client = Clients.FirstOrDefault(x => x.EndPoint.ToString() == endpoint.ToString());
             if (client == null)
             {
