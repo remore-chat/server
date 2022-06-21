@@ -611,7 +611,22 @@ namespace TTalk.WinUI.ViewModels
                     _client = new TTalkClient(ip, port);
                     _client.SocketErrored += OnSocketErrored;
                     _client.PacketReceived += OnPacketReceived;
-                    var success = _client.ConnectAsync();
+                    var success = _client.Connect();
+                    if (!success)
+                    {
+                        App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                        {
+                            await new ContentDialog()
+                            {
+                                Title = "Failed to connect to server",
+                                Content = "Something went wrong",
+                                XamlRoot = App.MainWindow.Content.XamlRoot,
+                                CloseButtonText = "Close"
+                            }.ShowAsync(ContentDialogPlacement.InPlace);
+                        });
+                        _cts.Cancel();
+                        return;
+                    }
                     while (_client.IsConnecting || _client.TcpId == null)
                         await Task.Yield();
                     App.MainWindow.DispatcherQueue.TryEnqueue(() => IsConnected = true);
