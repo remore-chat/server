@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TTalk.Server.EF;
 
@@ -10,9 +11,10 @@ using TTalk.Server.EF;
 namespace TTalk.Server.Migrations
 {
     [DbContext(typeof(ServerDbContext))]
-    partial class ServerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220621104148_Files")]
+    partial class Files
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.5");
@@ -44,33 +46,12 @@ namespace TTalk.Server.Migrations
                     b.ToTable("ChannelMessages");
                 });
 
-            modelBuilder.Entity("TTalk.Library.Models.MessageAttachment", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FileId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MessageId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MessageId");
-
-                    b.ToTable("MessageAttachment");
-                });
-
             modelBuilder.Entity("TTalk.Library.Models.ServerFile", b =>
                 {
                     b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ChannelMessageId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -78,6 +59,8 @@ namespace TTalk.Server.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChannelMessageId");
 
                     b.ToTable("Files");
                 });
@@ -153,15 +136,11 @@ namespace TTalk.Server.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TTalk.Library.Models.MessageAttachment", b =>
+            modelBuilder.Entity("TTalk.Library.Models.ServerFile", b =>
                 {
-                    b.HasOne("TTalk.Library.Models.ChannelMessage", "Message")
+                    b.HasOne("TTalk.Library.Models.ChannelMessage", null)
                         .WithMany("Attachments")
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Message");
+                        .HasForeignKey("ChannelMessageId");
                 });
 
             modelBuilder.Entity("TTalk.Server.Services.ServerConfiguration", b =>

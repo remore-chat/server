@@ -28,7 +28,7 @@ namespace TTalk.Server
             })
            .ConfigureServices((context, services) =>
            {
-               services.AddDbContext<ServerDbContext>();
+               services.AddDbContext<ServerDbContext>(ServiceLifetime.Transient);
                services.AddTransient<ConfigurationService>();
                var mapperConfig = new MapperConfiguration(mc =>
                {

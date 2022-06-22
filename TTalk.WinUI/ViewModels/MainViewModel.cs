@@ -34,12 +34,13 @@ using Windows.Media.SpeechSynthesis;
 using TTalk.WinUI.Views;
 using Microsoft.Extensions.Logging;
 using DnsClient;
+using AutoMapper;
 
 namespace TTalk.WinUI.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
-        public MainViewModel(ILocalSettingsService settingsService, ILogger<MainViewModel> logger, SoundService sounds, KeyBindingsService bindingsService, ILookupClient lookupClient)
+        public MainViewModel(ILocalSettingsService settingsService, IMapper mapper, ILogger<MainViewModel> logger, SoundService sounds, KeyBindingsService bindingsService, ILookupClient lookupClient)
         {
             Process.GetCurrentProcess().Exited += OnExited;
             Channels = new();
@@ -49,7 +50,7 @@ namespace TTalk.WinUI.ViewModels
             _microphoneQueueSlim = new(0);
             _audioQueueSlim = new(0);
             _audioQueue = new();
-
+            _mapper = mapper;
             _logger = logger;
             _logger.LogInformation("\n\n");
             _logger.LogInformation(new string('=', 100));
@@ -257,6 +258,7 @@ namespace TTalk.WinUI.ViewModels
         private TTalkClient _client;
         private CancellationTokenSource _cts;
         private bool? voiceAllowed = null;
+        public (string Ip, int Port) ServerAddress => (_client?.Address, _client?.Port ?? 0);
 
         #region Reactive Properties
 
@@ -382,6 +384,7 @@ namespace TTalk.WinUI.ViewModels
 
         private Queue<byte[]> _microphoneAudioQueue;
         private Queue<byte[]> _audioQueue;
+        private IMapper _mapper;
         private ILogger<MainViewModel> _logger;
         private ThrottleDispatcher _throttleDispatcher;
         private ThrottleDispatcher _throttleDispatcherForSpeech;
@@ -672,11 +675,39 @@ namespace TTalk.WinUI.ViewModels
                     if (channel.LastParsedPage != 0)
                     {
                         channel.LastParsedPage++;
-                        _client.Send(new RequestChannelMessagesPacket()
+                        if (channel.Messages == null)
                         {
-                            ChannelId = channel.Id,
-                            Page = 0
-                        });
+                            channel.Messages = new();
+                            channel.Messages.Add(new Message()
+                            {
+                                ChannelId = channel.Id,
+                                CreatedAt = DateTime.Now,
+                                Id = "123",
+                                Attachments = new List<Attachment>()
+                                {
+                                    new Attachment()
+                                    {
+                                        Id = "",
+                                        FileId = "06aff5cd-b5f7-405c-a4f3-d3119b105551",
+                                        ContentType = "image/png",
+                                    },
+                                    new Attachment()
+                                    {
+                                        Id = "",
+                                        FileId = "e2ed63e4-9b89-4339-8e3a-7cf030bcd6b0",
+                                        ContentType = "image/png",
+                                    },
+
+                                },
+                                Text = "teee",
+                                Username = "roxxelroxx"
+                            });
+                        }
+                        //_client.Send(new RequestChannelMessagesPacket()
+                        //{
+                        //    ChannelId = channel.Id,
+                        //    Page = 0
+                        //});
                     }
                     return;
                 }
@@ -771,21 +802,15 @@ namespace TTalk.WinUI.ViewModels
                 }
                 else if (packet is ChannelMessageAddedPacket channelMessage)
                 {
-                    var channel = Channels.FirstOrDefault(x => x.Id == channelMessage.ChannelId);
+                    var channel = Channels.FirstOrDefault(x => x.Id == channelMessage.Message.ChannelId);
                     if (channel == null)
                         return;
                     App.MainWindow.DispatcherQueue.TryEnqueue(() =>
                     {
                         if (channel.Messages == null)
                             channel.Messages = new();
-                        channel.Messages.Add(new()
-                        {
-                            ChannelId = channelMessage.ChannelId,
-                            Id = channelMessage.MessageId,
-                            Message = channelMessage.Text,
-                            Username = channelMessage.SenderName
-                        });
-                        if (channelMessage.SenderName == Username)
+                        channel.Messages.Add(_mapper.Map<Message>(channelMessage.Message));
+                        if (channelMessage.Message.Username == Username)
                         {
 
                             //MainWindow.ListBox.Scroll.Offset = new Vector(MainWindow.ListBox.Scroll.Offset.X, double.MaxValue);
@@ -804,7 +829,7 @@ namespace TTalk.WinUI.ViewModels
                         channelMessages.Messages.Reverse();
                         foreach (var message in channelMessages.Messages)
                         {
-                            channel.Messages.Insert(0, message);
+                            channel.Messages.Insert(0, _mapper.Map<Message>(message));
                         }
                     });
                 }

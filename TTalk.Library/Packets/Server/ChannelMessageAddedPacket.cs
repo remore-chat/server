@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TTalk.Library.Models;
 
 namespace TTalk.Library.Packets.Server
 {
@@ -11,11 +12,7 @@ namespace TTalk.Library.Packets.Server
         }
 
         public int Id => 25;
-        public string MessageId { get; set; }
-        public string ChannelId { get; set; }
-        public string SenderName { get; set; }
-        public string Text { get; set; }
+        public ChannelMessage Message { get; set; }
         public string RequestId { get; set; }
-
     }
 }

@@ -77,5 +77,12 @@ namespace TTalk.WinUI.Views
                 }
             });
         }
+
+        private void Border_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            var border = sender as Border;
+            var attachment = border.Tag as Attachment;
+            attachment.Maximize();
+        }
     }
 }
