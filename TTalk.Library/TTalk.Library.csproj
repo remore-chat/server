@@ -6,8 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BinData" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Thirdparty\BinData\BinData\BinData.csproj" />
   </ItemGroup>
 
 </Project>

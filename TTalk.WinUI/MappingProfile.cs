@@ -13,7 +13,7 @@ namespace TTalk.WinUI
     {
         public MappingProfile()
         {
-            CreateMap<ChannelMessage, Message>();
+            CreateMap<ChannelMessage, Message>().AfterMap((prev, now) => now.Text = prev.Message);
             CreateMap<MessageAttachment, Attachment>();
         }
     }

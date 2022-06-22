@@ -16,6 +16,7 @@ namespace TTalk.WinUI.Views
             ViewModel = App.GetService<MainViewModel>();
             InitializeComponent();
             MessageContent.KeyDown += OnMessageContentKeyDown;
+            ViewModel.MessagesScrollIntoView = (obj) => MessagesListBox.ScrollIntoView(obj, ScrollIntoViewAlignment.Leading);
         }
 
         private void MessagesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -41,7 +42,6 @@ namespace TTalk.WinUI.Views
                 MessageContent.Text = "";
             }
         }
-
 
         private void StackPanel_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {

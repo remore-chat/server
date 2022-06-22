@@ -368,6 +368,7 @@ namespace TTalk.WinUI.ViewModels
         public bool EnableRNNoiseSuppression { get; private set; }
         public int InputDevice { get; private set; }
         public int OutputDevice { get; private set; }
+        public Action<object> MessagesScrollIntoView { get; internal set; }
 
         private Channel _channel;
         private int _bytesPerSegment;
@@ -675,39 +676,39 @@ namespace TTalk.WinUI.ViewModels
                     if (channel.LastParsedPage != 0)
                     {
                         channel.LastParsedPage++;
-                        if (channel.Messages == null)
-                        {
-                            channel.Messages = new();
-                            channel.Messages.Add(new Message()
-                            {
-                                ChannelId = channel.Id,
-                                CreatedAt = DateTime.Now,
-                                Id = "123",
-                                Attachments = new List<Attachment>()
-                                {
-                                    new Attachment()
-                                    {
-                                        Id = "",
-                                        FileId = "06aff5cd-b5f7-405c-a4f3-d3119b105551",
-                                        ContentType = "image/png",
-                                    },
-                                    new Attachment()
-                                    {
-                                        Id = "",
-                                        FileId = "e2ed63e4-9b89-4339-8e3a-7cf030bcd6b0",
-                                        ContentType = "image/png",
-                                    },
-
-                                },
-                                Text = "teee",
-                                Username = "roxxelroxx"
-                            });
-                        }
-                        //_client.Send(new RequestChannelMessagesPacket()
+                        //if (channel.Messages == null)
                         //{
-                        //    ChannelId = channel.Id,
-                        //    Page = 0
-                        //});
+                        //    channel.Messages = new();
+                        //    channel.Messages.Add(new Message()
+                        //    {
+                        //        ChannelId = channel.Id,
+                        //        CreatedAt = DateTime.Now,
+                        //        Id = "123",
+                        //        Attachments = new List<Attachment>()
+                        //        {
+                        //            new Attachment()
+                        //            {
+                        //                Id = "",
+                        //                FileId = "06aff5cd-b5f7-405c-a4f3-d3119b105551",
+                        //                ContentType = "image/png",
+                        //            },
+                        //            new Attachment()
+                        //            {
+                        //                Id = "",
+                        //                FileId = "e2ed63e4-9b89-4339-8e3a-7cf030bcd6b0",
+                        //                ContentType = "image/png",
+                        //            },
+
+                        //        },
+                        //        Text = "teee",
+                        //        Username = "roxxelroxx"
+                        //    });
+                        //}
+                        _client.Send(new RequestChannelMessagesPacket()
+                        {
+                            ChannelId = channel.Id,
+                            Page = 0
+                        });
                     }
                     return;
                 }
@@ -809,11 +810,11 @@ namespace TTalk.WinUI.ViewModels
                     {
                         if (channel.Messages == null)
                             channel.Messages = new();
-                        channel.Messages.Add(_mapper.Map<Message>(channelMessage.Message));
+                        var message = _mapper.Map<Message>(channelMessage.Message);
+                        channel.Messages.Add(message);
                         if (channelMessage.Message.Username == Username)
                         {
-
-                            //MainWindow.ListBox.Scroll.Offset = new Vector(MainWindow.ListBox.Scroll.Offset.X, double.MaxValue);
+                            MessagesScrollIntoView(message);
                         }
                     });
                 }
@@ -829,7 +830,8 @@ namespace TTalk.WinUI.ViewModels
                         channelMessages.Messages.Reverse();
                         foreach (var message in channelMessages.Messages)
                         {
-                            channel.Messages.Insert(0, _mapper.Map<Message>(message));
+                            var mappedMessage = _mapper.Map<Message>(message);
+                            channel.Messages.Insert(0, mappedMessage);
                         }
                     });
                 }
