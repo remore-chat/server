@@ -10,24 +10,23 @@ using TTalk.Library.Packets;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 
-namespace TTalk.WinUI.Networking
+namespace TTalk.Client.Core
 {
     public class TTalkQueryClient : TcpClient
     {
-        public TTalkQueryClient(string address, int port) : base(IPAddress.Parse(address), port)
-        {
-            _slim = new(0);
-        }
-
-        private SemaphoreSlim _slim;
+        private SemaphoreSlim _semaphoreSlim;
         private ServerQueryResponsePacket _response;
 
+        public TTalkQueryClient(string address, int port) : base(IPAddress.Parse(address), port)
+        {
+            _semaphoreSlim = new(0);
+        }
         protected override void OnConnected()
         {
             ReceiveAsync();
         }
 
-        public async Task<ServerQueryResponsePacket> GetServerInfo()
+        public async Task<ServerQueryResponsePacket?> GetServerInfo()
         {
             try
             {
@@ -46,7 +45,7 @@ namespace TTalk.WinUI.Networking
                         return null;
                 }
                 this.Send(new ServerQueryPacket());
-                _slim.Wait();
+                _semaphoreSlim.Wait();
                 return _response;
             }
             catch (Exception ex)
@@ -65,12 +64,12 @@ namespace TTalk.WinUI.Networking
             var packet = IPacket.FromByteArray(buffer);
             if (packet is not ServerQueryResponsePacket response)
             {
-                _slim.Release();
+                _semaphoreSlim.Release();
             }
             else
             {
                 _response = response;
-                _slim.Release();
+                _semaphoreSlim.Release();
             }
         }
     }

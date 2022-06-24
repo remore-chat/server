@@ -17,14 +17,7 @@ namespace TTalk.Server.EF
 
         public DbSet<ServerConfiguration> Configuration { get; set; }
         public DbSet<Channel> Channels { get; set; }
-        public DbSet<ServerFile> Files { get; set; }
         public DbSet<ChannelMessage> ChannelMessages { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<MessageAttachment>(x => x.HasKey(x => x.Id));
-            base.OnModelCreating(modelBuilder);
-        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

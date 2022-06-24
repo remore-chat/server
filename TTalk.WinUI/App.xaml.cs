@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using DnsClient;
+﻿using DnsClient;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -66,13 +65,6 @@ namespace TTalk.WinUI
                 services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
                 services.AddTransient<INavigationViewService, NavigationViewService>();
 
-                var mapperConfig = new MapperConfiguration(mc =>
-                {
-                    mc.AddProfile(new MappingProfile());
-                });
-
-                IMapper mapper = mapperConfig.CreateMapper();
-                services.AddSingleton(mapper);
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IPageService, PageService>();
                 services.AddSingleton<INavigationService, NavigationService>();
@@ -125,7 +117,7 @@ namespace TTalk.WinUI
         
         public static void ResetMainViewModel()
         {
-            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<IMapper>(), GetService<ILogger<MainViewModel>>(), GetService<SoundService>(), GetService<KeyBindingsService>(), GetService<ILookupClient>());
+            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<ILogger<MainViewModel>>(), GetService<SoundService>(), GetService<KeyBindingsService>(), GetService<ILookupClient>());
             _settingsViewModel = new SettingsViewModel(App.GetService<IThemeSelectorService>(),
                    App.GetService<ILogger<SettingsViewModel>>(),
                    GetService<KeyBindingsService>(),

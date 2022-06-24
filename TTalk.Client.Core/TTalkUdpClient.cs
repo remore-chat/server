@@ -7,36 +7,26 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TTalk.WinUI.Networking.EventArgs;
-using TTalk.WinUI.Models;
 using TTalk.Library.Packets;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
-using TTalk.WinUI.Contracts.Services;
-using TTalk.WinUI.ViewModels;
-using Microsoft.Extensions.Logging;
 
-namespace TTalk.WinUI.Networking.ClientCode
+
+namespace TTalk.Client.Core
 {
-    public class TTalkUdpClient : UdpClient
+    internal class TTalkUdpClient : UdpClient
     {
-        public TTalkUdpClient(string tcpId, IPAddress address, int port) : base(address, port)
+        public TTalkUdpClient(string tcpId, IPAddress address, int port, string username) : base(address, port)
         {
             TcpId = tcpId;
-            _settingsService = App.GetService<ILocalSettingsService>();
-            _username = _settingsService.ReadSettingAsync<string>(SettingsViewModel.UsernameSettingsKey).GetAwaiter().GetResult();
-            _logger = App.GetService<ILogger<TTalkUdpClient>>();
+            Username = username;
         }
         public string TcpId { get;}
-
-        private ILocalSettingsService _settingsService;
-        private string _username;
-        private ILogger<TTalkUdpClient> _logger;
-
-        public EndPoint LastSenderEndpoint { get; set; }
+        public string Username { get; set; }
         public bool IsConnectedToServer { get; set; }
 
-        public event EventHandler<VoiceDataMulticastPacket> VoiceDataAvailable;
+        public event EventHandler<object> Disconnected;
+        public event EventHandler<IPacket> PacketReceived;
 
         public void DisconnectAndStop()
         {
@@ -55,7 +45,7 @@ namespace TTalk.WinUI.Networking.ClientCode
         {
             this.Send(new UdpAuthenticationPacket()
             {
-                ClientUsername = _username,
+                ClientUsername = Username,
                 TcpId = TcpId
             });
             ReceiveAsync();
@@ -63,18 +53,13 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         protected override void OnSent(EndPoint endpoint, long sent)
         {
-            
+            ReceiveAsync();
         }
         protected override void OnDisconnected()
         {
-            Thread.Sleep(1000);
-            _logger.LogInformation(_stop ? $"Udp disconnected" : "UDP connection lost");
+            IsConnectedToServer = false;
+            Disconnected?.Invoke(this, null);
             
-            if (!_stop)
-            {
-                _logger.LogInformation("Trying to restore UDP connection");
-                Connect();
-            }
         }
 
         protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
@@ -84,11 +69,12 @@ namespace TTalk.WinUI.Networking.ClientCode
                 IsConnectedToServer = true;
             else if (packet is UdpHeartbeatPacket)
             {
-                this.Send(new UdpHeartbeatPacket() {  ClientUsername = _username });
+                IsConnectedToServer = true;
+                this.Send(new UdpHeartbeatPacket() {  ClientUsername = Username });
             }
-            else if (packet is VoiceDataMulticastPacket multicast)
+            else
             {
-                VoiceDataAvailable?.Invoke(this, multicast);
+                PacketReceived?.Invoke(this, packet);
             }
 
             ReceiveAsync();

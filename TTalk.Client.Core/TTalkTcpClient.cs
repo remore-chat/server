@@ -6,51 +6,40 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TTalk.WinUI.Networking.EventArgs;
 using TTalk.Library.Packets;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
-using TTalk.WinUI.ViewModels;
-using TTalk.WinUI.Contracts.Services;
 
-namespace TTalk.WinUI.Networking.ClientCode
+
+namespace TTalk.Client.Core
 {
-    internal class TTalkClient : TcpClient
+    internal class TTalkTcpClient : TcpClient
     {
 
-        public TTalkClient(string address, int port) : base(address, port)
+        private long lastHeartbeatReceived = 0;
+        private Timer _heartbeatTimer;
+
+        public TTalkTcpClient(string address, int port, string username, string? privilegeKey = null) : base(address, port)
         {
             TcpId = null;
-            _settingsService = App.GetService<ILocalSettingsService>();
-            _username = _settingsService.ReadSettingAsync<string>(SettingsViewModel.UsernameSettingsKey).GetAwaiter().GetResult();
+            Username = username;
+            PrivilegeKey = privilegeKey;
         }
 
 
-        public event EventHandler<PacketReceivedEventArgs> PacketReceived;
-        public event EventHandler<object> OnClientReady;
-        public event EventHandler<object> OnClientDisconnected;
+        public event EventHandler<IPacket> PacketReceived;
+        public event EventHandler<object> Ready;
+        public event EventHandler<object> Disconnected;
         public event EventHandler<System.Net.Sockets.SocketError> SocketErrored;
 
         public string PrivilegeKey { get; private set; }
         public SessionState State { get; set; }
         public string TcpId { get; private set; }
+        public string Username { get; }
 
-        private long lastTimeReceivedHeartbeat;
-        private Timer heartbeatTimer;
-        private ILocalSettingsService _settingsService;
-        private string _username;
-
-        protected override async void OnConnected()
+        protected override void OnConnected()
         {
-            Initialize();
-        }
-
-        private async Task Initialize()
-        {
-            await Task.Delay(100);
-            PrivilegeKey = (await _settingsService.ReadSettingAsync<string>($"{Address}:{Port}PrivilegeKey")) ?? "";
-            State = SessionState.VersionExchange;
-            this.Send(new VersionExchangePacket(SettingsViewModel.ClientVersion));
+            this.Send(new VersionExchangePacket(Constants.ClientVersion));
             ReceiveAsync();
         }
 
@@ -62,6 +51,7 @@ namespace TTalk.WinUI.Networking.ClientCode
             if (lengthOfPacket == size - 4)
             {
                 HandlePacket(buffer);
+                return;
             }
             else
             {
@@ -89,52 +79,48 @@ namespace TTalk.WinUI.Networking.ClientCode
                 State = state;
                 if (state == SessionState.Authenticating)
                 {
-                    this.Send(new AuthenticationDataPacket(_username, PrivilegeKey));
+                    this.Send(new AuthenticationDataPacket(Username, PrivilegeKey ?? ""));
                 }
                 else if (state == SessionState.Connected)
                 {
-                    lastTimeReceivedHeartbeat = DateTimeOffset.Now.ToUnixTimeSeconds();
-                    heartbeatTimer = new Timer((_) =>
+                    TcpId = stateChanged.ClientId;
+                    lastHeartbeatReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
+                    _heartbeatTimer = new Timer((_) =>
                     {
                         if (_stop)
-                        {
-                            heartbeatTimer.Dispose();
-                            heartbeatTimer = null;
                             return;
-                        }
-                        if (DateTimeOffset.Now.ToUnixTimeSeconds() - lastTimeReceivedHeartbeat > 10)
+                        if (DateTimeOffset.Now.ToUnixTimeSeconds() - lastHeartbeatReceived > 10)
                         {
-                            PacketReceived?.Invoke(this, new() { Packet = new DisconnectPacket() { Reason = "Timed out" } });
-                            heartbeatTimer.Dispose();
-                            heartbeatTimer = null;
+                            PacketReceived?.Invoke(this, new DisconnectPacket() { Reason = "TIMED_OUT" });
+                            this.DisconnectAndStop();
                         }
-                    }, null, 0, 10000);
-                    OnClientReady?.Invoke(this, null);
-                    TcpId = stateChanged.ClientId;
+                    }, 
+                    null, 0, 10*1000);
+                    Ready?.Invoke(this, null);
                 }
             }
             else if (packet is DisconnectPacket disconnect)
             {
-                PacketReceived.Invoke(this, new() { Packet = disconnect });
+                PacketReceived?.Invoke(this, disconnect);
                 return;
             }
             else if (State == SessionState.Connected)
             {
                 if (packet is TcpHeartbeatPacket)
                 {
-                    lastTimeReceivedHeartbeat = DateTimeOffset.Now.ToUnixTimeSeconds();
                     this.Send(new TcpHeartbeatPacket());
+                    lastHeartbeatReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                 }
                 else
                 {
-                    PacketReceived?.Invoke(this, new() { Packet = packet });
+                    PacketReceived?.Invoke(this, packet);
                 }
             }
         }
 
         protected override void OnDisconnected()
         {
-            OnClientDisconnected?.Invoke(this, null);
+            Disconnected?.Invoke(this, null);
         }
 
         public void DisconnectAndStop()
