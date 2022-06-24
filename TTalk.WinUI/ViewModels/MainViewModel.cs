@@ -118,7 +118,6 @@ namespace TTalk.WinUI.ViewModels
                     });
                 }
             });
-            _denoiser = new Denoiser();
             App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
             {
                 IsConnected = true;
@@ -255,97 +254,39 @@ namespace TTalk.WinUI.ViewModels
             EnableRNNoiseSuppression = await SettingsService.ReadSettingAsync<bool>(SettingsViewModel.EnableRNNoiseSuppressionSettingsKey);
         }
 
-        private TTalkClient _client;
+        private TTal _client;
         private CancellationTokenSource _cts;
         private bool? voiceAllowed = null;
+        private int _segmentFrames;
+        private string ip;
+        private int port;
+        public Channel CurrentChannel { get; set; }
         public (string Ip, int Port) ServerAddress => (_client?.Address, _client?.Port ?? 0);
 
         #region Reactive Properties
 
         [ObservableProperty]
         private string serverName;
-
         [ObservableProperty]
         private int serverMaxClients;
-
+        [ObservableProperty]
         private string address;
-
-        public string Address
-        {
-            get { return address; }
-            set { this.SetProperty(ref address, value); }
-        }
-
+        [ObservableProperty]
         private string messageContent;
-
-        public string MessageContent
-        {
-            get { return messageContent; }
-            set { this.SetProperty(ref messageContent, value); }
-        }
-
+        [ObservableProperty]
         private ObservableCollection<Channel> channels;
-
-        public ObservableCollection<Channel> Channels
-        {
-            get { return channels; }
-            set { this.SetProperty(ref channels, value); }
-        }
-
-        private int _segmentFrames;
+        [ObservableProperty]
         private bool isConnected;
-        private string ip;
-        private int port;
-
-        public bool IsConnected
-        {
-            get { return isConnected; }
-            set { this.SetProperty(ref isConnected, value); }
-        }
-
+        [ObservableProperty]
         private Channel currentTextChannel;
-
-        public Channel CurrentTextChannel
-        {
-            get { return currentTextChannel; }
-            set { this.SetProperty(ref currentTextChannel, value); }
-        }
-
-
+        [ObservableProperty]
         private bool isNegotiationFinished;
-
-        public bool IsNegotiationFinished
-        {
-            get { return isNegotiationFinished; }
-            set { SetProperty(ref isNegotiationFinished, value); }
-        }
-
+        [ObservableProperty]
         private bool canEditServerSettings;
-
-        public bool CanEditServerSettings
-        {
-            get { return canEditServerSettings; }
-            set { SetProperty(ref canEditServerSettings, value); }
-        }
-
-
+        [ObservableProperty]
         private ChannelClient currentChannelClient;
-
-        public ChannelClient CurrentChannelClient
-        {
-            get { return currentChannelClient; }
-            set { SetProperty(ref currentChannelClient, value); }
-        }
-
-
-        public Channel CurrentChannel { get; set; }
+        [ObservableProperty]
         private bool isNotConnectingToChannel;
-
-        public bool IsNotConnectingToChannel
-        {
-            get { return isNotConnectingToChannel; }
-            set { this.SetProperty(ref isNotConnectingToChannel, value); }
-        }
 
         public ICommand ShowConnectDialog { get; }
         public RelayCommand DisconnectCommand { get; }
@@ -355,8 +296,6 @@ namespace TTalk.WinUI.ViewModels
         public RelayCommand CreateChannelDialogCommand { get; }
         public RelayCommand<string> DeleteChannelDialogCommand { get; }
         public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
-
-        private Denoiser _denoiser;
 
         public ILookupClient LookupClient { get; }
         public ILocalSettingsService SettingsService { get; }
