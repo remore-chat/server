@@ -17,7 +17,7 @@ namespace TTalk.WinUI.Converters
             if (parameter == null)
                 return value;
 
-            return string.Format(((string)parameter).Replace("[[", "{").Replace("]]", "}"), value);
+            return string.Format((string)parameter, value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

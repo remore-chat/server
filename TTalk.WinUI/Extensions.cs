@@ -27,12 +27,6 @@ namespace TTalk.WinUI
             Array.Copy(source, index, slice, 0, length);
             return slice;
         }
-        public static T[] Slice<T>(this T[] source, long index, long length)
-        {
-            T[] slice = new T[length];
-            Array.Copy(source, index, slice, 0, length);
-            return slice;
-        }
 
         public static string Capitalize(this string str)
         {

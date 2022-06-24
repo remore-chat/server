@@ -15,7 +15,6 @@ using TTalk.Library.Packets.Server;
 using TTalk.WinUI.Contracts.Services;
 using TTalk.WinUI.ViewModels;
 using Microsoft.Extensions.Logging;
-using System.Buffers.Binary;
 
 namespace TTalk.WinUI.Networking.ClientCode
 {
@@ -80,9 +79,7 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
         {
-            var packet = IPacket.FromByteArray(buffer, out var ex);
-            if (ex != null)
-                App.GetService<ILogger<TTalkUdpClient>>().LogError($"Failed to read packet with ID {BinaryPrimitives.ReadInt32LittleEndian(buffer.AsSpan(4, 4))}:\n" + ex.ToString());
+            var packet = IPacket.FromByteArray(buffer);
             if (packet is UdpNotifyConnectedPacket)
                 IsConnectedToServer = true;
             else if (packet is UdpHeartbeatPacket)

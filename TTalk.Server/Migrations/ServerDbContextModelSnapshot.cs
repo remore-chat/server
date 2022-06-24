@@ -44,44 +44,6 @@ namespace TTalk.Server.Migrations
                     b.ToTable("ChannelMessages");
                 });
 
-            modelBuilder.Entity("TTalk.Library.Models.MessageAttachment", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FileId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MessageId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MessageId");
-
-                    b.ToTable("MessageAttachment");
-                });
-
-            modelBuilder.Entity("TTalk.Library.Models.ServerFile", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Files");
-                });
-
             modelBuilder.Entity("TTalk.Server.Channel", b =>
                 {
                     b.Property<string>("Id")
@@ -153,17 +115,6 @@ namespace TTalk.Server.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TTalk.Library.Models.MessageAttachment", b =>
-                {
-                    b.HasOne("TTalk.Library.Models.ChannelMessage", "Message")
-                        .WithMany("Attachments")
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Message");
-                });
-
             modelBuilder.Entity("TTalk.Server.Services.ServerConfiguration", b =>
                 {
                     b.HasOne("TTalk.Server.Models.PrivilegeKey", "PrivilegeKey")
@@ -171,11 +122,6 @@ namespace TTalk.Server.Migrations
                         .HasForeignKey("PrivilegeKeyId");
 
                     b.Navigation("PrivilegeKey");
-                });
-
-            modelBuilder.Entity("TTalk.Library.Models.ChannelMessage", b =>
-                {
-                    b.Navigation("Attachments");
                 });
 
             modelBuilder.Entity("TTalk.Server.Channel", b =>

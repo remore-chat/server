@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>true</ImplicitUsings>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Authors>Piotr Madura</Authors>
+        <Description>Serializes and deserializes anything into compact binary data. Dependency free!</Description>
+        <Copyright>Copyright (c) Piotr Madura 2022</Copyright>
+        <PackageProjectUrl>https://github.com/ndelta0/BinData</PackageProjectUrl>
+        <PackageLicenseUrl>https://choosealicense.com/licenses/mit/</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/ndelta0/BinData</RepositoryUrl>
+        <AssemblyVersion>2.1.0.*</AssemblyVersion>
+        <Deterministic>false</Deterministic>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+</Project>
