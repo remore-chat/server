@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "Remore.WinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Remore.WinUI (Unpackaged)": {
+      "commandName": "Project"
+    },
+    "Profile 1": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

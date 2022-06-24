@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Remore.Server": {
+      "commandName": "Project"
+    },
+    "Remore.Server (Voice debug)": {
+      "commandName": "Project",
+      "commandLineArgs": "--voice-debug"
+    }
+  }
+}
