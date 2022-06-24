@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppDisplayName" xml:space="preserve">
-    <value>Remore</value>
+    <value>TTalk</value>
   </data>
   <data name="AppDescription" xml:space="preserve">
-    <value>Remore</value>
+    <value>TTalk</value>
   </data>
   <data name="Shell_Main.Content" xml:space="preserve">
     <value>Thuis</value>
@@ -145,7 +145,7 @@
     <value>Over deze applicatie</value>
   </data>
   <data name="Settings_AboutDescription.Text" xml:space="preserve">
-    <value>Remore - is een gratis open-source alternatief op TeamSpeak, ontwikkeld door Roxxel (https://roxxel.moe)</value>
+    <value>TTalk - is een gratis open-source alternatief op TeamSpeak, ontwikkeld door Roxxel (https://roxxel.moe)</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
     <value>Privacy Statement</value>

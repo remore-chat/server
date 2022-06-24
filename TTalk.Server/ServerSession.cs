@@ -1,5 +1,4 @@
 ﻿using NetCoreServer;
-using System.Buffers.Binary;
 using System.Net.Sockets;
 using System.Text;
 using TTalk.Library.Models;
@@ -7,7 +6,6 @@ using TTalk.Library.Packets;
 using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.Server;
-using TTalk.Server.EF;
 
 public class ServerSession : TcpSession
 {
@@ -39,24 +37,15 @@ public class ServerSession : TcpSession
     {
         Logger.LogInfo($"TCP session with Id {Id} disconnected!");
         DisconnectCurrentFromChannel();
-        try
-        {
-            var connectedClient = CurrentChannel?.ConnectedClients.FirstOrDefault(x => x.Username == Username);
-            if (connectedClient != null)
-                Server.UDP.Clients.Remove(connectedClient);
-            Server.Clients.Remove(this);
-        }
-        catch
-        {
-
-        }
+        var connectedClient = CurrentChannel?.ConnectedClients.FirstOrDefault(x => x.Username == Username);
+        if (connectedClient != null)
+            Server.UDP.Clients.Remove(connectedClient);
+        Server.Clients.Remove(this);
     }
 
     protected override async void OnReceived(byte[] buffer, long offset, long size)
     {
-        var packet = IPacket.FromByteArray(buffer, out var ex);
-        if (ex != null)
-            Logger.LogError($"Failed to read packet with ID {BinaryPrimitives.ReadInt32LittleEndian(buffer.AsSpan(4, 4))}:\n" + ex.ToString());
+        var packet = IPacket.FromByteArray(buffer);
         if (State == SessionState.VersionExchange)
         {
             if (packet is ServerQueryPacket queryPacket)
@@ -74,48 +63,6 @@ public class ServerSession : TcpSession
                 this.Disconnect();
                 Logger.LogInfo($"Query client disconnected {Id}");
                 return;
-            }
-            if (packet is RequestFilePacket fileRequest)
-            {
-                Logger.LogInfo($"File request from {Id}");
-                if (!Directory.Exists("storage"))
-                    Directory.CreateDirectory("storage");
-                var file = ServiceContainer.GetService<ServerDbContext>().Files.FirstOrDefault(x => x.Id == fileRequest.FileId);
-                byte[] bytes = null;
-                if (file == null)
-                {
-                    bytes = new PacketWriter(new FileResponsePacket()
-                    {
-                        Data = new byte[0],
-                        RequestId = fileRequest.RequestId,
-                        ContentType = null,
-                        Error = "NOT_FOUND"
-                    }).Write();
-                }
-                else
-                {
-                    if (!File.Exists($"storage/{file.Name}"))
-                        bytes = new PacketWriter(new FileResponsePacket()
-                        {
-                            Data = new byte[0],
-                            RequestId = fileRequest.RequestId,
-                            ContentType = null,
-                            Error = "FILE_FOUND_IN_DB_BUT_DOESNT_EXISTS_IN_FS"
-                        }).Write();
-                    else
-                        bytes = new PacketWriter(new FileResponsePacket()
-                        {
-                            Data = File.ReadAllBytes($"storage/{file.Name}"),
-                            RequestId = fileRequest.RequestId,
-                            ContentType = MimeTypes.MimeTypeMap.GetMimeType(Path.GetExtension(file.Name))
-                        }).Write();
-                }
-                var byteReaderWriter = new ByteReaderWriter();
-                byteReaderWriter.Write(bytes.Length);
-                byteReaderWriter.Write(bytes);
-                this.Send(byteReaderWriter.ToArray());
-                this.Disconnect();
-                byteReaderWriter.Dispose();
             }
             if (packet is not VersionExchangePacket vs)
             {
@@ -157,7 +104,7 @@ public class ServerSession : TcpSession
                 this.Disconnect();
                 return;
             }
-            if (auth.ServerPrivilegeKey != "" && auth.ServerPrivilegeKey != Server.Configuration.PrivilegeKey?.Key)
+            if (!string.IsNullOrWhiteSpace(auth.ServerPrivilegeKey) && auth.ServerPrivilegeKey != Server.Configuration.PrivilegeKey?.Key)
             {
                 Logger.LogInfo($"Client {Id} tried to connect with invalid privilege key");
                 this.Send(new DisconnectPacket($"Invalid privilege key"));
@@ -234,7 +181,10 @@ public class ServerSession : TcpSession
                 channel.Messages.Add(message);
                 TCP.Multicast(new ChannelMessageAddedPacket()
                 {
-                    Message = message
+                    ChannelId = channel.Id,
+                    MessageId = message.Id,
+                    SenderName = message.Username,
+                    Text = message.Message
                 });
                 Server.Context.ChannelMessages.Add(message);
                 await Server.Context.SaveChangesAsync();
@@ -277,28 +227,28 @@ public class ServerSession : TcpSession
                 var channel = Server.Channels.FirstOrDefault(x => x.Id == channelJoin.ChannelId);
                 if (channel == null)
                 {
-                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Channel not found" });
+                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Channel not found", RequestId = channelJoin.RequestId });
                 }
                 else if (channel.Id == CurrentChannel?.Id)
                 {
-                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Already joined" });
+                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Already joined", RequestId = channelJoin.RequestId });
                 }
                 else if (channel.ChannelType == TTalk.Library.Enums.ChannelType.Text)
                 {
-                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "This is text channel" });
+                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "This is text channel", RequestId = channelJoin.RequestId });
                 }
                 else
                 {
                     if (channel.ConnectedClients.Count >= channel.MaxClients)
                     {
-                        this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Maximum limit of connected clients reached" });
+                        this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Maximum limit of connected clients reached", RequestId = channelJoin.RequestId });
                     }
                     else
                     {
                         var udpClient = Server.UDP.Clients.FirstOrDefault(x => x.TcpSession.Id == this.Id);
                         if (udpClient == null)
                         {
-                            this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Your client isn't connected to UDP server" });
+                            this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Your client isn't connected to UDP server", RequestId = channelJoin.RequestId });
                         }
                         else
                         {
@@ -310,7 +260,7 @@ public class ServerSession : TcpSession
                             }
                             channel.ConnectedClients.Add(udpClient);
                             CurrentChannel = channel;
-                            this.Send(new RequestChannelJoinResponse() { Allowed = true, Reason = "" });
+                            this.Send(new RequestChannelJoinResponse() { Allowed = true, Reason = "", RequestId = channelJoin.RequestId });
                             TCP.Multicast(new ChannelUserConnected() { ChannelId = channel.Id, Username = this.Username });
                         }
                     }

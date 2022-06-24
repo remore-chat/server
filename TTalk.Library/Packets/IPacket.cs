@@ -12,16 +12,14 @@ namespace TTalk.Library.Packets
         public int Id { get; }
         public string RequestId { get; set; }
 
-        public static IPacket FromByteArray(byte[] data, out Exception exception)
+        public static IPacket FromByteArray(byte[] data)
         {
             try
             {
-                exception = null;
                 return new PacketReader(data).Read();
             }
             catch (Exception ex)
             {
-                exception = ex;
                 return null;
             }
         }
