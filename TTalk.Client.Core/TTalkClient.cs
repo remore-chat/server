@@ -10,6 +10,7 @@ using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.Library.Packets;
 using TTalk.Client.Core.Exceptions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TTalk.Client.Core
 {
@@ -80,6 +81,7 @@ namespace TTalk.Client.Core
 
         public async Task SendPacketTCP(IPacket packet)
         {
+            ArgumentNullException.ThrowIfNull(packet);
             if (!_tcpClient.IsConnected && _tcpClient.State != SessionState.Connected)
                 throw new Exception("Can't send packets if state is not connected");
 
@@ -88,6 +90,7 @@ namespace TTalk.Client.Core
 
         public async Task SendPacketUDP(IUdpPacket packet)
         {
+            ArgumentNullException.ThrowIfNull(packet);
             if (!_udpClient.IsConnectedToServer)
                 throw new Exception("Can't send packets if state is not connected");
             _udpClient.Send(packet as IPacket);
@@ -104,6 +107,17 @@ namespace TTalk.Client.Core
             };
             await SendPacketTCP(packet);
             return await _pending.WaitForValueAsync(packet.RequestId, 5000) as RequestChannelJoinResponse;
+        }
+        public async Task<ChannelMessagesResponse?> RequestChannelMessages(string channelId, int page)
+        {
+            var packet = new RequestChannelMessagesPacket()
+            {
+                ChannelId = channelId,
+                RequestId = Guid.NewGuid().ToString(),
+                Page = page
+            };
+            await SendPacketTCP(packet);
+            return await _pending.WaitForValueAsync(packet.RequestId, 15000) as ChannelMessagesResponse;
         }
         #endregion
 
