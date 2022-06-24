@@ -157,7 +157,7 @@ public class ServerSession : TcpSession
                 this.Disconnect();
                 return;
             }
-            if (!string.IsNullOrWhiteSpace(auth.ServerPrivilegeKey) && auth.ServerPrivilegeKey != Server.Configuration.PrivilegeKey?.Key)
+            if (auth.ServerPrivilegeKey != "" && auth.ServerPrivilegeKey != Server.Configuration.PrivilegeKey?.Key)
             {
                 Logger.LogInfo($"Client {Id} tried to connect with invalid privilege key");
                 this.Send(new DisconnectPacket($"Invalid privilege key"));
@@ -277,28 +277,28 @@ public class ServerSession : TcpSession
                 var channel = Server.Channels.FirstOrDefault(x => x.Id == channelJoin.ChannelId);
                 if (channel == null)
                 {
-                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Channel not found", RequestId = channelJoin.RequestId });
+                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Channel not found" });
                 }
                 else if (channel.Id == CurrentChannel?.Id)
                 {
-                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Already joined", RequestId = channelJoin.RequestId });
+                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Already joined" });
                 }
                 else if (channel.ChannelType == TTalk.Library.Enums.ChannelType.Text)
                 {
-                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "This is text channel", RequestId = channelJoin.RequestId });
+                    this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "This is text channel" });
                 }
                 else
                 {
                     if (channel.ConnectedClients.Count >= channel.MaxClients)
                     {
-                        this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Maximum limit of connected clients reached", RequestId = channelJoin.RequestId });
+                        this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Maximum limit of connected clients reached" });
                     }
                     else
                     {
                         var udpClient = Server.UDP.Clients.FirstOrDefault(x => x.TcpSession.Id == this.Id);
                         if (udpClient == null)
                         {
-                            this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Your client isn't connected to UDP server", RequestId = channelJoin.RequestId });
+                            this.Send(new RequestChannelJoinResponse() { Allowed = false, Reason = "Your client isn't connected to UDP server" });
                         }
                         else
                         {
@@ -310,7 +310,7 @@ public class ServerSession : TcpSession
                             }
                             channel.ConnectedClients.Add(udpClient);
                             CurrentChannel = channel;
-                            this.Send(new RequestChannelJoinResponse() { Allowed = true, Reason = "", RequestId = channelJoin.RequestId });
+                            this.Send(new RequestChannelJoinResponse() { Allowed = true, Reason = "" });
                             TCP.Multicast(new ChannelUserConnected() { ChannelId = channel.Id, Username = this.Username });
                         }
                     }
