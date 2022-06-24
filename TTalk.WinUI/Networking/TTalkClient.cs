@@ -12,6 +12,8 @@ using TTalk.Library.Packets.Client;
 using TTalk.Library.Packets.Server;
 using TTalk.WinUI.ViewModels;
 using TTalk.WinUI.Contracts.Services;
+using Microsoft.Extensions.Logging;
+using System.Buffers.Binary;
 
 namespace TTalk.WinUI.Networking.ClientCode
 {
@@ -82,7 +84,9 @@ namespace TTalk.WinUI.Networking.ClientCode
 
         private void HandlePacket(byte[] buffer)
         {
-            var packet = IPacket.FromByteArray(buffer);
+            var packet = IPacket.FromByteArray(buffer, out var ex);
+            if (ex != null)
+                App.GetService<ILogger<TTalkClient>>().LogError($"Failed to read packet with ID {BinaryPrimitives.ReadInt32LittleEndian(buffer.AsSpan(4, 4))}:\n" + ex.ToString());
             if (packet is StateChangedPacket stateChanged)
             {
                 var state = (SessionState)stateChanged.NewState;

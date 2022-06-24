@@ -28,6 +28,7 @@
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
 	  <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+	  <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
 	  <PackageReference Include="NetCoreServer" Version="6.2.0" />
 	</ItemGroup>
 

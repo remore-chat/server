@@ -44,7 +44,6 @@
 	  <None Remove="Assets\Square150x150Logo.scale-200.png" />
 	  <None Remove="Assets\Square44x44Logo.scale-200.png" />
 	  <None Remove="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-	  <None Remove="Assets\StoreLogo.png" />
 	  <None Remove="Assets\Wide310x150Logo.scale-200.png" />
 	  <None Remove="Views\ServerSettingsPage.xaml" />
 	  <None Remove="Views\ServerSettings\ServerSettingsOverviewView.xaml" />
@@ -55,6 +54,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="11.0.1" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />

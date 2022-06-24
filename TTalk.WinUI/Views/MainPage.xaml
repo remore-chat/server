@@ -165,7 +165,24 @@
                                 <DataTemplate>
                                     <StackPanel Margin="0 4 0 4">
                                         <TextBlock Margin="0 4 0 0" Text="{Binding Username}" FontSize="16" />
-                                        <TextBlock Margin="0 4 0 4" Text="{Binding Message}" FontSize="14"  />
+                                        <TextBlock Margin="0 4 0 4" Text="{Binding Text}" FontSize="14"  />
+                                        <ListView Margin="0 0 0 12" SelectionMode="None" HorizontalAlignment="Left" ItemsSource="{Binding Attachments}">
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0 6 6 0">
+                                                        <Border Width="350" Height="200" CornerRadius="8" Visibility="{Binding IsNotLoaded, Mode=OneWay, Converter={StaticResource boolToVis}}"  HorizontalAlignment="Left"  Background="Black">
+                                                            <StackPanel VerticalAlignment="Center">
+                                                                <ProgressRing IsIndeterminate="False" Value="{Binding LoadingProgress}" />
+                                                                <TextBlock HorizontalAlignment="Center" Text="{Binding LoadingProgress, Converter={StaticResource format}, ConverterParameter='[[0]]%'}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <Border Tag="{Binding}" Tapped="Border_Tapped"  CornerRadius="8" HorizontalAlignment="Left" Visibility="{Binding IsLoaded, Mode=OneWay, Converter={StaticResource boolToVis}}">
+                                                            <Image HorizontalAlignment="Stretch" MaxWidth="350" Source="{Binding ImageSource, Mode=OneWay}"  />
+                                                        </Border>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
                                     </StackPanel>
                                 </DataTemplate>
                             </ListView.ItemTemplate>

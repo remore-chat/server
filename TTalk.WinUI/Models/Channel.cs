@@ -64,9 +64,9 @@ namespace TTalk.WinUI.Models
 
         public int LastParsedPage { get; set; } = -1;
 
-        private ObservableCollection<ChannelMessage> messages;
+        private ObservableCollection<Message> messages;
 
-        public ObservableCollection<ChannelMessage> Messages
+        public ObservableCollection<Message> Messages
         {
             get
             {
