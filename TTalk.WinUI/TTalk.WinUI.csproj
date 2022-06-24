@@ -83,6 +83,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Thirdparty\Opus.NET\OpusWrapper\OpusWrapper.csproj" />
+		<ProjectReference Include="..\TTalk.Client.Core\TTalk.Client.Core.csproj" />
 		<ProjectReference Include="..\TTalk.Library\TTalk.Library.csproj" />
 		<ProjectReference Include="..\TTalk.WinUI.Core\TTalk.WinUI.Core.csproj" />
 	</ItemGroup>

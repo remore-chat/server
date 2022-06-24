@@ -204,6 +204,7 @@ public class ServerSession : TcpSession
                 this.Send(new ChannelMessagesResponse()
                 {
                     ChannelId = channel.Id,
+                    RequestId = messagesPacket.RequestId,
                     Messages = messages
                 });
             }

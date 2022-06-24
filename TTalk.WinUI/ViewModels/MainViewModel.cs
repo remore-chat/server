@@ -24,9 +24,6 @@ using TTalk.WinUI.Contracts.Services;
 using TTalk.WinUI.Helpers;
 using TTalk.WinUI.KeyBindings;
 using TTalk.WinUI.Models;
-using TTalk.WinUI.Networking;
-using TTalk.WinUI.Networking.ClientCode;
-using TTalk.WinUI.Networking.EventArgs;
 using TTalk.WinUI.AudioProcessing;
 using TTalk.WinUI.Services;
 using Windows.ApplicationModel.Resources.Core;
@@ -34,6 +31,9 @@ using Windows.Media.SpeechSynthesis;
 using TTalk.WinUI.Views;
 using Microsoft.Extensions.Logging;
 using DnsClient;
+using TTalk.Client.Core;
+using TTalk.Library.Packets;
+using TTalk.Client.Core.Exceptions;
 
 namespace TTalk.WinUI.ViewModels
 {
@@ -72,7 +72,7 @@ namespace TTalk.WinUI.ViewModels
             });
             LeaveChannel = new RelayCommand(() =>
             {
-                this._client.Send(new LeaveChannelPacket());
+                _ = _client.SendPacketTCP(new LeaveChannelPacket());
             });
             ToggleMute = new RelayCommand(async () =>
             {
@@ -135,7 +135,7 @@ namespace TTalk.WinUI.ViewModels
             var viewModel = new ServerSettingsViewModel();
             viewModel.Init((name, maxClients) =>
                 {
-                    this._client.Send(new UpdateServerInfoPacket()
+                    _ = _client.SendPacketTCP(new UpdateServerInfoPacket()
                     {
                         Name = name,
                         MaxClients = maxClients
@@ -158,7 +158,7 @@ namespace TTalk.WinUI.ViewModels
             }.ShowAsync(ContentDialogPlacement.InPlace);
             if (result == ContentDialogResult.Primary)
             {
-                _client.Send(new DeleteChannelPacket() { ChannelId = channel.Id });
+                await _client.SendPacketTCP(new DeleteChannelPacket() { ChannelId = channel.Id });
             }
         }
 
@@ -211,7 +211,7 @@ namespace TTalk.WinUI.ViewModels
             var result = await dialog.ShowAsync(ContentDialogPlacement.InPlace);
             if (result == ContentDialogResult.Primary)
             {
-                this._client.Send(new CreateChannelPacket()
+                _ = _client.SendPacketTCP(new CreateChannelPacket()
                 {
                     Name = channelNameInput.Text,
                     Bitrate = (int)bitrateSlider.Value * 1000,
@@ -378,7 +378,6 @@ namespace TTalk.WinUI.ViewModels
         private BufferedWaveProvider _playBuffer;
         private OpusEncoder _encoder;
         private OpusDecoder _decoder;
-        private TTalkUdpClient _udpClient;
 
         private Queue<byte[]> _microphoneAudioQueue;
         private Queue<byte[]> _audioQueue;
@@ -471,7 +470,7 @@ namespace TTalk.WinUI.ViewModels
         {
 
             var channelClient = CurrentChannel.ConnectedClients.FirstOrDefault(x => x.Username == Username);
-            _client.Send(new VoiceEstablishPacket());
+            _ = _client.SendPacketTCP(new VoiceEstablishPacket());
             while (voiceAllowed == null)
                 await Task.Yield();
             if (voiceAllowed == false)
@@ -489,7 +488,7 @@ namespace TTalk.WinUI.ViewModels
                 {
                     _microphoneQueueSlim.Wait();
                     var chunk = _microphoneAudioQueue.Dequeue();
-                    _udpClient.Send(new VoiceDataPacket() { ClientUsername = Username, VoiceData = chunk });
+                    await _client.SendPacketUDP(new VoiceDataPacket() { ClientUsername = Username, VoiceData = chunk });
                 }
                 catch (Exception)
                 {
@@ -592,7 +591,7 @@ namespace TTalk.WinUI.ViewModels
             _logger.LogInformation($"Connecting to {Address}");
 
             if (_client?.IsConnected ?? false)
-                _client.DisconnectAndStop();
+                _client.Disconnect();
             if (_cts != null)
                 _cts.Cancel();
             _cts = new();
@@ -608,19 +607,24 @@ namespace TTalk.WinUI.ViewModels
                 port = Convert.ToInt32(address.Split(":")[1]);
                 try
                 {
-                    _client = new TTalkClient(ip, port);
-                    _client.SocketErrored += OnSocketErrored;
+                    _client = new TTalkClient(ip, port, Username, await SettingsService.ReadSettingAsync<string>($"{Address}PrivilegeKey"), null);
                     _client.PacketReceived += OnPacketReceived;
-                    var success = _client.ConnectAsync();
-                    while (_client.IsConnecting || _client.TcpId == null)
-                        await Task.Yield();
-                    App.MainWindow.DispatcherQueue.TryEnqueue(() => IsConnected = true);
-                    UdpConnect(ip, port);
-                    while (!_udpClient?.IsConnectedToServer ?? false)
-                        await Task.Delay(100);
+                    _client.UDPPacketReceived += OnUdpPacketReceived;
+                    try
+                    {
+                        await _client.ConnectAsync();
+                        App.MainWindow.DispatcherQueue.TryEnqueue(() => IsConnected = true);
+                    }
+                    catch (ConnectionFailedException ex)
+                    {
+                        App.MainWindow.DispatcherQueue.TryEnqueue(() => IsConnected = false);
+                        _logger.LogError($"Connection to {address} failed");
+                        App.ResetMainViewModel();
+                        App.GetService<INavigationService>().NavigateTo(typeof(SettingsViewModel).FullName, null, true);
+                        App.GetService<INavigationService>().NavigateTo(typeof(MainViewModel).FullName, null, true);
+                        return;
+                    }
                     _logger.LogInformation($"Connected to {Address}");
-
-                    await Task.Delay(-1, _cts.Token);
                 }
                 catch (TaskCanceledException)
                 {
@@ -632,13 +636,11 @@ namespace TTalk.WinUI.ViewModels
                 }
             });
         }
-        private void UdpConnect(string ip, int port)
-        {
-            _udpClient = new TTalkUdpClient(_client.TcpId, IPAddress.Parse(ip), port);
-            _udpClient.VoiceDataAvailable += OnVoiceDataAvailable;
-            _udpClient.Connect();
-            _logger.LogInformation("UDP connected");
 
+        private void OnUdpPacketReceived(object sender, IPacket e)
+        {
+            if (e is VoiceDataMulticastPacket voice)
+                HandleVoiceData(voice);
         }
 
         public async Task JoinChannel(Channel channel)
@@ -657,17 +659,36 @@ namespace TTalk.WinUI.ViewModels
                     if (channel.LastParsedPage != 0)
                     {
                         channel.LastParsedPage++;
-                        _client.Send(new RequestChannelMessagesPacket()
+                        var messages = await _client.RequestChannelMessages(channel.Id, 0);
+                        App.MainWindow.DispatcherQueue.TryEnqueue(() =>
                         {
-                            ChannelId = channel.Id,
-                            Page = 0
+                            if (channel.Messages == null)
+                                channel.Messages = new();
+                            messages.Messages.Reverse();
+                            foreach (var message in messages.Messages)
+                            {
+                                channel.Messages.Insert(0, message);
+                            }
                         });
                     }
                     return;
                 }
                 IsNotConnectingToChannel = false;
                 _channel = channel;
-                _client.Send(new RequestChannelJoin() { ChannelId = channel.Id });
+                var response = await _client.RequestChannelJoinAsync(channel.Id);
+                if (response == null || !response.Allowed)
+                {
+                    App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                    {
+                        await new ContentDialog()
+                        {
+                            Title = "Failed to connect to channel",
+                            Content = new TextBlock() { Text = response.Reason },
+                            CloseButtonText = "Close",
+                            XamlRoot = App.MainWindow.Content.XamlRoot,
+                        }.ShowAsync(ContentDialogPlacement.InPlace);
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -684,8 +705,7 @@ namespace TTalk.WinUI.ViewModels
             try
             {
                 _cts?.Cancel();
-                _client.DisconnectAndStop();
-                UdpDisconnect();
+                _client.Disconnect();
                 StopEncoding();
                 StopAudioPlayback();
                 App.ResetMainViewModel();
@@ -700,11 +720,11 @@ namespace TTalk.WinUI.ViewModels
 
         }
 
-        private void OnPacketReceived(object? sender, PacketReceivedEventArgs e)
+        private void OnPacketReceived(object? sender, IPacket e)
         {
             App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
             {
-                var packet = e.Packet;
+                var packet = e;
 
                 if (packet is ClientConnectedPacket client)
                 {
@@ -777,22 +797,6 @@ namespace TTalk.WinUI.ViewModels
                         }
                     });
                 }
-                else if (packet is ChannelMessagesResponse channelMessages)
-                {
-                    var channel = Channels.FirstOrDefault(x => x.Id == channelMessages.ChannelId);
-                    if (channel == null)
-                        return;
-                    App.MainWindow.DispatcherQueue.TryEnqueue(() =>
-                    {
-                        if (channel.Messages == null)
-                            channel.Messages = new();
-                        channelMessages.Messages.Reverse();
-                        foreach (var message in channelMessages.Messages)
-                        {
-                            channel.Messages.Insert(0, message);
-                        }
-                    });
-                }
                 else if (packet is ChannelUserConnected userConnected)
                 {
 
@@ -837,33 +841,6 @@ namespace TTalk.WinUI.ViewModels
                 {
                     voiceAllowed = voiceEstablishResponse.Allowed;
                 }
-                else if (packet is RequestChannelJoinResponse response)
-                {
-                    if (!response.Allowed)
-                    {
-                        if (response.Reason.StartsWith("Your client isn't connected"))
-                        {
-                            UdpDisconnect();
-                            UdpConnect(ip, port);
-                            while (!_udpClient.IsConnectedToServer)
-                            {
-
-                            }
-                            _client.Send(new RequestChannelJoin() { ChannelId = _channel.Id });
-                            return;
-                        }
-                        App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
-                        {
-                            await new ContentDialog()
-                            {
-                                Title = "Failed to connect to channel",
-                                Content = new TextBlock() { Text = response.Reason },
-                                CloseButtonText = "Close",
-                                XamlRoot = App.MainWindow.Content.XamlRoot,
-                            }.ShowAsync(ContentDialogPlacement.InPlace);
-                        });
-                    }
-                }
                 else if (packet is ClientPermissionsUpdatedPacket permissions)
                 {
                     if (permissions.HasAllPermissions)
@@ -886,7 +863,7 @@ namespace TTalk.WinUI.ViewModels
                     var channel = Channels.FirstOrDefault(x => x.Id == deletedChannel.ChannelId);
                     if (channel == null)
                         return;
-                    if (channel.Id == currentTextChannel.Id)
+                    if (channel.Id == currentTextChannel?.Id)
                     {
                         currentTextChannel.Messages.Clear();
                         CurrentTextChannel = null;
@@ -894,22 +871,6 @@ namespace TTalk.WinUI.ViewModels
                     Channels.Remove(channel);
                 }
             });
-        }
-        private void OnVoiceDataAvailable(object? sender, VoiceDataMulticastPacket e)
-        {
-            HandleVoiceData(e);
-        }
-
-        public void UdpDisconnect()
-        {
-            if (_udpClient != null && _udpClient.IsConnected)
-            {
-                _udpClient.Send(new UdpDisconnectPacket() { ClientUsername = Username });
-                _udpClient.DisconnectAndStop();
-                _udpClient = null;
-                _logger.LogInformation("UDP client disconnected");
-
-            }
         }
         #endregion
 
@@ -922,7 +883,7 @@ namespace TTalk.WinUI.ViewModels
                 return;
             if (CurrentTextChannel != null)
             {
-                _client.Send(new CreateChannelMessagePacket()
+                _ = _client.SendPacketTCP(new CreateChannelMessagePacket()
                 {
                     ChannelId = CurrentTextChannel.Id,
                     Text = message
@@ -932,8 +893,7 @@ namespace TTalk.WinUI.ViewModels
         private void OnExited(object? sender, EventArgs e)
         {
             _cts?.Cancel();
-            _client.DisconnectAndStop();
-            UdpDisconnect();
+            _client.Disconnect();
         }
 
 

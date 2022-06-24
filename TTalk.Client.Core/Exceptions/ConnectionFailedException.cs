@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TTalk.Client.Core.Exceptions
 {
-    internal class ConnectionFailedException : Exception
+    public class ConnectionFailedException : Exception
     {
         public SocketType SocketType { get; }
 

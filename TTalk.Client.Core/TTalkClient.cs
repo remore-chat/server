@@ -60,10 +60,13 @@ namespace TTalk.Client.Core
         public string BotToken { get; }
 
         public event EventHandler<IPacket> PacketReceived;
+        public event EventHandler<IPacket> UDPPacketReceived;
         public event EventHandler<object> Ready;
 
         private TTalkTcpClient _tcpClient;
         private TTalkUdpClient _udpClient;
+
+        public bool IsConnected => _tcpClient.IsConnected;
 
         private PendingDictionary<string, IPacket> _pending = new();
 
@@ -78,7 +81,12 @@ namespace TTalk.Client.Core
             await InternalUdpConnect(connectionTimeout);
             Ready?.Invoke(this, null);
         }
-
+        public async void Disconnect()
+        {
+            _tcpClient.DisconnectAndStop();
+            _udpClient.Send(new UdpDisconnectPacket() { ClientUsername = Username });
+            _udpClient.DisconnectAndStop();
+        }
         public async Task SendPacketTCP(IPacket packet)
         {
             ArgumentNullException.ThrowIfNull(packet);
@@ -124,6 +132,7 @@ namespace TTalk.Client.Core
 
         private async Task InternalTcpConnectAsync(int connectionTimeout = 5000)
         {
+            _tcpClient.PacketReceived += OnTcpPacketReceived;
             var tcpSuccess = _tcpClient.Connect();
             if (!tcpSuccess)
             {
@@ -140,7 +149,6 @@ namespace TTalk.Client.Core
             var tcpId = _tcpClient.TcpId;
             if (tcpId == null)
                 throw new ConnectionFailedException(SocketType.Stream, $"Failed to connect to server. Client didn't receive needed information in {connectionTimeout / 1000} seconds after connecting");
-            _tcpClient.PacketReceived += OnTcpPacketReceived;
         }
 
 
@@ -156,7 +164,14 @@ namespace TTalk.Client.Core
             await Task.WhenAny(ConnectionWaiter(), Task.Delay(connectionTimeout));
             if (!_udpClient.IsConnectedToServer)
                 throw new ConnectionFailedException(SocketType.Dgram, "Udp client failed to connect. Timed out");
+            _udpClient.PacketReceived += OnUdpPacketReceived;
         }
+
+        private void OnUdpPacketReceived(object? sender, IPacket e)
+        {
+            UDPPacketReceived?.Invoke(this, e);
+        }
+
         private void OnTcpPacketReceived(object? sender, IPacket packet)
         {
             if (Ip == "127.0.0.1")

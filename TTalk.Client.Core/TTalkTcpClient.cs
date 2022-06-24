@@ -37,8 +37,9 @@ namespace TTalk.Client.Core
         public string TcpId { get; private set; }
         public string Username { get; }
 
-        protected override void OnConnected()
+        protected override async void OnConnected()
         {
+            await Task.Delay(100);
             this.Send(new VersionExchangePacket(Constants.ClientVersion));
             ReceiveAsync();
         }
