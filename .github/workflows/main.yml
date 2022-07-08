@@ -1,4 +1,4 @@
-name: TTalk
+name: Remore
 on:
   push:
     branches: [ master ]
@@ -18,7 +18,7 @@ jobs:
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
 
     env:
-      Solution_Name: TTalk.sln                         # Replace with your solution name, i.e. App1.sln.
+      Solution_Name: Remore.sln                         # Replace with your solution name, i.e. App1.sln.
 
     steps:
     - name: Checkout
@@ -49,9 +49,14 @@ jobs:
         Configuration: ${{ matrix.configuration }}
         Platform: ${{ matrix.platform }}
 
-    # Upload the app
-    - name: Upload app
+    - name: Upload client app
       uses: actions/upload-artifact@v2
       with:
-        name: Upload app
-        path: TTalk.WinUI\\bin
+        name: App
+        path: Remore.WinUI\\bin
+
+    - name: Upload server executable
+      uses: actions/upload-artifact@v2
+      with:
+        name: Server
+        path: Remore.Server\\bin
