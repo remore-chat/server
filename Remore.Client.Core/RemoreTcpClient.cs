@@ -24,6 +24,8 @@ namespace Remore.Client.Core
             TcpId = null;
             Username = username;
             PrivilegeKey = privilegeKey;
+            this.OptionReceiveBufferLimit = 16384;
+            this.OptionReceiveBufferSize = 16384;
         }
 
 

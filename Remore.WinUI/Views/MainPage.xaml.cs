@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Remore.WinUI.Models;
 using Remore.WinUI.ViewModels;
+using System;
+using CommunityToolkit.WinUI.UI.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Remore.WinUI.Views
 {
@@ -16,6 +19,7 @@ namespace Remore.WinUI.Views
             ViewModel = App.GetService<MainViewModel>();
             InitializeComponent();
             MessageContent.KeyDown += OnMessageContentKeyDown;
+            ViewModel.MessagesListBox = MessagesListBox;
         }
 
         private void MessagesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -25,21 +29,7 @@ namespace Remore.WinUI.Views
 
         private void OnMessageContentKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter && new Keyboard().ShiftKeyDown)
-            {
-                MessageContent.TextWrapping = TextWrapping.Wrap;
-                MessageContent.AcceptsReturn = true;
-                MessageContent.Text += "\n";
-                MessageContent.SelectionStart = MessageContent.Text.Length;
-                MessageContent.SelectionLength = 0;
-                MessageContent.AcceptsReturn = false;
-                return;
-            }
-            if (e.Key == Windows.System.VirtualKey.Enter)
-            {
-                ViewModel.SendMessage(MessageContent.Text);
-                MessageContent.Text = "";
-            }
+            //
         }
 
 
@@ -48,7 +38,7 @@ namespace Remore.WinUI.Views
             if (e.Pointer.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Mouse)
             {
                 var properties = e.GetCurrentPoint(this).Properties;
-                
+
                 if (properties.IsRightButtonPressed)
                 {
                     return;
@@ -75,6 +65,47 @@ namespace Remore.WinUI.Views
                         ViewModel.CurrentTextChannel.IsSelected = false;
                     channel.JoinChannel.Execute(null);
                 }
+            });
+        }
+
+        private void NewLine(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+        {
+            var txtB = MessageContent;
+            if (txtB == null)
+                return;
+            var caretIdx = txtB.SelectionStart;
+
+            if (string.IsNullOrEmpty(MessageContent.Text))
+                MessageContent.Text += Environment.NewLine;
+            else
+                MessageContent.Text = MessageContent.Text.Insert(caretIdx, "\r");
+
+            txtB.SelectionStart = caretIdx + 1;
+        }
+
+        private void Send(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+        {
+            ViewModel.SendMessage(MessageContent.Text);
+            MessageContent.Text = "";
+        }
+
+        private void MarkdownTextBlock_LinkClicked(object sender, CommunityToolkit.WinUI.UI.Controls.LinkClickedEventArgs e)
+        {
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                var res = await new ContentDialog()
+                {
+                    Title = "Hang on",
+                    Content = new MarkdownTextBlock()
+                    {
+                        Text = $"This link will take you to **{e.Link}**. Are you sure you want to go there?",
+                    },
+                    XamlRoot = this.Content.XamlRoot,
+                    CloseButtonText = "Cancel",
+                    PrimaryButtonText = "Yes, take me there",
+                }.ShowAsync(ContentDialogPlacement.InPlace);
+                if (res == ContentDialogResult.Primary)
+                    LinkHandler.OpenBrowser(e.Link);
             });
         }
     }

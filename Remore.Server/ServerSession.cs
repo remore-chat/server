@@ -200,7 +200,9 @@ public class ServerSession : TcpSession
                     return;
                 if (messagesPacket.Page < 0)
                     return;
-                var messages = channel.Messages.Skip(page * 20).Take(20).ToList();
+                var count = Server.Context.ChannelMessages.Count(x=>x.ChannelId == channel.Id);
+                var messages = Server.Context.ChannelMessages.Where(x => x.ChannelId == channel.Id).OrderByDescending(x => x.CreatedAt).Skip(20 * (page - 1)).Take(20).ToList();
+                Logger.LogInfo($"Requested messages on page {page}. Total count: {count}. Sent {messages.Count}");
                 this.Send(new ChannelMessagesResponse()
                 {
                     ChannelId = channel.Id,
