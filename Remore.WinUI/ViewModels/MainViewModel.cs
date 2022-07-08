@@ -34,6 +34,7 @@ using DnsClient;
 using Remore.Client.Core;
 using Remore.Library.Packets;
 using Remore.Client.Core.Exceptions;
+using Fluent.Icons;
 
 namespace Remore.WinUI.ViewModels
 {
@@ -1027,21 +1028,45 @@ namespace Remore.WinUI.ViewModels
                     {
                         (_ip, _port) = GetEndpointForHostname(address);
                     }
+                    var holder = new Grid();
+                    holder.ColumnDefinitions.Add(new() { Width = new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Star) });
+                    holder.ColumnDefinitions.Add(new() { Width = Microsoft.UI.Xaml.GridLength.Auto });
                     var progress = new ProgressRing() { IsIndeterminate = true, Width = 16, Height = 16, IsActive = true };
                     var _stackPanel = new StackPanel()
                     {
-                        Orientation = Orientation.Horizontal
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center
                     };
                     var textBlock = new TextBlock()
                     {
                         Margin = new(12, 0, 0, 0),
                         Text = string.Format("Main_ConnectToServerFavorites_ConnectingToServer".GetLocalized(), address)
                     };
+                    var removeButton = new Button()
+                    {
+                        Content = new FluentSymbolIcon(FluentSymbol.Delete16)
+                        {
+                            Width = 16,
+                            Height = 16
+                        },
+                        Margin = new(12, 0, 0, 0)
+                    };
+                    removeButton.Click += async (s, e) =>
+                    {
+                        App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+                        {
+                            listView.Items.Remove(holder); 
+                        });
+                        list.Remove(address);
+                        await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, list);
+
+                    };
                     _stackPanel.Children.Add(progress);
                     _stackPanel.Children.Add(textBlock);
                     var button = new Button()
                     {
                         Content = _stackPanel,
+                        HorizontalContentAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
                         HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
                         IsEnabled = false
                     };
@@ -1051,6 +1076,11 @@ namespace Remore.WinUI.ViewModels
                         Connect();
                         (parentStack.Parent as ContentDialog).Hide();
                     };
+                    Grid.SetColumn(button, 0);
+                    Grid.SetColumn(removeButton, 1);
+                    holder.Children.Add(button);
+                    holder.Children.Add(removeButton);
+
                     _ = Task.Run(async () =>
                     {
                         var query = await new RemoreQueryClient(_ip, _port).GetServerInfo();
@@ -1075,7 +1105,7 @@ namespace Remore.WinUI.ViewModels
                             }
                         });
                     });
-                    listView.Items.Add(button);
+                    listView.Items.Add(holder);
                 }
                 connectToServerViaFavoritesStack.Children.Add(listView);
                 var connectToServerViaFavorites = new TabViewItem()
