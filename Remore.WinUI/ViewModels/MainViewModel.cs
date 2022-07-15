@@ -35,17 +35,18 @@ using Remore.Client.Core;
 using Remore.Library.Packets;
 using Remore.Client.Core.Exceptions;
 using Fluent.Icons;
+using Remore.WinUI.Factories;
 
 namespace Remore.WinUI.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
-        public MainViewModel(ILocalSettingsService settingsService, ILogger<MainViewModel> logger, SoundService sounds, KeyBindingsService bindingsService, ILookupClient lookupClient)
+        public MainViewModel(ILocalSettingsService settingsService, IDialogFactory dialogFactory, ILogger<MainViewModel> logger, SoundService sounds, KeyBindingsService bindingsService, ILookupClient lookupClient)
         {
             Process.GetCurrentProcess().Exited += OnExited;
             Channels = new();
 
-
+            _dialogFactory = dialogFactory;
             _segmentFrames = 960;
             _microphoneQueueSlim = new(0);
             _audioQueueSlim = new(0);
@@ -65,7 +66,25 @@ namespace Remore.WinUI.ViewModels
 
             Task.Run(SendAudio);
             Task.Run(PlayAudio);
-            ShowConnectDialog = new RelayCommand(CreateConnectDialog(settingsService));
+            ShowConnectDialog = new RelayCommand(async () =>
+            {
+                var dialog = dialogFactory.CreateJoinServerDialog();
+                var result = await dialog.ShowAsync(ContentDialogPlacement.InPlace);
+                if (result == ContentDialogResult.Primary || dialog.IsConnectionFromFavorites)
+                {
+                    Address = dialog.ConnectionAddress;
+                    if (dialog.ShouldServerBeAddedInFavoritesAfterConnect)
+                    {
+                        var addresses = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
+                        if (addresses == null)
+                            addresses = new();
+                        if (!addresses.Contains(Address))
+                            addresses.Add(Address);
+                        await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, addresses);
+                    }
+                    Connect();
+                }
+            });
             DisconnectCommand = new RelayCommand(() =>
             {
                 Disconnect();
@@ -293,6 +312,7 @@ namespace Remore.WinUI.ViewModels
             set { this.SetProperty(ref channels, value); }
         }
 
+        private IDialogFactory _dialogFactory;
         private int _segmentFrames;
         private bool isConnected;
         private string ip;
@@ -607,10 +627,12 @@ namespace Remore.WinUI.ViewModels
                 if (!IPAddress.TryParse(ip, out _))
                 {
                     _logger.LogInformation("IP parse failed. Using DNS to find server's IP");
-                    ip = Dns.GetHostAddresses(ip)[0].ToString();
-
+                    //var ep = GetEndpointForHostname(address);
+                    //ip = ep.Address;
+                    //port = ep.Port;
                 }
-                port = Convert.ToInt32(address.Split(":")[1]);
+                else
+                    port = Convert.ToInt32(address.Split(":")[1]);
                 try
                 {
                     _client = new RemoreClient(ip, port, Username, null, null);
@@ -966,213 +988,6 @@ namespace Remore.WinUI.ViewModels
         {
             _cts?.Cancel();
             _client.Disconnect();
-        }
-
-
-        //Ugly code, don't read
-        private Action CreateConnectDialog(ILocalSettingsService settingsService)
-        {
-            return async () =>
-            {
-                if (string.IsNullOrEmpty(Username) || Username.Length < 3)
-                {
-                    await new ContentDialog()
-                    {
-                        Title = "Main_ConnectToServer_InvalidNicknameTitle".GetLocalized(),
-                        Content = "Main_ConnectToServer_InvalidNicknameContent".GetLocalized(),
-                        XamlRoot = App.MainWindow.Content.XamlRoot,
-                        CloseButtonText = "Main_ConnectToServer_CloseButton".GetLocalized(),
-                    }.ShowAsync(ContentDialogPlacement.InPlace);
-                    return;
-                }
-                var parentStack = new StackPanel();
-                var stack = new StackPanel()
-                {
-                    Padding = new(12)
-                };
-                stack.Children.Add(new TextBlock() { Text = "Main_ConnectToServer_Description".GetLocalized(), TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap });
-                var textBox = new TextBox() { PlaceholderText = "Main_ConnectToServer_AddressInputPlaceholder".GetLocalized(), Name = "AddressInput", Margin = new(0, 12, 0, 0) };
-                stack.Children.Add(textBox);
-                var addToFavorites = new CheckBox() { Content = new TextBlock() { Text = "Main_ConnectToServer_AddServerToFavoritesAfterConnect".GetLocalized() } };
-                stack.Children.Add(addToFavorites);
-                var tabView = new TabView()
-                {
-                    IsAddTabButtonVisible = false,
-                    CloseButtonOverlayMode = TabViewCloseButtonOverlayMode.OnPointerOver,
-                };
-
-                var connectToServerViaIpItem = new TabViewItem()
-                {
-                    Header = "Main_ConnectToServer_ConnectWithAddress".GetLocalized(),
-                    Content = stack,
-                    IsClosable = false
-                };
-                var connectToServerViaFavoritesStack = new StackPanel()
-                {
-                    Padding = new(12)
-                };
-                var list = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
-                if (list == null)
-                    list = new();
-                var listView = new ListView() { SelectionMode = ListViewSelectionMode.None, MaxHeight = 560 };
-                foreach (var address in list)
-                {
-                    string _ip;
-                    int _port;
-                    if (address.Contains(':'))
-                    {
-                        _ip = address.Split(":")[0];
-                        _port = Convert.ToInt32(address.Split(":")[1]);
-                    }
-                    else
-                    {
-                        (_ip, _port) = GetEndpointForHostname(address);
-                    }
-                    var holder = new Grid();
-                    holder.ColumnDefinitions.Add(new() { Width = new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Star) });
-                    holder.ColumnDefinitions.Add(new() { Width = Microsoft.UI.Xaml.GridLength.Auto });
-                    var progress = new ProgressRing() { IsIndeterminate = true, Width = 16, Height = 16, IsActive = true };
-                    var _stackPanel = new StackPanel()
-                    {
-                        Orientation = Orientation.Horizontal,
-                        HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center
-                    };
-                    var textBlock = new TextBlock()
-                    {
-                        Margin = new(12, 0, 0, 0),
-                        Text = string.Format("Main_ConnectToServerFavorites_ConnectingToServer".GetLocalized(), address)
-                    };
-                    var removeButton = new Button()
-                    {
-                        Content = new FluentSymbolIcon(FluentSymbol.Delete16)
-                        {
-                            Width = 16,
-                            Height = 16
-                        },
-                        Margin = new(12, 0, 0, 0)
-                    };
-                    removeButton.Click += async (s, e) =>
-                    {
-                        App.MainWindow.DispatcherQueue.TryEnqueue(() =>
-                        {
-                            listView.Items.Remove(holder); 
-                        });
-                        list.Remove(address);
-                        await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, list);
-
-                    };
-                    _stackPanel.Children.Add(progress);
-                    _stackPanel.Children.Add(textBlock);
-                    var button = new Button()
-                    {
-                        Content = _stackPanel,
-                        HorizontalContentAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-                        HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
-                        IsEnabled = false
-                    };
-                    button.Click += (s, e) =>
-                    {
-                        Address = address;
-                        Connect();
-                        (parentStack.Parent as ContentDialog).Hide();
-                    };
-                    Grid.SetColumn(button, 0);
-                    Grid.SetColumn(removeButton, 1);
-                    holder.Children.Add(button);
-                    holder.Children.Add(removeButton);
-
-                    _ = Task.Run(async () =>
-                    {
-                        var query = await new RemoreQueryClient(_ip, _port).GetServerInfo();
-                        App.MainWindow.DispatcherQueue.TryEnqueue(() =>
-                        {
-                            progress.IsActive = false;
-                            progress.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                            if (query == null)
-                            {
-                                textBlock.Text = string.Format($"Main_ConnectToServerFavorites_FailedToConnect".GetLocalized(), address);
-                                return;
-                            }
-                            if (query.ServerVersion == SettingsViewModel.ClientVersion)
-                            {
-                                textBlock.Text = $"{query.ServerName} - {query.ServerVersion} ({query.ClientsConnected}/{query.MaxClients})";
-                                button.IsEnabled = true;
-                            }
-                            else
-                            {
-                                textBlock.TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center;
-                                textBlock.Text = string.Format("Main_ConnectToServer_VersionDontMatch".GetLocalized(), query.ServerName, SettingsViewModel.ClientVersion, query.ServerVersion);
-                            }
-                        });
-                    });
-                    listView.Items.Add(holder);
-                }
-                connectToServerViaFavoritesStack.Children.Add(listView);
-                var connectToServerViaFavorites = new TabViewItem()
-                {
-                    Header = "Main_ConnectToServer_ConnectFromFavoritesList".GetLocalized(),
-                    Content = connectToServerViaFavoritesStack,
-                    IsClosable = false
-                };
-                tabView.TabItems.Add(connectToServerViaIpItem);
-                tabView.TabItems.Add(connectToServerViaFavorites);
-                parentStack.Children.Add(tabView);
-                var result = await new ContentDialog()
-                {
-                    Title = "Main_ConnectToServer_Title".GetLocalized(),
-                    Content = parentStack,
-                    XamlRoot = App.MainWindow.Content.XamlRoot,
-                    CloseButtonText = "Main_ConnectToServer_CloseButton".GetLocalized(),
-                    PrimaryButtonText = "Main_ConnectToServer_ConnectButton".GetLocalized(),
-                }.ShowAsync(ContentDialogPlacement.InPlace);
-                if (textBox.Text.Contains(':') || string.IsNullOrEmpty(textBox.Text))
-                    Address = textBox.Text;
-                else
-                {
-                    var ep = GetEndpointForHostname(textBox.Text);
-                    Address = ep.Address + ':' + ep.Port.ToString();
-                }
-                if (result == ContentDialogResult.Primary)
-                {
-                    Connect();
-                    if (addToFavorites.IsChecked ?? false)
-                    {
-                        var addresses = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
-                        if (addresses == null)
-                            addresses = new();
-                        if (!addresses.Contains(textBox.Text))
-                            addresses.Add(textBox.Text);
-                        await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, addresses);
-                    }
-                }
-            };
-        }
-
-        private (string Address, int Port) GetEndpointForHostname(string hostname)
-        {
-            var result = LookupClient.ResolveService(hostname, "Remore", ProtocolType.Tcp);
-            var entry = result.FirstOrDefault();
-            if (entry is null)
-                return new("0.0.0.0", 0);
-
-            if (entry.AddressList.Any())
-                return new(entry.AddressList.First().ToString(), entry.Port);
-
-            var entryAddressAnswers = LookupClient.Query(entry.HostName, QueryType.A).Answers;
-            if (entryAddressAnswers.Any())
-            {
-                var aTarget = entryAddressAnswers.ARecords().First();
-                return new(aTarget.Address.ToString(), entry.Port);
-            }
-
-            entryAddressAnswers = LookupClient.Query(entry.HostName, QueryType.AAAA).Answers;
-            if (entryAddressAnswers.Any())
-            {
-                var aaaaTarget = entryAddressAnswers.AaaaRecords().First();
-                return new(aaaaTarget.Address.ToString(), entry.Port);
-            }
-
-            return new("0.0.0.0", 0);
         }
     }
 }

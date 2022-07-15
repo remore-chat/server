@@ -13,6 +13,9 @@
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="ms-appx:///SettingsUI/Themes/SettingsUI.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}" x:Key="PrimaryButtonStyle">
+                
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

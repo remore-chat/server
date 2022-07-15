@@ -26,6 +26,8 @@ using Windows.ApplicationModel.Resources.Core;
 using Windows.Globalization;
 using Windows.Storage;
 using WinUIEx;
+using Remore.WinUI.Factories;
+using Remore.WinUI.ViewModels.Dialog;
 
 // To learn more about WinUI3, see: https://docs.microsoft.com/windows/apps/winui/winui3/.
 namespace Remore.WinUI
@@ -81,6 +83,8 @@ namespace Remore.WinUI
                 {
                     return _settingsViewModel;
                 });
+                services.AddTransient<JoinServerDialogViewModel>();
+                services.AddSingleton<IDialogFactory, DialogFactory>();
                 services.AddSingleton<LocalizationService>();
                 services.AddTransient<MainViewModel>((_) =>
                 {
@@ -120,7 +124,7 @@ namespace Remore.WinUI
 
         public static void ResetMainViewModel()
         {
-            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<ILogger<MainViewModel>>(), GetService<SoundService>(), GetService<KeyBindingsService>(), GetService<ILookupClient>());
+            _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<IDialogFactory>(), GetService<ILogger<MainViewModel>>(), GetService<SoundService>(), GetService<KeyBindingsService>(), GetService<ILookupClient>());
             _settingsViewModel = new SettingsViewModel(App.GetService<IThemeSelectorService>(),
                    App.GetService<ILogger<SettingsViewModel>>(),
                    GetService<KeyBindingsService>(),

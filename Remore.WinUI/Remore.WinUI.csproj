@@ -45,6 +45,7 @@
 		<None Remove="Assets\Square44x44Logo.scale-200.png" />
 		<None Remove="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
 		<None Remove="Assets\Wide310x150Logo.scale-200.png" />
+		<None Remove="Views\Dialogs\JoinServerDialog.xaml" />
 		<None Remove="Views\ServerSettingsPage.xaml" />
 		<None Remove="Views\ServerSettings\ServerSettingsOverviewView.xaml" />
 	</ItemGroup>
@@ -137,5 +138,15 @@
 
 	<ItemGroup>
 		<PRIResource Remove="NoiseReducer\**" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <CustomAdditionalCompileInputs Remove="Views\Dialogs\JoinServerDialog.xaml" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Resource Remove="Views\Dialogs\JoinServerDialog.xaml" />
 	</ItemGroup>
 </Project>
