@@ -22,13 +22,13 @@
     <ScrollViewer HorizontalScrollMode="Disabled"
               VerticalScrollBarVisibility="Visible"
               VerticalAlignment="Top">
-        <Grid Margin="{StaticResource MediumLeftRightMargin}">
-            <StackPanel HorizontalAlignment="Stretch"
+        <Grid Background="Transparent" Margin="{StaticResource MediumLeftRightMargin}">
+            <StackPanel Background="Transparent" HorizontalAlignment="Stretch"
             x:Name="ContentArea">
 
                 <TextBlock FontSize="36" Margin="0 12 0 0" Text="{l10n:Localize Key=Settings.Title}" />
 
-                <StackPanel Margin="10,5,10,5">
+                <StackPanel Background="Transparent" Margin="10,5,10,5">
                     <st:SettingsGroup Header="{l10n:Localize Key=Settings_Personalization.Text}">
                         <st:Setting Header="{l10n:Localize Key=Settings_Personalization_DefaultNickname.Text}">
                             <st:Setting.Icon>

@@ -25,6 +25,7 @@ using Windows.ApplicationModel.Resources;
 using Windows.ApplicationModel.Resources.Core;
 using Windows.Globalization;
 using Windows.Storage;
+using WinUIEx;
 
 // To learn more about WinUI3, see: https://docs.microsoft.com/windows/apps/winui/winui3/.
 namespace Remore.WinUI
@@ -100,7 +101,7 @@ namespace Remore.WinUI
             where T : class
             => _host.Services.GetService(typeof(T)) as T;
 
-        public static Window MainWindow { get; set; }
+        public static WindowEx MainWindow { get; set; }
 
         private static MainViewModel _mainViewModel;
         private static SettingsViewModel _settingsViewModel;
@@ -144,7 +145,7 @@ namespace Remore.WinUI
                 return;
             }
 
-            MainWindow = new Window() { Title = "AppDisplayName".GetLocalized() };
+            MainWindow = new WindowEx() { Title = "AppDisplayName".GetLocalized(), Backdrop = new MicaSystemBackdrop() };
             MainWindow.SetIcon("appicon.ico");
             base.OnLaunched(args);
             var activationService = App.GetService<IActivationService>();

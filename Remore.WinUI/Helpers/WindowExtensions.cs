@@ -6,12 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using WinRT;
 using Microsoft.UI.Xaml;
+using WinUIEx;
 
 namespace Remore.WinUI.Helpers
 {
     public static class WindowExtensions
     {
-        public static void SetIcon(this Window window, string iconName)
+        public static void SetIcon(this WindowEx window, string iconName)
         {
             unsafe
             {

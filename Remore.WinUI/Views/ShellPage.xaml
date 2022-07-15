@@ -8,6 +8,7 @@
     xmlns:behaviors="using:Remore.WinUI.Behaviors"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     Loaded="OnLoaded"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:l10n="using:Remore.WinUI.Helpers"
     Style="{StaticResource PageStyle}">
 

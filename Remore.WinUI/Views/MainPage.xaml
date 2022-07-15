@@ -9,8 +9,9 @@
     xmlns:fluent="using:Fluent.Icons"
     xmlns:l10n="using:Remore.WinUI.Helpers"
     xmlns:converters="using:Remore.WinUI.Converters"
-    Style="{StaticResource PageStyle}">
-
+    Style="{StaticResource PageStyle}"
+    Background="Transparent">
+    
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="format" />
@@ -18,7 +19,7 @@
         <converters:BooleanToVisibilityConverter x:Key="boolToVis" />
     </Page.Resources>
 
-    <Grid x:Name="ContentArea"  >
+    <Grid x:Name="ContentArea" Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -34,20 +35,20 @@
                 </AppBarButton>
             </CommandBar.SecondaryCommands>
         </CommandBar>
-        <Grid Grid.Row="1" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}}">
+        <Grid Grid.Row="1" Background="Transparent" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <ProgressRing Width="32" Height="32" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsActive="True" Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, ConverterParameter='Reverse', Converter={StaticResource boolToVis}}" />
-            <Grid Grid.Row="1" Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}"
-            Background="{ThemeResource SystemControlPageBackgroundChromeLowBrush}">
+            <Grid Background="Transparent" Grid.Row="1" Visibility="{x:Bind ViewModel.IsNegotiationFinished, Mode=OneWay, Converter={StaticResource boolToVis}}"
+            >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="1">
+                <Grid Grid.Row="1" Background="Transparent">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
@@ -57,7 +58,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Grid Grid.Row="1" Grid.Column="0" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" MinWidth="172">
+                    <Grid Grid.Row="1" Grid.Column="0" Background="Transparent"  MinWidth="172">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
@@ -155,7 +156,7 @@
                             </Button>
                         </StackPanel>
                     </Grid>
-                    <Grid Margin="24 0 0 0" Grid.Column="1" Grid.Row="1" Visibility="{x:Bind ViewModel.CurrentTextChannel, Mode=OneWay, Converter={StaticResource boolToVis}}">
+                    <Grid Margin="24 0 0 0" Background="Transparent" Grid.Column="1" Grid.Row="1" Visibility="{x:Bind ViewModel.CurrentTextChannel, Mode=OneWay, Converter={StaticResource boolToVis}}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />

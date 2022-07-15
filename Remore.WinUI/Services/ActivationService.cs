@@ -33,7 +33,7 @@ namespace Remore.WinUI.Services
             // take into account that the splash screen is shown while this code runs.
             await InitializeAsync();
 
-            if (App.MainWindow.Content == null)
+            if (App.MainWindow.Content is Grid)
             {
                 _shell = App.GetService<ShellPage>();
                 App.MainWindow.Content = _shell ?? new Frame();
