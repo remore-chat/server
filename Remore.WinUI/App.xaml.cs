@@ -34,12 +34,14 @@ namespace Remore.WinUI
     {
         private static IHost _host = Host
             .CreateDefaultBuilder()
-            .ConfigureLogging((context, logging) => {
+            .ConfigureLogging((context, logging) =>
+            {
                 var env = context.HostingEnvironment;
                 var config = context.Configuration.GetSection("Logging");
-                logging.AddFile($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}/Remore/logs/" + 
-                    string.Format("app_{0:yyyy}-{0:MM}-{0:dd}-{0:hh}-{0:mm}.log", DateTime.Now), fileLoggerOpts => {
-                });
+                logging.AddFile($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}/Remore/logs/" +
+                    string.Format("app_{0:yyyy}-{0:MM}-{0:dd}-{0:hh}-{0:mm}.log", DateTime.Now), fileLoggerOpts =>
+                    {
+                    });
                 logging.AddConsole();
                 logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", Microsoft.Extensions.Logging.LogLevel.None);
                 logging.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", Microsoft.Extensions.Logging.LogLevel.None);
@@ -115,7 +117,7 @@ namespace Remore.WinUI
             PacketReader.Init();
         }
 
-        
+
         public static void ResetMainViewModel()
         {
             _mainViewModel = new(GetService<ILocalSettingsService>(), GetService<ILogger<MainViewModel>>(), GetService<SoundService>(), GetService<KeyBindingsService>(), GetService<ILookupClient>());
@@ -145,7 +147,12 @@ namespace Remore.WinUI
                 return;
             }
 
-            MainWindow = new WindowEx() { Title = "AppDisplayName".GetLocalized(), Backdrop = new MicaSystemBackdrop() };
+            var mica = new MicaSystemBackdrop();
+            if (mica.IsSupported)
+                MainWindow = new WindowEx() { Title = "AppDisplayName".GetLocalized(), Backdrop = new MicaSystemBackdrop() };
+            else
+                MainWindow = new WindowEx() { Title = "AppDisplayName".GetLocalized(), Backdrop = new AcrylicSystemBackdrop() { DarkTintOpacity = .80, LightTintOpacity = .80 } };
+
             MainWindow.SetIcon("appicon.ico");
             base.OnLaunched(args);
             var activationService = App.GetService<IActivationService>();

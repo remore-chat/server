@@ -20,9 +20,9 @@
         IsBackButtonVisible="Collapsed"
         SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
         IsSettingsVisible="True"
+        Background="Transparent"
         ExpandedModeThresholdWidth="1280"
-        Header="Remore"
-        Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+        Header="Remore">
         <NavigationView.MenuItems>
             <!--
             TODO: Change the symbols for each item as appropriate for your app
@@ -49,7 +49,7 @@
             </behaviors:NavigationViewHeaderBehavior>
         </i:Interaction.Behaviors>-->
         <Grid>
-            <Frame x:Name="shellFrame" />
+            <Frame Background="Transparent" x:Name="shellFrame" />
         </Grid>
     </NavigationView>
 </Page>
