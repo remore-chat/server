@@ -148,7 +148,7 @@
     <value>Remore - безкоштовна альтернатива TeamSpeak з відкритим сирцевим кодом</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
-    <value>Privacy Statement</value>
+    <value>Заява про конфіденційність</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
     <value>https://YourPrivacyUrlGoesHere/</value>
@@ -281,60 +281,60 @@
     <value>Натисни будь-яку кнопку</value>
   </data>
   <data name="Main_CreateChannelDialog_ChannelNameInputPlaceholder" xml:space="preserve">
-    <value>Channel name</value>
+    <value>Назва каналу</value>
   </data>
   <data name="Main_CreateChannelDialog_ConfirmText" xml:space="preserve">
-    <value>Create</value>
+    <value>Створити</value>
   </data>
   <data name="Main_CreateChannelDialog_TextChannel" xml:space="preserve">
-    <value>Text channel</value>
+    <value>Текстовий канал</value>
   </data>
   <data name="Main_CreateChannelDialog_Title" xml:space="preserve">
-    <value>Create channel</value>
+    <value>Створити канал</value>
   </data>
   <data name="Main_CreateChannelDialog_VoiceChannel" xml:space="preserve">
-    <value>Voice channel</value>
+    <value>Голосовий канал</value>
   </data>
   <data name="Main_CreateChannelDialog_Bitrate" xml:space="preserve">
-    <value>Bitrate</value>
+    <value>Бітрейт</value>
   </data>
   <data name="Main_DeleteChannelDialog_Confirm" xml:space="preserve">
-    <value>Delete channel</value>
+    <value>Видалити канал</value>
   </data>
   <data name="Main_DeleteChannelDialog_Content" xml:space="preserve">
-    <value>Are you sure you want to delete channel {0}? This can not be undone.</value>
+    <value>Ви впевнені, що хочете видалити канал {0}? Це не можна скасувати.</value>
   </data>
   <data name="Main_DeleteChannelDialog_Title" xml:space="preserve">
-    <value>Delete channel</value>
+    <value>Видалити канал</value>
   </data>
   <data name="Application_Already_Running" xml:space="preserve">
-    <value>Application already running</value>
+    <value>Застосунок уже запущено</value>
   </data>
   <data name="ServerSettings_Overview" xml:space="preserve">
-    <value>Overview</value>
+    <value>Огляд</value>
   </data>
   <data name="ServerSettings_Overview_ServerMaxClients" xml:space="preserve">
-    <value>Maximum clients</value>
+    <value>Максимум клієнтів</value>
   </data>
   <data name="ServerSettings_Overview_ServerMaxClients_Tip" xml:space="preserve">
-    <value>Sets the maximum number of simultaneously connected users to this server</value>
+    <value>Встановлює максимальну кількість одночасно підключених користувачів до цього сервера</value>
   </data>
   <data name="ServerSettings_Overview_ServerName" xml:space="preserve">
-    <value>Server name</value>
+    <value>Назва сервера</value>
   </data>
   <data name="ServerSettings_Overview_ServerNamePlaceholder" xml:space="preserve">
-    <value>My awesome server!</value>
+    <value>Мій крутий сервер!</value>
   </data>
   <data name="ServerSettings_Overview_Title" xml:space="preserve">
-    <value>Server overview</value>
+    <value>Огляд серверу</value>
   </data>
   <data name="ServerSettings_UnsavedChanges" xml:space="preserve">
-    <value>You have unsaved changes</value>
+    <value>У вас є незбережені зміни</value>
   </data>
   <data name="ServerSettings_UnsavedChanges_Reset" xml:space="preserve">
-    <value>Reset</value>
+    <value>Скинути</value>
   </data>
   <data name="ServerSettings_UnsavedChanges_Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Зберегти</value>
   </data>
 </root>
