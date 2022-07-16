@@ -46,6 +46,7 @@
 		<None Remove="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
 		<None Remove="Assets\Wide310x150Logo.scale-200.png" />
 		<None Remove="Views\Dialogs\JoinServerDialog.xaml" />
+		<None Remove="Views\Dialogs\NotificationDialog.xaml" />
 		<None Remove="Views\ServerSettingsPage.xaml" />
 		<None Remove="Views\ServerSettings\ServerSettingsOverviewView.xaml" />
 	</ItemGroup>
@@ -108,6 +109,9 @@
 		<None Update="rnnoise.dll">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Views\Dialogs\NotificationDialog.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">

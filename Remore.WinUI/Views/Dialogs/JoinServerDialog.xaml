@@ -10,12 +10,12 @@
     mc:Ignorable="d"
     CornerRadius="12"
     x:Name="main"
-    Background="Transparent"
+    Background="{Binding Background}"
     CloseButtonText="{Binding CloseButtonText}"
     PrimaryButtonText="{Binding PrimaryButtonText, Mode=OneWay}"
     PrimaryButtonStyle="{StaticResource PrimaryButtonStyle}"
     Style="{StaticResource DefaultContentDialogStyle}"
-    Title="Connect">
+    Title="{Binding Title}">
     <ContentDialog.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
     </ContentDialog.Resources>
@@ -27,40 +27,42 @@
             <StackPanel Visibility="{Binding IsNicknameMisconfigured, Converter={StaticResource BooleanToVisibility}}">
                 <TextBlock Text="{Binding MisconfiguredNicknameMessage}" />
             </StackPanel>
-            <TabView SelectedIndex="{Binding SelectedTab, Mode=TwoWay}" IsAddTabButtonVisible="False" CloseButtonOverlayMode="OnPointerOver" Visibility="{Binding IsNicknameMisconfigured, Converter={StaticResource BooleanToVisibility}, ConverterParameter='Reverse'}">
-                <TabViewItem Background="#121212" Header="{l10n:Localize Key=Main_ConnectToServer_ConnectWithAddress}">
-                    <StackPanel Background="#4d121212" Margin="3,0,4,0" Padding="24,12,24,0" BorderBrush="#121212" BorderThickness="0" CornerRadius="0,0,6,6">
-                        <TextBlock FontSize="14" TextWrapping="Wrap" TextAlignment="Center" Text="{l10n:Localize Key=Main_ConnectToServer_Description}" />
-                        <TextBox Text="{Binding Address, Mode=TwoWay}" Margin="0,12,0,12"  PlaceholderText="{l10n:Localize Key=Main_ConnectToServer_AddressInputPlaceholder}" />
-                        <CheckBox IsChecked="{Binding ShouldServerBeAddedInFavoritesAfterConnect, Mode=TwoWay}" Margin="0,12,0,12" Content="{l10n:Localize Key=Main_ConnectToServer_AddServerToFavoritesAfterConnect}" />
-                    </StackPanel>
-                </TabViewItem>
-                <TabViewItem Background="#121212" Header="{l10n:Localize Key=Main_ConnectToServer_ConnectFromFavoritesList}">
-                    <StackPanel Background="#4d121212" Margin="3,0,4,0" Padding="0,12,0,0" BorderBrush="#121212" BorderThickness="0" CornerRadius="0,0,6,6">
-                        <ListView ItemsSource="{Binding ServerList}" SelectionMode="None" Margin="0,0,0,12">
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Button Command="{Binding DataContext.ConnectCommand, ElementName=main}" CommandParameter="{Binding Address}" HorizontalAlignment="Stretch" IsEnabled="{Binding IsConnectionSucceeded, Mode=OneWay}">
-                                            <StackPanel  Orientation="Horizontal" HorizontalAlignment="Stretch">
-                                                <ProgressRing Visibility="{Binding IsConnecting, Mode=OneWay, Converter={StaticResource BooleanToVisibility}}" IsActive="{Binding IsConnecting}" IsIndeterminate="True" Width="20" Height="20" />
-                                                <TextBlock TextAlignment="Center" TextWrapping="Wrap" Margin="12,0,0,0" Text="{Binding ConnectionStatusMessage}" />
-                                            </StackPanel>
-                                        </Button>
-                                        <Button Command="{Binding DataContext.RemoveServerFromFavoritesCommand, ElementName=main}" CommandParameter="{Binding Address}" IsEnabled="{Binding IsNotConnecting, Mode=OneWay}" VerticalAlignment="Stretch" Grid.Column="1" Margin="12,0,0,0">
-                                            <icons:FluentSymbolIcon Symbol="Delete20" Width="20" Height="20" />
-                                        </Button>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </StackPanel>
-                </TabViewItem>
-            </TabView>
+            <Border BorderBrush="#121212" BorderThickness="0" CornerRadius="6">
+                <TabView SelectedIndex="{Binding SelectedTab, Mode=TwoWay}" IsAddTabButtonVisible="False" CloseButtonOverlayMode="OnPointerOver" Visibility="{Binding IsNicknameMisconfigured, Converter={StaticResource BooleanToVisibility}, ConverterParameter='Reverse'}">
+                    <TabViewItem Background="#121212" Header="{l10n:Localize Key=Main_ConnectToServer_ConnectWithAddress}">
+                        <StackPanel Background="#4d121212" Margin="3,0,4,0" Padding="24,12,24,0" BorderBrush="#121212" BorderThickness="0" CornerRadius="0,0,6,6">
+                            <TextBlock FontSize="14" TextWrapping="Wrap" TextAlignment="Center" Text="{l10n:Localize Key=Main_ConnectToServer_Description}" />
+                            <TextBox Text="{Binding Address, Mode=TwoWay}" Margin="0,12,0,12"  PlaceholderText="{l10n:Localize Key=Main_ConnectToServer_AddressInputPlaceholder}" />
+                            <CheckBox IsChecked="{Binding ShouldServerBeAddedInFavoritesAfterConnect, Mode=TwoWay}" Margin="0,12,0,12" Content="{l10n:Localize Key=Main_ConnectToServer_AddServerToFavoritesAfterConnect}" />
+                        </StackPanel>
+                    </TabViewItem>
+                    <TabViewItem Background="#121212" Header="{l10n:Localize Key=Main_ConnectToServer_ConnectFromFavoritesList}">
+                        <StackPanel Background="#4d121212" Margin="3,0,4,0" Padding="0,12,0,0" BorderBrush="#121212" BorderThickness="0" CornerRadius="0,0,6,6">
+                            <ListView ItemsSource="{Binding ServerList}" SelectionMode="None" Margin="0,0,0,12">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button Command="{Binding DataContext.ConnectCommand, ElementName=main}" CommandParameter="{Binding Address}" HorizontalAlignment="Stretch" IsEnabled="{Binding IsConnectionSucceeded, Mode=OneWay}">
+                                                <StackPanel  Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                                    <ProgressRing Visibility="{Binding IsConnecting, Mode=OneWay, Converter={StaticResource BooleanToVisibility}}" IsActive="{Binding IsConnecting}" IsIndeterminate="True" Width="20" Height="20" />
+                                                    <TextBlock TextAlignment="Center" TextWrapping="Wrap" Margin="12,0,0,0" Text="{Binding ConnectionStatusMessage}" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Command="{Binding DataContext.RemoveServerFromFavoritesCommand, ElementName=main}" CommandParameter="{Binding Address}" IsEnabled="{Binding IsNotConnecting, Mode=OneWay}" VerticalAlignment="Stretch" Grid.Column="1" Margin="12,0,0,0">
+                                                <icons:FluentSymbolIcon Symbol="Delete20" Width="20" Height="20" />
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </TabViewItem>
+                </TabView>
+            </Border>
         </Grid>
     </Grid>
 </ContentDialog>

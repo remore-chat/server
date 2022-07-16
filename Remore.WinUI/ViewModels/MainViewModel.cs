@@ -167,14 +167,12 @@ namespace Remore.WinUI.ViewModels
         private async void DeleteChannelDialog(string obj)
         {
             var channel = Channels.FirstOrDefault(x => x.Id == obj);
-            var result = await new ContentDialog()
-            {
-                Title = "Main_DeleteChannelDialog_Title".GetLocalized(),
-                Content = string.Format("Main_DeleteChannelDialog_Content".GetLocalized(), channel.Name),
-                XamlRoot = App.MainWindow.Content.XamlRoot,
-                PrimaryButtonText = "Main_DeleteChannelDialog_Confirm".GetLocalized(),
-                CloseButtonText = "Main_PrivilegeKey_Close.Text".GetLocalized()
-            }.ShowAsync(ContentDialogPlacement.InPlace);
+            var result = await _dialogFactory.CreateNotificationDialog(
+                "Main_DeleteChannelDialog_Title".GetLocalized(),
+                string.Format("Main_DeleteChannelDialog_Content".GetLocalized(), channel.Name),
+                "Main_DeleteChannelDialog_Confirm".GetLocalized()
+                )
+                .ShowAsync(ContentDialogPlacement.InPlace);
             if (result == ContentDialogResult.Primary)
             {
                 await _client.SendPacketTCP(new DeleteChannelPacket() { ChannelId = channel.Id });
@@ -737,29 +735,6 @@ namespace Remore.WinUI.ViewModels
                             MessagesListBox.GetScrollViewer().ScrollToVerticalOffset(999999);
                             IsMessagesNotLoading = true;
                         });
-                        if (_offsetListenerTimer != null)
-                            _offsetListenerTimer.Dispose();
-                        _offsetListenerTimer = new Timer(async (state) =>
-                        {
-
-                            App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
-                            {
-
-                                var scroll = MessagesListBox.GetScrollViewer();
-                                try
-                                {
-                                    if (scroll.VerticalOffset < 10)
-                                    {
-                                        await LoadMoreMessages();
-                                    }
-                                }
-                                catch
-                                {
-
-                                }
-                            });
-
-                        }, null, 1000, 40);
                     }
                     return;
                 }
