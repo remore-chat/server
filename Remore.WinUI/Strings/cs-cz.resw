@@ -145,7 +145,7 @@
     <value>O aplikaci</value>
   </data>
   <data name="Settings_AboutDescription.Text" xml:space="preserve">
-    <value>Remore - zdarma and open source alternativa teamspeaku vyvíjená Roxxelem (https://roxxel.moe)</value>
+    <value>Remore - zdarma a open-source alternativa teamspeaku vyvíjená Roxxelem (https://roxxel.moe)</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
     <value>Ochrana soukromí</value>
@@ -335,6 +335,6 @@ Verze aplikace (v{1}) není kompatibilní s verzí serveru (v{2})</value>
     <value>Reset</value>
   </data>
   <data name="ServerSettings_UnsavedChanges_Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Uložit</value>
   </data>
 </root>
