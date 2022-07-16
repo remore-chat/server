@@ -59,46 +59,46 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -279,5 +279,62 @@
   </data>
   <data name="Settings_KeyBindings_KeyInputPlaceholder" xml:space="preserve">
     <value>Натисни будь-яку кнопку</value>
+  </data>
+  <data name="Main_CreateChannelDialog_ChannelNameInputPlaceholder" xml:space="preserve">
+    <value>Channel name</value>
+  </data>
+  <data name="Main_CreateChannelDialog_ConfirmText" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="Main_CreateChannelDialog_TextChannel" xml:space="preserve">
+    <value>Text channel</value>
+  </data>
+  <data name="Main_CreateChannelDialog_Title" xml:space="preserve">
+    <value>Create channel</value>
+  </data>
+  <data name="Main_CreateChannelDialog_VoiceChannel" xml:space="preserve">
+    <value>Voice channel</value>
+  </data>
+  <data name="Main_CreateChannelDialog_Bitrate" xml:space="preserve">
+    <value>Bitrate</value>
+  </data>
+  <data name="Main_DeleteChannelDialog_Confirm" xml:space="preserve">
+    <value>Delete channel</value>
+  </data>
+  <data name="Main_DeleteChannelDialog_Content" xml:space="preserve">
+    <value>Are you sure you want to delete channel {0}? This can not be undone.</value>
+  </data>
+  <data name="Main_DeleteChannelDialog_Title" xml:space="preserve">
+    <value>Delete channel</value>
+  </data>
+  <data name="Application_Already_Running" xml:space="preserve">
+    <value>Application already running</value>
+  </data>
+  <data name="ServerSettings_Overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerMaxClients" xml:space="preserve">
+    <value>Maximum clients</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerMaxClients_Tip" xml:space="preserve">
+    <value>Sets the maximum number of simultaneously connected users to this server</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerName" xml:space="preserve">
+    <value>Server name</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerNamePlaceholder" xml:space="preserve">
+    <value>My awesome server!</value>
+  </data>
+  <data name="ServerSettings_Overview_Title" xml:space="preserve">
+    <value>Server overview</value>
+  </data>
+  <data name="ServerSettings_UnsavedChanges" xml:space="preserve">
+    <value>You have unsaved changes</value>
+  </data>
+  <data name="ServerSettings_UnsavedChanges_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="ServerSettings_UnsavedChanges_Save" xml:space="preserve">
+    <value>Save</value>
   </data>
 </root>
