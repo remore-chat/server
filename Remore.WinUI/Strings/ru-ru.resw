@@ -269,13 +269,13 @@
     <value>Выбери действие</value>
   </data>
   <data name="Settings_KeyBindings_AddButton" xml:space="preserve">
-    <value>Добавить гарячую клавишу</value>
+    <value>Добавить горячую клавишу</value>
   </data>
   <data name="Settings_KeyBindings_DialogTitle" xml:space="preserve">
-    <value>Создание гарячей клавиши</value>
+    <value>Создание горячей клавиши</value>
   </data>
   <data name="Settings_KeyBindings_Header" xml:space="preserve">
-    <value>Гарячие клавиши</value>
+    <value>Горячие клавиши</value>
   </data>
   <data name="Settings_KeyBindings_KeyInputPlaceholder" xml:space="preserve">
     <value>Нажми любую кнопку</value>
