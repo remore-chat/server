@@ -5,5 +5,5 @@ files:
     translation: /Remore.WinUI/Strings/%original_file_name%
     languages_mapping:
       locale:
-          en: en-us
-          ru: ru-ru
+        en: en-us
+        ru: ru-ru
