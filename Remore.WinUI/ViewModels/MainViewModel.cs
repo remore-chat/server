@@ -113,30 +113,18 @@ namespace Remore.WinUI.ViewModels
             {
                 var address = $"{ip}:{port}";
                 var textBox = new TextBox() { PlaceholderText = "Main_PrivilegeKey.PlaceholderText".GetLocalized(), MinWidth = 400 };
-                var res = await new ContentDialog()
-                {
-                    Title = "Main_PriviligeKey.Title".GetLocalized(),
-                    Content = textBox,
-                    XamlRoot = App.MainWindow.Content.XamlRoot,
-                    CloseButtonText = "Main_PrivilegeKey_Close.Text".GetLocalized(),
-                    PrimaryButtonText = "Main_PrivilegeKey_Confirm.Text".GetLocalized(),
-                }.ShowAsync(ContentDialogPlacement.InPlace);
+                var res = await dialogFactory
+                .CreateNotificationDialog("Main_PriviligeKey.Title".GetLocalized(), textBox, "Main_PrivilegeKey_Confirm.Text".GetLocalized())
+                .ShowAsync(ContentDialogPlacement.InPlace);
                 if (res == ContentDialogResult.Primary)
                 {
                     App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
                     {
                         await SettingsService.SaveSettingAsync<string>($"{address}PrivilegeKey", textBox.Text);
-                        var res = await new ContentDialog()
-                        {
-                            Title = "!",
-                            Content = "Main_PrivilegeKey_AfterConfirmNotification.Text".GetLocalized(),
-                            XamlRoot = App.MainWindow.Content.XamlRoot,
-                            CloseButtonText = "Main_PrivilegeKey_Close.Text".GetLocalized(),
-                        }.ShowAsync(ContentDialogPlacement.InPlace);
+                        await _dialogFactory.CreateNotificationDialog("!", "Main_PrivilegeKey_AfterConfirmNotification.Text".GetLocalized()).ShowAsync(ContentDialogPlacement.InPlace);
                     });
                 }
             });
-            _denoiser = new Denoiser();
             App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
             {
                 IsConnected = true;
@@ -374,9 +362,6 @@ namespace Remore.WinUI.ViewModels
         public RelayCommand CreateChannelDialogCommand { get; }
         public RelayCommand<string> DeleteChannelDialogCommand { get; }
         public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
-
-        private Denoiser _denoiser;
-
         public ILookupClient LookupClient { get; }
         public ILocalSettingsService SettingsService { get; }
         public SoundService Sounds { get; }
@@ -633,7 +618,7 @@ namespace Remore.WinUI.ViewModels
                     port = Convert.ToInt32(address.Split(":")[1]);
                 try
                 {
-                    _client = new RemoreClient(ip, port, Username, null, null);
+                    _client = new RemoreClient(ip, port, Username, await SettingsService.ReadSettingAsync<string>($"{address}PrivilegeKey"), null);
                     _client.PacketReceived += OnPacketReceived;
                     _client.UDPPacketReceived += OnUdpPacketReceived;
                     try
@@ -745,13 +730,11 @@ namespace Remore.WinUI.ViewModels
                 {
                     App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
                     {
-                        await new ContentDialog()
-                        {
-                            Title = "Failed to connect to channel",
-                            Content = new TextBlock() { Text = response.Reason },
-                            CloseButtonText = "Close",
-                            XamlRoot = App.MainWindow.Content.XamlRoot,
-                        }.ShowAsync(ContentDialogPlacement.InPlace);
+                        //TODO: Translation
+                        await _dialogFactory
+                        .CreateNotificationDialog("Failed to connect to channel",
+                        response?.Reason ?? "No reason")
+                        .ShowAsync(ContentDialogPlacement.InPlace);
                     });
                 }
             }
@@ -812,13 +795,12 @@ namespace Remore.WinUI.ViewModels
                             newViewModel.Connect();
                             return;
                         }
-                        await new ContentDialog()
-                        {
-                            Title = "You were disconnected from the server",
-                            Content = $"Reason: {disconnect.Reason}",
-                            XamlRoot = App.MainWindow.Content.XamlRoot,
-                            CloseButtonText = "Close"
-                        }.ShowAsync(ContentDialogPlacement.InPlace);
+                        //TODO: Translation
+                        await _dialogFactory
+                        .CreateNotificationDialog(
+                            "You were disconnected from the server", 
+                            $"Reason: {disconnect.Reason}")
+                        .ShowAsync(ContentDialogPlacement.InPlace);
 
                     });
                 }

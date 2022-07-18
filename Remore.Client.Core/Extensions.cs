@@ -17,7 +17,8 @@ namespace Remore.Client.Core
 
         public static long Send(this UdpClient client, IPacket packet)
         {
-
+            if (client == null)
+                return 0;
             return client.Send(client.Endpoint, new PacketWriter(packet).Write());
         }
 

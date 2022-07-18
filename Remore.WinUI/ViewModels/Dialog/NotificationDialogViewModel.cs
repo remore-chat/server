@@ -11,8 +11,8 @@ namespace Remore.WinUI.ViewModels.Dialog
     public partial class NotificationDialogViewModel : BaseDialogViewModel
     {
         [ObservableProperty]
-        private string content;
-        public NotificationDialogViewModel(string title, string content, string primaryButtonText = null)
+        private object content;
+        public NotificationDialogViewModel(string title, object content, string primaryButtonText = null)
         {
             Title = title;
             Content = content;

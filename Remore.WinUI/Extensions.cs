@@ -31,6 +31,10 @@ namespace Remore.WinUI
             return slice;
         }
 
+        public static long Map(long x, long inMin, long inMax, long outMin, long outMax)
+        {
+            return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+        }
         public static string Capitalize(this string str)
         {
             if (string.IsNullOrEmpty(str))

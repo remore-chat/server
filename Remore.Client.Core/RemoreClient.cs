@@ -85,7 +85,7 @@ namespace Remore.Client.Core
         {
             _tcpClient.DisconnectAndStop();
             _udpClient.Send(new UdpDisconnectPacket() { ClientUsername = Username });
-            _udpClient.DisconnectAndStop();
+            _udpClient?.DisconnectAndStop();
         }
         public async Task SendPacketTCP(IPacket packet)
         {

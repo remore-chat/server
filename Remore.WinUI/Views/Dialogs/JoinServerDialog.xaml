@@ -25,7 +25,7 @@
         </StackPanel>
         <Grid Visibility="{Binding IsNotBusy, Converter={StaticResource BooleanToVisibility}}">
             <StackPanel Visibility="{Binding IsNicknameMisconfigured, Converter={StaticResource BooleanToVisibility}}">
-                <TextBlock Text="{Binding MisconfiguredNicknameMessage}" />
+                <TextBlock TextWrapping="Wrap" Text="{Binding MisconfiguredNicknameMessage}" />
             </StackPanel>
             <Border BorderBrush="#121212" BorderThickness="0" CornerRadius="6">
                 <TabView SelectedIndex="{Binding SelectedTab, Mode=TwoWay}" IsAddTabButtonVisible="False" CloseButtonOverlayMode="OnPointerOver" Visibility="{Binding IsNicknameMisconfigured, Converter={StaticResource BooleanToVisibility}, ConverterParameter='Reverse'}">

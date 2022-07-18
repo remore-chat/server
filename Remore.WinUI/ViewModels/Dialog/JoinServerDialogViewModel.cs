@@ -135,9 +135,6 @@ namespace Remore.WinUI.ViewModels.Dialog
                 IsConnectionSucceeded = false;
                 ConnectionStatusMessage = string.Format("Main_ConnectToServerFavorites_ConnectingToServer".GetLocalized(), address);
             });
-#if DEBUG
-            await Task.Delay(3000);
-#endif
             var ip = address.Split(":")[0];
             int port = 0;
             if (!IPAddress.TryParse(ip, out var _))

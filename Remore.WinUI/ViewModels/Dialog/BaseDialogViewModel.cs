@@ -24,7 +24,7 @@ namespace Remore.WinUI.ViewModels.Dialog
         public bool IsNotBusy => !IsBusy;
         public SolidColorBrush Background => 
             (App.MainWindow.Content as FrameworkElement).RequestedTheme == ElementTheme.Dark ? 
-            new SolidColorBrush(Color.FromArgb(0, 0, 0, 0)) :
+            new SolidColorBrush(Color.FromArgb(80, 0, 0, 0)) :
             // #121212
             new SolidColorBrush(Color.FromArgb(255, 18, 18, 18));
     }

@@ -11,7 +11,7 @@ namespace Remore.WinUI.Factories
     public interface IDialogFactory
     {
         JoinServerDialog CreateJoinServerDialog();
-        NotificationDialog CreateNotificationDialog(string title, string content, string primaryButtonText = null);
+        NotificationDialog CreateNotificationDialog(string title, object content, string primaryButtonText = null);
     }
 
     public class DialogFactory : IDialogFactory
@@ -25,7 +25,7 @@ namespace Remore.WinUI.Factories
             return dialog;
         }
 
-        public NotificationDialog CreateNotificationDialog(string title, string content, string primaryButtonText = null)
+        public NotificationDialog CreateNotificationDialog(string title, object content, string primaryButtonText = null)
         {
             var vm = new NotificationDialogViewModel(title, content, primaryButtonText);
             var dialog = new NotificationDialog(vm)

@@ -36,7 +36,7 @@
             </NavigationView.ContentOverlay>
         </NavigationView>
         <Frame MaxWidth="1200" HorizontalAlignment="Center" Grid.Row="1" HorizontalContentAlignment="Center" Padding="16 16 16 16" x:Name="content"  />
-        <Grid  CornerRadius="8" MinWidth="640" Visibility="{x:Bind IsSettingsChanged, Converter={StaticResource boolToVis}, Mode=OneWay}"  Padding="16" Background="Transparent" Margin="0 0 0 24" HorizontalAlignment="Center"  Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Bottom">
+        <Grid  CornerRadius="8" MinWidth="640" Visibility="{x:Bind IsSettingsChanged, Converter={StaticResource boolToVis}, Mode=OneWay}"  Padding="16" Background="#4d121212" Margin="0 0 0 24" HorizontalAlignment="Center"  Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Bottom">
             <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Text="{l10n:Localize Key=ServerSettings_UnsavedChanges}" />
             <StackPanel Spacing="8" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="resetButton" HorizontalAlignment="Right" Content="{l10n:Localize Key=ServerSettings_UnsavedChanges_Reset}" />
