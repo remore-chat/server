@@ -1,4 +1,4 @@
-commit_message: 'fix: new translations in %locale% from Crowdin'
+commit_message: '[crowdin] new translations in %language% from Crowdin'
 append_commit_message: false
 files:
   - source: /Remore.WinUI/Strings/en-us.resw
