@@ -34,5 +34,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Remore.Library\Remore.Library.csproj" />
+	  <ProjectReference Include="..\Remore.Packets\Remore.Packets.csproj" />
 	</ItemGroup>
 </Project>

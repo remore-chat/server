@@ -2,16 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Remore.Library.Packets;
 
-namespace Remore.Library.Packets
+namespace Remore.Library
 {
-    public interface IPacket
+    public static class Packet
     {
-        public int Id { get; }
-        public string RequestId { get; set; }
-
         public static IPacket FromByteArray(byte[] data)
         {
             try

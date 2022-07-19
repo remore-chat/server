@@ -87,6 +87,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Remore.Client.Core\Remore.Client.Core.csproj" />
 		<ProjectReference Include="..\Remore.Library\Remore.Library.csproj" />
+		<ProjectReference Include="..\Remore.Packets\Remore.Packets.csproj" />
 		<ProjectReference Include="..\Remore.WinUI.Core\Remore.WinUI.Core.csproj" />
 		<ProjectReference Include="..\Thirdparty\Opus.NET\OpusWrapper\OpusWrapper.csproj" />
 	</ItemGroup>

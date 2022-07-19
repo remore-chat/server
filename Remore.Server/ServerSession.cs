@@ -6,6 +6,7 @@ using Remore.Library.Packets;
 using Remore.Library.Packets.Client;
 using Remore.Library.Packets.Server;
 using Remore.Server;
+using Remore.Library;
 
 public class ServerSession : TcpSession
 {
@@ -45,7 +46,7 @@ public class ServerSession : TcpSession
 
     protected override async void OnReceived(byte[] buffer, long offset, long size)
     {
-        var packet = IPacket.FromByteArray(buffer);
+        var packet = Packet.FromByteArray(buffer);
         if (State == SessionState.VersionExchange)
         {
             if (packet is ServerQueryPacket queryPacket)

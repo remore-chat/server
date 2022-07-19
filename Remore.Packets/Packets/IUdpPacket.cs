@@ -6,6 +6,6 @@ namespace Remore.Library.Packets
 {
     public interface IUdpPacket
     {
-        public string ClientUsername { get; set; }
+        string ClientUsername { get; set; }
     }
 }

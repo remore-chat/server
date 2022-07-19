@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Remore.Library.Enums;
 
 namespace Remore.Library.Packets.Server
 {

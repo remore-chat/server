@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Remore.Library.Packets;
 using Remore.Library.Packets.Client;
 using Remore.Library.Packets.Server;
-
+using Remore.Library;
 
 namespace Remore.Client.Core
 {
@@ -64,7 +64,7 @@ namespace Remore.Client.Core
 
         protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
         {
-            var packet = IPacket.FromByteArray(buffer);
+            var packet = Packet.FromByteArray(buffer);
             if (packet is UdpNotifyConnectedPacket)
                 IsConnectedToServer = true;
             else if (packet is UdpHeartbeatPacket)

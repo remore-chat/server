@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Remore.Library.Packets;
 using Remore.Library.Packets.Client;
 using Remore.Library.Packets.Server;
+using Remore.Library;
 
 namespace Remore.Client.Core
 {
@@ -61,7 +62,7 @@ namespace Remore.Client.Core
 
         private void HandlePacket(byte[] buffer)
         {
-            var packet = IPacket.FromByteArray(buffer);
+            var packet = Packet.FromByteArray(buffer);
             if (packet is not ServerQueryResponsePacket response)
             {
                 _semaphoreSlim.Release();

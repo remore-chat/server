@@ -8,6 +8,7 @@ using Remore.Library.Packets.Server;
 using Remore.Server;
 using Remore.Server.EF;
 using Remore.Server.Services;
+using Remore.Library;
 
 public class RemoreServer
 {
@@ -106,7 +107,7 @@ public class RemoreServer
 
         protected override async void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
         {
-            var packet = IPacket.FromByteArray(buffer);
+            var packet = Packet.FromByteArray(buffer);
             var client = Clients.FirstOrDefault(x => x.EndPoint.ToString() == endpoint.ToString());
             if (client == null)
             {
