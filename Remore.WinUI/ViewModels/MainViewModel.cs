@@ -36,6 +36,8 @@ using Remore.Library.Packets;
 using Remore.Client.Core.Exceptions;
 using Fluent.Icons;
 using Remore.WinUI.Factories;
+using Remore.WinUI.PacketHandling;
+using Remore.Library.Models;
 
 namespace Remore.WinUI.ViewModels
 {
@@ -56,6 +58,7 @@ namespace Remore.WinUI.ViewModels
             _logger.LogInformation("\n\n");
             _logger.LogInformation(new string('=', 100));
             _throttleDispatcher = new DebounceThrottle.ThrottleDispatcher(1000);
+            _handler = new PacketHandler(this);
             SettingsService = settingsService;
             SettingsService.SettingsUpdated += OnSettingsUpdated;
 
@@ -390,6 +393,7 @@ namespace Remore.WinUI.ViewModels
         private Queue<byte[]> _audioQueue;
         private ILogger<MainViewModel> _logger;
         private ThrottleDispatcher _throttleDispatcher;
+        private PacketHandler _handler;
         private ThrottleDispatcher _throttleDispatcherForSpeech;
         private SemaphoreSlim _microphoneQueueSlim;
         private SemaphoreSlim _audioQueueSlim;
@@ -771,161 +775,153 @@ namespace Remore.WinUI.ViewModels
 
         }
 
-        private void OnPacketReceived(object? sender, IPacket e)
+        #region Packet Handling
+        public async Task HandleClientConnectedPacket(IPacket packet)
         {
-            App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+            //TODO: Handle client connected packet
+        }
+        public async Task HandleDisconnectPacket(IPacket packet)
+        {
+            var disconnect = packet as DisconnectPacket;
+            var address = $"{ip}:{port}";
+            Disconnect();
+            if (disconnect.Reason == "Invalid privilege key")
             {
-                var packet = e;
+                await SettingsService.SaveSettingAsync<string>($"{address}PrivilegeKey", "");
+                var newViewModel = App.GetService<MainViewModel>();
+                newViewModel.Address = Address;
+                newViewModel.Connect();
+                return;
+            }
+            //TODO: Translation
+            await _dialogFactory
+            .CreateNotificationDialog(
+                "You were disconnected from the server",
+                $"Reason: {disconnect.Reason}")
+            .ShowAsync(ContentDialogPlacement.InPlace);
+        }
 
-                if (packet is ClientConnectedPacket client)
-                {
-
-                }
-                else if (packet is DisconnectPacket disconnect)
-                {
-                    App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
-                    {
-                        var address = $"{ip}:{port}";
-                        Disconnect();
-                        if (disconnect.Reason == "Invalid privilege key")
-                        {
-                            await SettingsService.SaveSettingAsync<string>($"{address}PrivilegeKey", "");
-                            var newViewModel = App.GetService<MainViewModel>();
-                            newViewModel.Address = Address;
-                            newViewModel.Connect();
-                            return;
-                        }
-                        //TODO: Translation
-                        await _dialogFactory
-                        .CreateNotificationDialog(
-                            "You were disconnected from the server", 
-                            $"Reason: {disconnect.Reason}")
-                        .ShowAsync(ContentDialogPlacement.InPlace);
-
-                    });
-                }
-                else if (packet is ChannelAddedPacket addedChannel)
-                {
-                    App.MainWindow.DispatcherQueue.TryEnqueue(() =>
-                    {
-                        Channels.Add(new Channel()
-                        {
-                            Id = addedChannel.ChannelId,
-                            Name = addedChannel.Name,
-                            Bitrate = addedChannel.Bitrate,
-                            ConnectedClients = new(addedChannel.Clients.Select(x => new ChannelClient(x)).ToList()),
-                            Parent = this,
-                            ClientsCount = addedChannel.Clients.Count,
-                            MaxClients = addedChannel.MaxClients,
-                            Order = addedChannel.Order,
-                            ChannelType = addedChannel.ChannelType
-                        });
-                    });
-
-
-                }
-                else if (packet is ChannelMessageAddedPacket channelMessage)
-                {
-                    var channel = Channels.FirstOrDefault(x => x.Id == channelMessage.ChannelId);
-                    if (channel == null)
-                        return;
-                    App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
-                    {
-                        if (channel.Messages == null)
-                            channel.Messages = new();
-                        channel.Messages.Add(new()
-                        {
-                            ChannelId = channelMessage.ChannelId,
-                            Id = channelMessage.MessageId,
-                            Message = channelMessage.Text,
-                            Username = channelMessage.SenderName
-                        });
-                        if (channelMessage.SenderName == Username)
-                        {
-                            await Task.Delay(100);
-                            var scrollViewer = MessagesListBox.GetScrollViewer();
-                            scrollViewer.ScrollToVerticalOffset(9999999);
-                        }
-                    });
-                }
-                else if (packet is ChannelUserConnected userConnected)
-                {
-
-                    var channel = Channels.FirstOrDefault(x => x.Id == userConnected.ChannelId);
-                    if (channel == null)
-                        return;
-                    var chClient = new ChannelClient(userConnected.Username);
-                    channel.ConnectedClients.Add(chClient);
-                    channel.ClientsCount++;
-                    if (userConnected.Username == Username)
-                    {
-                        CurrentChannelClient = chClient;
-                        CurrentChannel = channel;
-                        CurrentChannel.IsSelected = true;
-                        IsNotConnectingToChannel = false;
-                        Task.Run(() => StartAudioStreaming());
-                    }
-                }
-                else if (packet is ChannelUserDisconnected userDisconnected)
-                {
-
-                    var channel = Channels.FirstOrDefault(x => x.Id == userDisconnected.ChannelId);
-                    if (channel == null)
-                        return;
-                    channel.ClientsCount--;
-                    if (userDisconnected.Username == Username)
-                    {
-                        StopEncoding();
-                        CurrentChannel.IsSelected = false;
-                        CurrentChannel = null;
-                        CurrentChannelClient = null;
-                    }
-                    var channelClient = channel.ConnectedClients.FirstOrDefault(x => x.Username == userDisconnected.Username);
-                    channel.ConnectedClients.Remove(channelClient);
-                }
-                else if (packet is ServerInfoUpdatedPacket infoUpdate)
-                {
-                    ServerName = infoUpdate.Name;
-                    ServerMaxClients = infoUpdate.MaxClients;
-                }
-                else if (packet is VoiceEstablishResponsePacket voiceEstablishResponse)
-                {
-                    voiceAllowed = voiceEstablishResponse.Allowed;
-                }
-                else if (packet is ClientPermissionsUpdatedPacket permissions)
-                {
-                    if (permissions.HasAllPermissions)
-                    {
-                        CanEditServerSettings = true;
-                    }
-                    else
-                    {
-                        //TODO: Handle permissions
-                    }
-                }
-                else if (packet is ServerToClientNegotatiationFinished)
-                {
-                    //Make it look like we're doing something important xD
-                    await Task.Delay(1000);
-                    IsNegotiationFinished = true;
-                }
-                else if (packet is ChannelDeletedPacket deletedChannel)
-                {
-                    var channel = Channels.FirstOrDefault(x => x.Id == deletedChannel.ChannelId);
-                    if (channel == null)
-                        return;
-                    if (channel.Id == currentTextChannel?.Id)
-                    {
-                        currentTextChannel.Messages.Clear();
-                        CurrentTextChannel = null;
-                    }
-                    Channels.Remove(channel);
-                }
+        public async Task HandleChannelAddedPacket(IPacket packet)
+        {
+            var addedChannel = packet as ChannelAddedPacket;
+            Channels.Add(new Channel()
+            {
+                Id = addedChannel.ChannelId,
+                Name = addedChannel.Name,
+                Bitrate = addedChannel.Bitrate,
+                ConnectedClients = new(addedChannel.Clients.Select(x => new ChannelClient(x)).ToList()),
+                Parent = this,
+                ClientsCount = addedChannel.Clients.Count,
+                MaxClients = addedChannel.MaxClients,
+                Order = addedChannel.Order,
+                ChannelType = addedChannel.ChannelType
             });
         }
+
+        public async Task HandleChannelMessageAddedPacket(IPacket packet)
+        {
+            var channelMessage = packet as ChannelMessageAddedPacket;
+            var channel = Channels.FirstOrDefault(x => x.Id == channelMessage.ChannelId);
+            if (channel == null)
+                return;
+            if (channel.Messages == null)
+                channel.Messages = new();
+            channel.Messages.Add(new()
+            {
+                ChannelId = channelMessage.ChannelId,
+                Id = channelMessage.MessageId,
+                Message = channelMessage.Text,
+                Username = channelMessage.SenderName
+            });
+            if (channelMessage.SenderName == Username)
+            {
+                await Task.Delay(100);
+                var scrollViewer = MessagesListBox.GetScrollViewer();
+                scrollViewer.ScrollToVerticalOffset(9999999);
+            }
+        }
+
+        public async Task HandleChannelUserConnected(IPacket packet)
+        {
+            var userConnected = packet as ChannelUserConnected;
+            var channel = Channels.FirstOrDefault(x => x.Id == userConnected.ChannelId);
+            if (channel == null)
+                return;
+            var chClient = new ChannelClient(userConnected.Username);
+            channel.ConnectedClients.Add(chClient);
+            channel.ClientsCount++;
+            if (userConnected.Username == Username)
+            {
+                CurrentChannelClient = chClient;
+                CurrentChannel = channel;
+                CurrentChannel.IsSelected = true;
+                IsNotConnectingToChannel = false;
+                _ = Task.Run(() => StartAudioStreaming());
+            }
+        }
+        public async Task HandleChannelUserDisconnected(IPacket packet)
+        {
+            var userDisconnected = packet as ChannelUserDisconnected;
+            var channel = Channels.FirstOrDefault(x => x.Id == userDisconnected.ChannelId);
+            if (channel == null)
+                return;
+            channel.ClientsCount--;
+            if (userDisconnected.Username == Username)
+            {
+                StopEncoding();
+                CurrentChannel.IsSelected = false;
+                CurrentChannel = null;
+                CurrentChannelClient = null;
+            }
+            var channelClient = channel.ConnectedClients.FirstOrDefault(x => x.Username == userDisconnected.Username);
+            channel.ConnectedClients.Remove(channelClient);
+        }
+        public async Task HandleServerInfoUpdatedPacket(IPacket packet)
+        {
+            var infoUpdate = packet as ServerInfoUpdatedPacket;
+            ServerName = infoUpdate.Name;
+            ServerMaxClients = infoUpdate.MaxClients;
+        }
+        public async Task HandleVoiceEstablishResponsePacket(IPacket packet)
+        {
+            var voiceEstablishResponse = packet as VoiceEstablishResponsePacket;
+            voiceAllowed = voiceEstablishResponse.Allowed;
+        }
+        public async Task HandleClientPermissionsUpdatedPacket(IPacket packet)
+        {
+            var permissions = packet as ClientPermissionsUpdatedPacket;
+            if (permissions.HasAllPermissions)
+            {
+                CanEditServerSettings = true;
+            }
+            else
+            {
+                //TODO: Handle permissions
+            }
+        }
+        public async Task HandleChannelDeletedPacket(IPacket packet)
+        {
+            var deletedChannel = packet as ChannelDeletedPacket;
+            var channel = Channels.FirstOrDefault(x => x.Id == deletedChannel.ChannelId);
+            if (channel == null)
+                return;
+            if (channel.Id == currentTextChannel?.Id)
+            {
+                currentTextChannel.Messages.Clear();
+                CurrentTextChannel = null;
+            }
+            Channels.Remove(channel);
+        }
+        public async Task HandleServerToClientNegotatiationFinished(IPacket packet)
+        {
+            IsNegotiationFinished = true;
+        }
+        private void OnPacketReceived(object? sender, IPacket e)
+        {
+            _ = _handler.HandlePacket(e);
+        }
         #endregion
-
-
+        #endregion
 
         public void SendMessage(object param)
         {
