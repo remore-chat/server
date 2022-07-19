@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Remore.Library.Attributes;
 
 namespace Remore.Library.Packets.Client
 {
+    [SourceGeneratorIgnorePacket]
     public class VersionExchangePacket : IPacket
     {
         public VersionExchangePacket()

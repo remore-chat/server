@@ -13,5 +13,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Remore.Library\Remore.Library.csproj" />
     <ProjectReference Include="..\Remore.Packets\Remore.Packets.csproj" />
+    <ProjectReference Include="..\Remore.SourceGenerators\Remore.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceToOutputAssembly="false" />
   </ItemGroup>
 </Project>

@@ -12,7 +12,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Remore.Packets\Remore.Packets.csproj" />
+	  <ProjectReference Include="..\Remore.Packets\Remore.Packets.csproj" OutputItemType="Analyzer" GeneratePathProperty="true" PrivateAssets="all" />
 	</ItemGroup>
 
 	<PropertyGroup>

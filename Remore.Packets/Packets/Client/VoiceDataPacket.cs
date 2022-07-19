@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Remore.Library.Attributes;
 
 namespace Remore.Library.Packets.Client
 {
+    [SourceGeneratorIgnorePacket]
     public class VoiceDataPacket : IPacket, IUdpPacket
     {
         public int Id => 12;

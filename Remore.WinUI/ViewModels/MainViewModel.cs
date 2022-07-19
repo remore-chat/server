@@ -75,7 +75,7 @@ namespace Remore.WinUI.ViewModels
             });
             LeaveChannel = new RelayCommand(() =>
             {
-                _ = _client.SendPacketTCP(new LeaveChannelPacket());
+                _ = _client.SendLeaveChannelPacket();
             });
             ToggleMute = new RelayCommand(async () =>
             {
@@ -146,11 +146,7 @@ namespace Remore.WinUI.ViewModels
             var viewModel = new ServerSettingsViewModel();
             viewModel.Init((name, maxClients) =>
                 {
-                    _ = _client.SendPacketTCP(new UpdateServerInfoPacket()
-                    {
-                        Name = name,
-                        MaxClients = maxClients
-                    });
+                    _ = _client.SendUpdateServerInfoPacket(name, maxClients);
                 }, ServerName, ServerMaxClients);
             navService.NavigateTo(typeof(ServerSettingsViewModel).FullName, viewModel);
 
@@ -167,7 +163,7 @@ namespace Remore.WinUI.ViewModels
                 .ShowAsync(ContentDialogPlacement.InPlace);
             if (result == ContentDialogResult.Primary)
             {
-                await _client.SendPacketTCP(new DeleteChannelPacket() { ChannelId = channel.Id });
+                await _client.SendDeleteChannelPacket(channel.Id);
             }
         }
 
@@ -220,13 +216,12 @@ namespace Remore.WinUI.ViewModels
             var result = await dialog.ShowAsync(ContentDialogPlacement.InPlace);
             if (result == ContentDialogResult.Primary)
             {
-                _ = _client.SendPacketTCP(new CreateChannelPacket()
-                {
-                    Name = channelNameInput.Text,
-                    Bitrate = (int)bitrateSlider.Value * 1000,
-                    ChannelType = radioButtons.SelectedIndex == 0 ? Library.Enums.ChannelType.Text : Library.Enums.ChannelType.Voice,
-                    MaxClients = 999999,
-                });
+                _ = _client.SendCreateChannelPacket(
+                    channelNameInput.Text,
+                    999999,
+                    (int)bitrateSlider.Value * 1000,
+                    0,
+                    radioButtons.SelectedIndex == 0 ? Library.Enums.ChannelType.Text : Library.Enums.ChannelType.Voice);
             }
         }
         private void OnKeybindingExecuted(object sender, KeyBindingExecutedEventArgs e)
@@ -425,7 +420,7 @@ namespace Remore.WinUI.ViewModels
         {
 
             var channelClient = CurrentChannel.ConnectedClients.FirstOrDefault(x => x.Username == Username);
-            _ = _client.SendPacketTCP(new VoiceEstablishPacket());
+            _ = _client.SendVoiceEstablishPacket();
             while (voiceAllowed == null)
                 await Task.Yield();
             if (voiceAllowed == false)
@@ -874,11 +869,7 @@ namespace Remore.WinUI.ViewModels
                 return;
             if (CurrentTextChannel != null)
             {
-                _ = _client.SendPacketTCP(new CreateChannelMessagePacket()
-                {
-                    ChannelId = CurrentTextChannel.Id,
-                    Text = message
-                });
+                _ = _client.SendCreateChannelMessagePacket(CurrentTextChannel.Id, message);
             }
         }
         private void OnExited(object? sender, EventArgs e)

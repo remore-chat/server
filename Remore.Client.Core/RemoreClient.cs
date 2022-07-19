@@ -10,11 +10,10 @@ using Remore.Library.Packets.Client;
 using Remore.Library.Packets.Server;
 using Remore.Library.Packets;
 using Remore.Client.Core.Exceptions;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Remore.Client.Core
 {
-    public class RemoreClient
+    public partial class RemoreClient
     {
         private const string version = "1.0.0";
 
