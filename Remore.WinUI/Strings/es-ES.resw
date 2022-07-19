@@ -260,7 +260,7 @@ Versión de la aplicación (v{1}) no coincide con la versión del servidor (v{2}
     <value>Idioma</value>
   </data>
   <data name="Settings_Capture_EnableRNNoiseSuppresion" xml:space="preserve">
-    <value>Activar supresión de ruido RNruido</value>
+    <value>Activar supresión de ruido RNNoise</value>
   </data>
   <data name="Settings_KeyBindingsFailed" xml:space="preserve">
     <value>Parece que hay otra acción que está vinculada a la tecla que has presionado.</value>
