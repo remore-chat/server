@@ -23,12 +23,12 @@
               VerticalScrollBarVisibility="Visible"
               VerticalAlignment="Top">
         <Grid Background="Transparent" Margin="{StaticResource MediumLeftRightMargin}">
-            <StackPanel Background="Transparent" HorizontalAlignment="Stretch"
+            <StackPanel MaxWidth="1050" Background="Transparent" HorizontalAlignment="Stretch"
             x:Name="ContentArea">
 
-                <TextBlock FontSize="36" Margin="0 12 0 0" Text="{l10n:Localize Key=Settings.Title}" />
+                <TextBlock FontSize="36" TextAlignment="Left" Margin="10 12 0 -24" Text="{l10n:Localize Key=Settings.Title}" />
 
-                <StackPanel Background="Transparent" Margin="10,5,10,5">
+                <StackPanel Background="Transparent" Margin="10,0,10,5">
                     <st:SettingsGroup Header="{l10n:Localize Key=Settings_Personalization.Text}">
                         <st:Setting Header="{l10n:Localize Key=Settings_Personalization_DefaultNickname.Text}">
                             <st:Setting.Icon>

@@ -27,11 +27,18 @@ namespace Remore.WinUI.Services
             _cultureToResourceMap = new();
             Languages = new List<CultureInfo>()
             {
-                new("en-US"),
-                new("ru-RU"),
-                new("uk-UA"),
-                new("de-DE"),
-                new("cs-CZ"),
+                new("en-us"),
+                new("ru-ru"),
+                new("de-de"),
+                new("uk-ua"),
+                new("cs-cz"),
+                new("ro-RO"),
+                new("pl-pl"),
+                new("nl-nl"),
+                new("es-ES"),
+                new("be-BY"),
+                new("az-AZ"),
+                new("ar-SA"),
             };
         }
         public event EventHandler<object> LanguageUpdated;

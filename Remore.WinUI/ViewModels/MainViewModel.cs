@@ -65,29 +65,10 @@ namespace Remore.WinUI.ViewModels
             BindingsService = bindingsService;
             BindingsService.KeyBindingExecuted += OnKeybindingExecuted;
             Sounds = sounds;
-            LookupClient = lookupClient;
 
             Task.Run(SendAudio);
             Task.Run(PlayAudio);
-            ShowConnectDialog = new RelayCommand(async () =>
-            {
-                var dialog = dialogFactory.CreateJoinServerDialog();
-                var result = await dialog.ShowAsync(ContentDialogPlacement.InPlace);
-                if (result == ContentDialogResult.Primary || dialog.IsConnectionFromFavorites)
-                {
-                    Address = dialog.ConnectionAddress;
-                    if (dialog.ShouldServerBeAddedInFavoritesAfterConnect)
-                    {
-                        var addresses = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
-                        if (addresses == null)
-                            addresses = new();
-                        if (!addresses.Contains(Address))
-                            addresses.Add(Address);
-                        await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, addresses);
-                    }
-                    Connect();
-                }
-            });
+            ShowConnectDialog = new RelayCommand(CreateConnectDialog);
             DisconnectCommand = new RelayCommand(() =>
             {
                 Disconnect();
@@ -135,6 +116,26 @@ namespace Remore.WinUI.ViewModels
                 IsConnected = false;
                 StartAudioPlayback();
             });
+        }
+
+        private void CreateConnectDialog()
+        {
+            var dialog = dialogFactory.CreateJoinServerDialog();
+            var result = await dialog.ShowAsync(ContentDialogPlacement.InPlace);
+            if (result == ContentDialogResult.Primary || dialog.IsConnectionFromFavorites)
+            {
+                Address = dialog.ConnectionAddress;
+                if (dialog.ShouldServerBeAddedInFavoritesAfterConnect)
+                {
+                    var addresses = await SettingsService.ReadSettingAsync<List<string>>(SettingsViewModel.FavoritesSettingsKey);
+                    if (addresses == null)
+                        addresses = new();
+                    if (!addresses.Contains(Address))
+                        addresses.Add(Address);
+                    await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, addresses);
+                }
+                Connect();
+            }
         }
 
         private void OpenServerSettings()
@@ -276,87 +277,31 @@ namespace Remore.WinUI.ViewModels
 
         [ObservableProperty]
         private int serverMaxClients;
-
+        [ObservableProperty]
         private string address;
-
-        public string Address
-        {
-            get { return address; }
-            set { this.SetProperty(ref address, value); }
-        }
-
+        [ObservableProperty]
         private string messageContent;
-
-        public string MessageContent
-        {
-            get { return messageContent; }
-            set { this.SetProperty(ref messageContent, value); }
-        }
-
+        [ObservableProperty]
         private ObservableCollection<Channel> channels;
+        [ObservableProperty]
+        private bool isConnected;
 
-        public ObservableCollection<Channel> Channels
-        {
-            get { return channels; }
-            set { this.SetProperty(ref channels, value); }
-        }
-
+        [ObservableProperty]
+        private Channel currentTextChannel;
+        [ObservableProperty]
+        private bool isNegotiationFinished;
+        [ObservableProperty]
+        private bool canEditServerSettings;
+        [ObservableProperty]
+        private ChannelClient currentChannelClient;
+        [ObservableProperty]
+        private bool isNotConnectingToChannel;
         private IDialogFactory _dialogFactory;
         private int _segmentFrames;
-        private bool isConnected;
         private string ip;
         private int port;
 
-        public bool IsConnected
-        {
-            get { return isConnected; }
-            set { this.SetProperty(ref isConnected, value); }
-        }
-
-        private Channel currentTextChannel;
-
-        public Channel CurrentTextChannel
-        {
-            get { return currentTextChannel; }
-            set { this.SetProperty(ref currentTextChannel, value); }
-        }
-
-
-        private bool isNegotiationFinished;
-
-        public bool IsNegotiationFinished
-        {
-            get { return isNegotiationFinished; }
-            set { SetProperty(ref isNegotiationFinished, value); }
-        }
-
-        private bool canEditServerSettings;
-
-        public bool CanEditServerSettings
-        {
-            get { return canEditServerSettings; }
-            set { SetProperty(ref canEditServerSettings, value); }
-        }
-
-
-        private ChannelClient currentChannelClient;
-
-        public ChannelClient CurrentChannelClient
-        {
-            get { return currentChannelClient; }
-            set { SetProperty(ref currentChannelClient, value); }
-        }
-
-
         public Channel CurrentChannel { get; set; }
-        private bool isNotConnectingToChannel;
-
-        public bool IsNotConnectingToChannel
-        {
-            get { return isNotConnectingToChannel; }
-            set { this.SetProperty(ref isNotConnectingToChannel, value); }
-        }
-
         public ICommand ShowConnectDialog { get; }
         public RelayCommand DisconnectCommand { get; }
         public RelayCommand LeaveChannel { get; }
@@ -365,7 +310,6 @@ namespace Remore.WinUI.ViewModels
         public RelayCommand CreateChannelDialogCommand { get; }
         public RelayCommand<string> DeleteChannelDialogCommand { get; }
         public RelayCommand ShowUpdatePriviligeKeyDialog { get; }
-        public ILookupClient LookupClient { get; }
         public ILocalSettingsService SettingsService { get; }
         public SoundService Sounds { get; }
         public KeyBindingsService BindingsService { get; }
