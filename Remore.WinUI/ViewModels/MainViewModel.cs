@@ -68,7 +68,7 @@ namespace Remore.WinUI.ViewModels
 
             Task.Run(SendAudio);
             Task.Run(PlayAudio);
-            ShowConnectDialog = new RelayCommand(CreateConnectDialog);
+            ShowConnectDialog = new RelayCommand(async() => await CreateConnectDialog());
             DisconnectCommand = new RelayCommand(() =>
             {
                 Disconnect();
@@ -118,9 +118,9 @@ namespace Remore.WinUI.ViewModels
             });
         }
 
-        private void CreateConnectDialog()
+        private async Task CreateConnectDialog()
         {
-            var dialog = dialogFactory.CreateJoinServerDialog();
+            var dialog = _dialogFactory.CreateJoinServerDialog();
             var result = await dialog.ShowAsync(ContentDialogPlacement.InPlace);
             if (result == ContentDialogResult.Primary || dialog.IsConnectionFromFavorites)
             {
@@ -132,7 +132,7 @@ namespace Remore.WinUI.ViewModels
                         addresses = new();
                     if (!addresses.Contains(Address))
                         addresses.Add(Address);
-                    await settingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, addresses);
+                    await SettingsService.SaveSettingAsync(SettingsViewModel.FavoritesSettingsKey, addresses);
                 }
                 Connect();
             }
