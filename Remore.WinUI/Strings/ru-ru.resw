@@ -59,46 +59,46 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -148,7 +148,7 @@
     <value>Remore - бесплатная альтернатива TeamSpeak с открытым исходным кодом</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
-    <value>Privacy Statement</value>
+    <value>Политика конфиденциальности</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
     <value>https://YourPrivacyUrlGoesHere/</value>
@@ -279,5 +279,62 @@
   </data>
   <data name="Settings_KeyBindings_KeyInputPlaceholder" xml:space="preserve">
     <value>Нажми любую кнопку</value>
+  </data>
+  <data name="Main_CreateChannelDialog_ChannelNameInputPlaceholder" xml:space="preserve">
+    <value>Имя канала</value>
+  </data>
+  <data name="Main_CreateChannelDialog_ConfirmText" xml:space="preserve">
+    <value>Создать</value>
+  </data>
+  <data name="Main_CreateChannelDialog_TextChannel" xml:space="preserve">
+    <value>Текстовый канал</value>
+  </data>
+  <data name="Main_CreateChannelDialog_Title" xml:space="preserve">
+    <value>Создать канал</value>
+  </data>
+  <data name="Main_CreateChannelDialog_VoiceChannel" xml:space="preserve">
+    <value>Голосовой канал</value>
+  </data>
+  <data name="Main_CreateChannelDialog_Bitrate" xml:space="preserve">
+    <value>Битрейт канала</value>
+  </data>
+  <data name="Main_DeleteChannelDialog_Confirm" xml:space="preserve">
+    <value>Удалить канал</value>
+  </data>
+  <data name="Main_DeleteChannelDialog_Content" xml:space="preserve">
+    <value>Вы уверены что хотите удалить канал {0}? Это действие не может быть отменено.</value>
+  </data>
+  <data name="Main_DeleteChannelDialog_Title" xml:space="preserve">
+    <value>Удалить канал</value>
+  </data>
+  <data name="Application_Already_Running" xml:space="preserve">
+    <value>Приложение уже запущено</value>
+  </data>
+  <data name="ServerSettings_Overview" xml:space="preserve">
+    <value>Обзор</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerMaxClients" xml:space="preserve">
+    <value>Максимальное количество пользователей</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerMaxClients_Tip" xml:space="preserve">
+    <value>Устанавливает максимальное количество одновременно подключенных людей</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerName" xml:space="preserve">
+    <value>Имя сервера</value>
+  </data>
+  <data name="ServerSettings_Overview_ServerNamePlaceholder" xml:space="preserve">
+    <value>Мой потрясающий сервер!</value>
+  </data>
+  <data name="ServerSettings_Overview_Title" xml:space="preserve">
+    <value>Обзор сервера</value>
+  </data>
+  <data name="ServerSettings_UnsavedChanges" xml:space="preserve">
+    <value>У вас есть несохраненные изменения</value>
+  </data>
+  <data name="ServerSettings_UnsavedChanges_Reset" xml:space="preserve">
+    <value>Сбросить</value>
+  </data>
+  <data name="ServerSettings_UnsavedChanges_Save" xml:space="preserve">
+    <value>Сохранить</value>
   </data>
 </root>
