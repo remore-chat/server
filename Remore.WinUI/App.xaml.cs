@@ -40,8 +40,14 @@ namespace Remore.WinUI
             {
                 var env = context.HostingEnvironment;
                 var config = context.Configuration.GetSection("Logging");
-                logging.AddFile($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}/Remore/logs/" +
-                    string.Format("app_{0:yyyy}-{0:MM}-{0:dd}-{0:hh}-{0:mm}.log", DateTime.Now), fileLoggerOpts =>
+                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TTalk");
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+                path = Path.Combine(path, "logs");
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+                logging.AddFile(path +
+                    string.Format("\\app_{0:yyyy}-{0:MM}-{0:dd}-{0:hh}-{0:mm}.log", DateTime.Now), fileLoggerOpts =>
                     {
                     });
                 logging.AddConsole();

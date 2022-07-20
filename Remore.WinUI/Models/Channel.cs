@@ -12,6 +12,7 @@ using System.Windows.Input;
 using Remore.Library.Enums;
 using Remore.Library.Models;
 using Remore.WinUI.ViewModels;
+using Remore.WinUI.Controls;
 
 namespace Remore.WinUI.Models
 {
@@ -64,9 +65,9 @@ namespace Remore.WinUI.Models
 
         public int LastParsedPage { get; set; } = -1;
 
-        private ObservableCollection<ChannelMessage> messages;
+        private Conversation messages;
 
-        public ObservableCollection<ChannelMessage> Messages
+        public Conversation Messages
         {
             get
             {

@@ -7,11 +7,12 @@
     mc:Ignorable="d"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:fluent="using:Fluent.Icons"
+    xmlns:customControls="using:Remore.WinUI.Controls"
     xmlns:l10n="using:Remore.WinUI.Helpers"
     xmlns:converters="using:Remore.WinUI.Converters"
     Style="{StaticResource PageStyle}"
     Background="Transparent">
-    
+
 
     <Page.Resources>
         <converters:StringFormatConverter x:Key="format" />
@@ -162,9 +163,13 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ProgressRing IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsMessagesNotLoading, Mode=OneWay, ConverterParameter='Reverse', Converter={StaticResource boolToVis}}" Grid.Row="0" Margin="0 12 0 12" Width="32" Height="32" IsActive="True" HorizontalAlignment="Center"  />
 
-                        <ListView x:Name="MessagesListBox" Margin="0 0 0 12" Grid.Row="1"   ItemsSource="{x:Bind ViewModel.CurrentTextChannel.Messages, Mode=OneWay}"  VerticalAlignment="Stretch">
+                        <customControls:ChatListView IncrementalLoadingThreshold="2" IncrementalLoadingTrigger="None" x:Name="MessagesListBox" Margin="0 0 0 12" Grid.Row="1"   ItemsSource="{x:Bind ViewModel.CurrentTextChannel.Messages, Mode=OneWay}"  VerticalAlignment="Stretch">
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsStackPanel ItemsUpdatingScrollMode="KeepLastItemInView" VerticalAlignment="Bottom"/>
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="0 4 0 4">
@@ -173,7 +178,7 @@
                                     </StackPanel>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
-                        </ListView>
+                        </customControls:ChatListView>
 
                         <TextBox Grid.Row="2" MinHeight="48" VerticalContentAlignment="Center" Visibility="{x:Bind ViewModel.CurrentTextChannel, Mode=OneWay, Converter={StaticResource boolToVis}}" HorizontalContentAlignment="Stretch" PlaceholderText="{l10n:Localize Key=Main_MessageContent.PlaceholderText}" AcceptsReturn="True" x:Name="MessageContent"  MaxLength="1999" HorizontalAlignment="Stretch" MaxHeight="250" Margin="0 0 8 0" >
                             <TextBox.KeyboardAccelerators>

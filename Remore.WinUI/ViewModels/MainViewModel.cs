@@ -591,37 +591,6 @@ namespace Remore.WinUI.ViewModels
             });
 
         }
-
-        private async Task LoadMoreMessages()
-        {
-            var queue = App.MainWindow.DispatcherQueue;
-
-            if (!IsMessagesNotLoading)
-                return;
-            if (CurrentTextChannel == null)
-                return;
-            var channel = CurrentTextChannel;
-            if (channel.LastParsedPage == -1)
-                return;
-            IsMessagesNotLoading = false;
-            channel.LastParsedPage++;
-            var messages = await _client.RequestChannelMessages(channel.Id, channel.LastParsedPage);
-            if (messages.Messages.Count == 0)
-            {
-                channel.LastParsedPage = -1;
-            }
-
-            if (channel.Messages == null)
-                channel.Messages = new();
-            foreach (var message in messages.Messages)
-            {
-                channel.Messages.Insert(0, message);
-            }
-            IsMessagesNotLoading = true;
-
-
-        }
-
         private void OnUdpPacketReceived(object sender, IPacket e)
         {
             if (e is VoiceDataMulticastPacket voice)
@@ -643,26 +612,7 @@ namespace Remore.WinUI.ViewModels
                     });
                     if (channel.Messages == null || channel.Messages.Count == 0)
                     {
-                        channel.LastParsedPage = 1;
-                        App.MainWindow.DispatcherQueue.TryEnqueue(() =>
-                        {
-                            IsMessagesNotLoading = false;
-                        });
-                        var messages = await _client.RequestChannelMessages(channel.Id, 1);
-                        App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
-                        {
-                            if (channel.Messages == null)
-                                channel.Messages = new();
-                            foreach (var message in messages.Messages)
-                            {
-                                channel.Messages.Insert(0, message);
-                            }
-                            await Task.Delay(1500);
-                            //Wait for messages to render
-                            //Scroll to infinity (basically)
-                            MessagesListBox.GetScrollViewer().ScrollToVerticalOffset(999999);
-                            IsMessagesNotLoading = true;
-                        });
+                        channel.Messages = new(channel.Id, _client);
                     }
                     return;
                 }
@@ -764,7 +714,7 @@ namespace Remore.WinUI.ViewModels
             if (channel == null)
                 return;
             if (channel.Messages == null)
-                channel.Messages = new();
+                channel.Messages = new(channel.Id, _client);
             channel.Messages.Add(new()
             {
                 ChannelId = channelMessage.ChannelId,
