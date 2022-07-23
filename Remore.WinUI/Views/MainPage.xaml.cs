@@ -86,27 +86,13 @@ namespace Remore.WinUI.Views
         private void Send(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
         {
             ViewModel.SendMessage(MessageContent.Text);
-            MessageContent.Text = "";
+            MessageContent.Select(0, 0);
+            MessageContent.Text = string.Empty;
         }
 
         private void MarkdownTextBlock_LinkClicked(object sender, CommunityToolkit.WinUI.UI.Controls.LinkClickedEventArgs e)
         {
-            DispatcherQueue.TryEnqueue(async () =>
-            {
-                var res = await new ContentDialog()
-                {
-                    Title = "Hang on",
-                    Content = new MarkdownTextBlock()
-                    {
-                        Text = $"This link will take you to **{e.Link}**. Are you sure you want to go there?",
-                    },
-                    XamlRoot = this.Content.XamlRoot,
-                    CloseButtonText = "Cancel",
-                    PrimaryButtonText = "Yes, take me there",
-                }.ShowAsync(ContentDialogPlacement.InPlace);
-                if (res == ContentDialogResult.Primary)
-                    LinkHandler.OpenBrowser(e.Link);
-            });
+            ViewModel.LinkClicked(sender, e);
         }
     }
 }

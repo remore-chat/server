@@ -24,7 +24,7 @@ namespace Remore.WinUI.Models
                 if (value == isSpeaking)
                     return;
                 isSpeaking = value;
-                App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+                App.MainWindow.DispatcherQueue?.TryEnqueue(() =>
                 PropertyChanged?.Invoke(this, new(nameof(IsSpeaking))));
             }
         }
@@ -49,7 +49,7 @@ namespace Remore.WinUI.Models
             IsSpeaking = false;
             _timer = new Timer((state) =>
             {
-                App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+                App.MainWindow.DispatcherQueue?.TryEnqueue(() =>
                 {
                     if (DateTimeOffset.Now.ToUnixTimeSeconds() - LastTimeVoiceDataReceived > 1)
                         IsSpeaking = false;

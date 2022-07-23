@@ -39,6 +39,8 @@ using Remore.WinUI.Factories;
 using Remore.WinUI.PacketHandling;
 using Remore.Library.Models;
 using SettingsUI.Extensions;
+using CommunityToolkit.WinUI.UI.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Remore.WinUI.ViewModels
 {
@@ -624,6 +626,10 @@ namespace Remore.WinUI.ViewModels
                 IsNotConnectingToChannel = false;
                 _channel = channel;
                 var response = await _client.RequestChannelJoinAsync(channel.Id);
+                if (response?.Reason.Contains("UDP server") ?? false)
+                {
+                    await _client.UdpReconnectAsync();
+                }
                 if (response == null || !response.Allowed)
                 {
                     App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
@@ -831,6 +837,24 @@ namespace Remore.WinUI.ViewModels
         {
             _cts?.Cancel();
             _client.Disconnect();
+        }
+
+        internal async void LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+            {
+                var res = await _dialogFactory.CreateNotificationDialog("Hang on",
+                    new MarkdownTextBlock()
+                    {
+                        Text = $"This link will take you to **{e.Link}**. Are you sure you want to go there?",
+                        Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0))
+                    },
+                    "Yes, take me there"
+                ).ShowAsync(ContentDialogPlacement.InPlace);
+
+                if (res == ContentDialogResult.Primary)
+                    LinkHandler.OpenBrowser(e.Link);
+            });
         }
     }
 }

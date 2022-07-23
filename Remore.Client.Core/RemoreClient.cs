@@ -126,6 +126,10 @@ namespace Remore.Client.Core
             await SendPacketTCP(packet);
             return await _pending.WaitForValueAsync(packet.RequestId, 15000) as ChannelMessagesResponse;
         }
+        public async Task UdpReconnectAsync()
+        {
+            await InternalUdpConnect();
+        }
         #endregion
 
 

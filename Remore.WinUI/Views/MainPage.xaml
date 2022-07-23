@@ -9,7 +9,7 @@
     xmlns:fluent="using:Fluent.Icons"
     xmlns:customControls="using:Remore.WinUI.Controls"
     xmlns:l10n="using:Remore.WinUI.Helpers"
-    xmlns:converters="using:Remore.WinUI.Converters"
+    xmlns:converters="using:Remore.WinUI.Converters" xmlns:media="using:CommunityToolkit.WinUI.UI.Media"
     Style="{StaticResource PageStyle}"
     Background="Transparent">
 
@@ -18,6 +18,7 @@
         <converters:StringFormatConverter x:Key="format" />
         <converters:MathConverter x:Key="math" />
         <converters:BooleanToVisibilityConverter x:Key="boolToVis" />
+        <converters:BooleanToObjectConverter x:Key="boolToObj" />
     </Page.Resources>
 
     <Grid x:Name="ContentArea" Background="Transparent">
@@ -64,7 +65,7 @@
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ListView Margin="0 12 0 0" Grid.Row="0" MinWidth="172" x:Name="ChannelsListBox"  SelectionChanged="MessagesListBox_SelectionChanged" SelectionMode="None" IsMultiSelectCheckBoxEnabled="False" ItemsSource="{x:Bind ViewModel.Channels}">
+                        <ListView Margin="0 12 0 0" Padding="0" Grid.Row="0" MinWidth="172" x:Name="ChannelsListBox"  SelectionChanged="MessagesListBox_SelectionChanged" SelectionMode="None" IsMultiSelectCheckBoxEnabled="False" ItemsSource="{x:Bind ViewModel.Channels}">
                             <ListView.ContextFlyout>
                                 <MenuFlyout>
                                     <MenuFlyoutItem Text="{l10n:Localize Key=Main_CreateChannelDialog_Title}" Command="{x:Bind ViewModel.CreateChannelDialogCommand}"
@@ -78,66 +79,79 @@
 
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <ListViewItem x:Name="innerColumn" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                        <Grid HorizontalAlignment="Stretch"  CornerRadius="6" Margin="0 4 0 4" MinWidth="172" MinHeight="24" PointerPressed="StackPanel_PointerPressed" 
-                                          Background="{ThemeResource BackButtonPointerOverBackgroundThemeBrush}">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="3" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <Grid.ContextFlyout>
-                                                <MenuFlyout>
-                                                    <MenuFlyoutItem Text="{l10n:Localize Key=Main_DeleteChannelDialog_Title}" CommandParameter="{Binding Id}" Command="{Binding Parent.DeleteChannelDialogCommand}"
+                                    <ListViewItem Padding="0" x:Name="innerColumn" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                        <Grid Padding="4">
+
+                                            <controls:DropShadowPanel ShadowOpacity="0.4" BorderThickness="2"  Color="{Binding IsSelected, Converter={StaticResource boolToObj}, ConverterParameter={StaticResource SystemAccentColorLight2}}" OffsetX="8" OffsetY="0"  BlurRadius="12" Background="Transparent" IsMasked="True" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch">
+
+                                                <!--<Rectangle Canvas.ZIndex="1" Fill="{ThemeResource CustomAcrylicInAppLuminosity}" />-->
+                                                <Grid Background="#FF121212" BorderThickness="4" Canvas.ZIndex="10" Name="innerGrid" HorizontalAlignment="Stretch"  CornerRadius="6" Margin="8 0 8 0" MinWidth="172" MinHeight="24" PointerPressed="StackPanel_PointerPressed">
+
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="3" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.ContextFlyout>
+                                                        <MenuFlyout>
+                                                            <MenuFlyoutItem Text="{l10n:Localize Key=Main_DeleteChannelDialog_Title}" CommandParameter="{Binding Id}" Command="{Binding Parent.DeleteChannelDialogCommand}"
                                                     Visibility="{Binding Parent.CanEditServerSettings, Converter={StaticResource boolToVis}, Mode=OneWay}">
-                                                        <MenuFlyoutItem.Icon>
-                                                            <fluent:FluentIconElement Symbol="Delete16Filled" Width="16" Height="16"/>
-                                                        </MenuFlyoutItem.Icon>
-                                                    </MenuFlyoutItem>
-                                                </MenuFlyout>
-                                            </Grid.ContextFlyout>
-                                            <Border Visibility="{Binding IsSelected, Mode=OneWay, Converter={StaticResource boolToVis}}" 
-                                                VerticalAlignment="Center" Height="48" Margin="0 6 0 6" CornerRadius="6" Background="{ThemeResource SystemAccentColorLight2}"
-                                                Width="3"/>
-                                            <Grid Grid.Column="1" Margin="8 0 0 0" HorizontalAlignment="Stretch">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-                                                <StackPanel Margin="0 0 8 0" Orientation="Vertical" HorizontalAlignment="Stretch" MinWidth="172">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <fluent:FluentSymbolIcon Visibility="{Binding IsText, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" VerticalAlignment="Bottom" Foreground="{ThemeResource SystemChromeGrayColor}" Symbol="MicOn16Filled" Width="16" Height="16" />
-                                                        <TextBlock Visibility="{Binding IsText, Converter={StaticResource boolToVis}}" VerticalAlignment="Bottom" Foreground="{ThemeResource SystemChromeGrayColor}" FontSize="18" FontWeight="Bold" Text="#" Margin="0 12 0 0" />
-                                                        <TextBlock Margin="4 8 0 0" MaxWidth="125"  Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0 -22 0 0" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                                <MenuFlyoutItem.Icon>
+                                                                    <fluent:FluentIconElement Symbol="Delete16Filled" Width="16" Height="16"/>
+                                                                </MenuFlyoutItem.Icon>
+                                                            </MenuFlyoutItem>
+                                                        </MenuFlyout>
+                                                    </Grid.ContextFlyout>
+                                                    <Border Visibility="{Binding IsSelected, Mode=OneWay, Converter={StaticResource boolToVis}}" 
+                                                VerticalAlignment="Center" Height="24" Margin="0 6 0 6" CornerRadius="6"    
+                                                Width="3" />
+                                                    <Grid Grid.Column="1" Margin="8 0 0 0" HorizontalAlignment="Stretch">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+                                                        <Border Grid.Row="0" Height="30" Background="Transparent" Visibility="{Binding IsText, Mode=OneWay, ConverterParameter='Reverse', Converter={StaticResource boolToVis}}" Margin="0 0 0 0">
+
+                                                        </Border>
+                                                        <StackPanel Margin="0 0 8 0" Orientation="Vertical" HorizontalAlignment="Stretch" MinWidth="172">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <fluent:FluentSymbolIcon  Visibility="{Binding IsText, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" VerticalAlignment="Bottom" Foreground="{ThemeResource SystemChromeGrayColor}" Symbol="MicOn20Filled" Width="20"  Height="20" />
+                                                                <TextBlock Visibility="{Binding IsText, Converter={StaticResource boolToVis}}" VerticalAlignment="Bottom" Foreground="{ThemeResource SystemChromeGrayColor}" FontSize="20" FontWeight="Bold" Text="#" Margin="0 12 0 0" />
+                                                                <TextBlock Margin="4 8 0 0" MaxWidth="125"  Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0 -22 0 0" VerticalAlignment="Center" HorizontalAlignment="Right"
                                                                 Visibility="{Binding HasUserLimit, Mode=OneWay, Converter={StaticResource boolToVis}}">
-                                                        <TextBlock Visibility="{Binding IsText, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                                <TextBlock Visibility="{Binding IsText, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" VerticalAlignment="Center" HorizontalAlignment="Right">
                                                             <Run Text="{Binding ClientsCount}" />
                                                             <Run Text="/" />
                                                             <Run Text="{Binding MaxClients}" />
-                                                        </TextBlock>
-                                                    </StackPanel>
-                                                </StackPanel>
-                                                <ListView Margin="0 8 0 8" SelectionMode="Single" ItemsSource="{Binding ConnectedClients}" Grid.Row="1">
-                                                    <ListView.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <TextBlock Text="{Binding Username}" />
-
-                                                                <Border Margin="12 0 0 0" Width="8" Visibility="{Binding IsSpeaking, Mode=OneWay, Converter={StaticResource boolToVis}}" Height="8" CornerRadius="24" Background="AliceBlue" />
-                                                                <Grid Margin="12 0 0 0" Visibility="{Binding IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}}">
-                                                                    <Grid>
-                                                                        <fluent:FluentSymbolIcon Visibility="{Binding IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}}" Foreground="{ThemeResource DefaultTextForegroundThemeBrush}" Symbol="MicOff16Filled" Width="16" Height="16" />
-                                                                    </Grid>
-                                                                </Grid>
+                                                                </TextBlock>
                                                             </StackPanel>
-                                                        </DataTemplate>
-                                                    </ListView.ItemTemplate>
-                                                </ListView>
-                                            </Grid>
+                                                        </StackPanel>
+                                                        <Border Grid.Row="1" Height="0" Background="Red" Visibility="{Binding IsText, Mode=OneWay, Converter={StaticResource boolToVis}}" Margin="0 0 0 8">
+
+                                                        </Border>
+                                                        <ListView  Visibility="{Binding IsText, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" Margin="0 0 0 8" SelectionMode="None" ItemsSource="{Binding ConnectedClients}" Grid.Row="1">
+                                                            <ListView.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <TextBlock Text="{Binding Username}" />
+
+                                                                        <Border Margin="12 0 0 0" Width="8" Visibility="{Binding IsSpeaking, Mode=OneWay, Converter={StaticResource boolToVis}}" Height="8" CornerRadius="24" Background="AliceBlue" />
+                                                                        <Grid Margin="12 0 0 0" Visibility="{Binding IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}}">
+                                                                            <Grid>
+                                                                                <fluent:FluentSymbolIcon Visibility="{Binding IsMuted, Mode=OneWay, Converter={StaticResource boolToVis}}" Foreground="{ThemeResource DefaultTextForegroundThemeBrush}" Symbol="MicOff16Filled" Width="16" Height="16" />
+                                                                            </Grid>
+                                                                        </Grid>
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+                                                            </ListView.ItemTemplate>
+                                                        </ListView>
+                                                    </Grid>
+                                                </Grid>
+                                            </controls:DropShadowPanel>
                                         </Grid>
                                     </ListViewItem>
                                 </DataTemplate>

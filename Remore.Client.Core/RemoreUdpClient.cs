@@ -21,7 +21,7 @@ namespace Remore.Client.Core
             TcpId = tcpId;
             Username = username;
         }
-        public string TcpId { get;}
+        public string TcpId { get; }
         public string Username { get; set; }
         public bool IsConnectedToServer { get; set; }
 
@@ -57,9 +57,13 @@ namespace Remore.Client.Core
         }
         protected override void OnDisconnected()
         {
-            IsConnectedToServer = false;
-            Disconnected?.Invoke(this, null);
-            
+            if (_stop)
+            {
+                IsConnectedToServer = false;
+                Disconnected?.Invoke(this, null);
+                return;
+            }
+            Connect();
         }
 
         protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
@@ -70,7 +74,7 @@ namespace Remore.Client.Core
             else if (packet is UdpHeartbeatPacket)
             {
                 IsConnectedToServer = true;
-                this.Send(new UdpHeartbeatPacket() {  ClientUsername = Username });
+                this.Send(new UdpHeartbeatPacket() { ClientUsername = Username });
             }
             else
             {

@@ -28,6 +28,7 @@ using Windows.Storage;
 using WinUIEx;
 using Remore.WinUI.Factories;
 using Remore.WinUI.ViewModels.Dialog;
+using Windows.UI;
 
 // To learn more about WinUI3, see: https://docs.microsoft.com/windows/apps/winui/winui3/.
 namespace Remore.WinUI
@@ -159,7 +160,7 @@ namespace Remore.WinUI
 
             var mica = new MicaSystemBackdrop();
             if (mica.IsSupported)
-                MainWindow = new WindowEx() { Title = "AppDisplayName".GetLocalized(), Backdrop = new MicaSystemBackdrop() };
+                MainWindow = new WindowEx() { Title = "AppDisplayName".GetLocalized(), Backdrop = new MicaSystemBackdrop() { DarkFallbackColor = Color.FromArgb(255,18,18,18) } };
             else
                 MainWindow = new WindowEx() { Title = "AppDisplayName".GetLocalized(), Backdrop = new AcrylicSystemBackdrop() { DarkTintOpacity = .80, LightTintOpacity = .80 } };
 
