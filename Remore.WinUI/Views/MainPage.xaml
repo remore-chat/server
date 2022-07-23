@@ -182,7 +182,6 @@
 
                         <TextBox Grid.Row="2" MinHeight="48" VerticalContentAlignment="Center" Visibility="{x:Bind ViewModel.CurrentTextChannel, Mode=OneWay, Converter={StaticResource boolToVis}}" HorizontalContentAlignment="Stretch" PlaceholderText="{l10n:Localize Key=Main_MessageContent.PlaceholderText}" AcceptsReturn="True" x:Name="MessageContent"  MaxLength="1999" HorizontalAlignment="Stretch" MaxHeight="250" Margin="0 0 8 0" >
                             <TextBox.KeyboardAccelerators>
-                                <!--<KeyboardAccelerator Modifiers="Shift" Key="Enter" Invoked="NewLine"/>-->
                                 <KeyboardAccelerator Key="Enter" Invoked="Send"/>
                             </TextBox.KeyboardAccelerators>
                         </TextBox>

@@ -12,6 +12,7 @@ using System.Diagnostics;
 
 namespace Remore.SourceGenerators
 {
+    //TODO: use SourceBuilder to build this generator
     [Generator]
     public class PacketSendingMethodsGenerator : ISourceGenerator
     {

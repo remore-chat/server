@@ -38,6 +38,7 @@ using Fluent.Icons;
 using Remore.WinUI.Factories;
 using Remore.WinUI.PacketHandling;
 using Remore.Library.Models;
+using SettingsUI.Extensions;
 
 namespace Remore.WinUI.ViewModels
 {
@@ -68,7 +69,7 @@ namespace Remore.WinUI.ViewModels
 
             Task.Run(SendAudio);
             Task.Run(PlayAudio);
-            ShowConnectDialog = new RelayCommand(async() => await CreateConnectDialog());
+            ShowConnectDialog = new RelayCommand(async () => await CreateConnectDialog());
             DisconnectCommand = new RelayCommand(() =>
             {
                 Disconnect();
@@ -553,9 +554,6 @@ namespace Remore.WinUI.ViewModels
                 if (!IPAddress.TryParse(ip, out _))
                 {
                     _logger.LogInformation("IP parse failed. Using DNS to find server's IP");
-                    //var ep = GetEndpointForHostname(address);
-                    //ip = ep.Address;
-                    //port = ep.Port;
                 }
                 else
                     port = Convert.ToInt32(address.Split(":")[1]);
@@ -571,7 +569,14 @@ namespace Remore.WinUI.ViewModels
                     }
                     catch (ConnectionFailedException ex)
                     {
-                        App.MainWindow.DispatcherQueue.TryEnqueue(() => IsConnected = false);
+                        App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                        {
+                            IsConnected = false;
+                            var dialog = _dialogFactory.CreateNotificationDialog(
+                                    "ConnectionFailed.Title".GetLocalized(),
+                                    string.Format("ConnectionFailed.Content".GetLocalized(), address));
+                            await dialog.ShowAsyncQueue();
+                        });
                         _logger.LogError($"Connection to {address} failed");
                         App.ResetMainViewModel();
                         App.GetService<INavigationService>().NavigateTo(typeof(SettingsViewModel).FullName, null, true);

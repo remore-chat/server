@@ -174,7 +174,7 @@ namespace Remore.Client.Core
         private void OnTcpPacketReceived(object? sender, IPacket packet)
         {
             if (Ip == "127.0.0.1")
-                Thread.Sleep(20);
+                Thread.Sleep(5);
             if (!string.IsNullOrWhiteSpace(packet.RequestId) && _pending.Add(packet.RequestId, packet))
                 return;
 
