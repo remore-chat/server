@@ -23,6 +23,8 @@ using Remore.WinUI.Helpers;
 using Remore.WinUI.KeyBindings;
 using Remore.WinUI.Services;
 using Windows.ApplicationModel;
+using WinUIEx;
+
 namespace Remore.WinUI.ViewModels
 {
     public class SettingsViewModel : ObservableRecipient
@@ -250,6 +252,25 @@ namespace Remore.WinUI.ViewModels
                 }
             }
         }
+        private int selectedBackdrop;
+
+        public int SelectedBackdrop
+        {
+            get { return selectedBackdrop; }
+            set
+            {
+                if (SetProperty(ref selectedBackdrop, value))
+                {
+                    if (value is 0)
+                        App.MainWindow.Backdrop = new MicaSystemBackdrop();
+                    else if (value is 1)
+                        App.MainWindow.Backdrop = new AcrylicSystemBackdrop();
+                    else
+                        App.MainWindow.Backdrop = null;
+                }
+
+            }
+        }
 
 
 
@@ -301,6 +322,15 @@ namespace Remore.WinUI.ViewModels
             OutputDevices = new();
             Actions = typeof(KeyBindingAction).GetEnumNames().Select(x => Regex.Replace(x.ToString(), "[a-z][A-Z]", m => $"{m.Value[0]} {char.ToLower(m.Value[1])}")).ToList();
             KeyBindings = new(_keyBindingsService.KeyBindings.ToList());
+
+            if (App.MainWindow.Backdrop is MicaSystemBackdrop)
+                selectedBackdrop = 0;
+            else if (App.MainWindow.Backdrop is AcrylicSystemBackdrop)
+                selectedBackdrop = 1;
+            else
+                selectedBackdrop = 2;
+
+
             AddKeyBinding = new RelayCommand(async () =>
             {
                 var content = new StackPanel()

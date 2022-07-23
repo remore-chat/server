@@ -343,5 +343,20 @@ App version (v{1}) doesn't match server's version (v{2})</value>
   <data name="ConnectionFailed.Content" xml:space="preserve">
     <value>Can't connect to server {0}</value>
   </data>
-
+  <data name="Settings_Backdrop.Acrylic" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="Settings_Backdrop.Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="Settings_Backdrop.Header" xml:space="preserve">
+    <value>Backdrop</value>
+  </data>
+  <data name="Settings_Backdrop.Mica" xml:space="preserve">
+    <value>Mica</value>
+  </data>
+  <data name="Shell.AddServer" xml:space="preserve">
+    <value>Add
+server</value>
+  </data>
 </root>

@@ -26,7 +26,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Right" HorizontalAlignment="Left" >
+        <CommandBar Background="Transparent" IsOpen="False" HorizontalContentAlignment="Left" DefaultLabelPosition="Right" HorizontalAlignment="Left" >
             <AppBarButton Margin="-4 0 0 0" Label="{x:Bind ViewModel.ServerName, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}}" />
             <AppBarButton Icon="Add"  Label="{l10n:Localize Key=Main_Connect.Label}" Command="{x:Bind ViewModel.ShowConnectDialog}" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" />
             <AppBarButton Icon="Remove" Label="{l10n:Localize Key=Main_Disconnect.Label}" Command="{x:Bind ViewModel.DisconnectCommand}" Visibility="{x:Bind ViewModel.IsConnected, Mode=OneWay, Converter={StaticResource boolToVis}}" />
@@ -136,7 +136,7 @@
                                                         <ListView  Visibility="{Binding IsText, Mode=OneWay, Converter={StaticResource boolToVis}, ConverterParameter='Reverse'}" Margin="0 0 0 8" SelectionMode="None" ItemsSource="{Binding ConnectedClients}" Grid.Row="1">
                                                             <ListView.ItemTemplate>
                                                                 <DataTemplate>
-                                                                    <StackPanel Orientation="Horizontal">
+                                                                    <StackPanel Orientation="Horizontal" Margin="8 0 0 0">
                                                                         <TextBlock Text="{Binding Username}" />
 
                                                                         <Border Margin="12 0 0 0" Width="8" Visibility="{Binding IsSpeaking, Mode=OneWay, Converter={StaticResource boolToVis}}" Height="8" CornerRadius="24" Background="AliceBlue" />

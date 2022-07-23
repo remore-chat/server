@@ -417,7 +417,7 @@ public class ServerSession : TcpSession
         var connectedClient = CurrentChannel?.ConnectedClients.FirstOrDefault(x => x.Username == Username);
         if (connectedClient == null)
             return;
-        //Server.UDP.Clients.Remove(connectedClient);
+        Server.UDP.Clients.Remove(connectedClient);
         CurrentChannel.ConnectedClients.Remove(connectedClient);
         TCP.Multicast(new ChannelUserDisconnected() { ChannelId = CurrentChannel.Id, Username = this.Username });
         this.CurrentChannel = null;

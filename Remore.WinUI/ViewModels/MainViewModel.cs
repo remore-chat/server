@@ -629,6 +629,7 @@ namespace Remore.WinUI.ViewModels
                 if (response?.Reason.Contains("UDP server") ?? false)
                 {
                     await _client.UdpReconnectAsync();
+                    response = await _client.RequestChannelJoinAsync(channel.Id);
                 }
                 if (response == null || !response.Allowed)
                 {

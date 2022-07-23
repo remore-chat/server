@@ -9,47 +9,78 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     Loaded="OnLoaded"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:l10n="using:Remore.WinUI.Helpers"
+    xmlns:l10n="using:Remore.WinUI.Helpers" xmlns:fluent="using:Fluent.Icons"
     Style="{StaticResource PageStyle}">
 
-    <NavigationView
+    <muxc:NavigationView
         x:Name="navigationView"
-        PaneDisplayMode="Top"
+        PaneDisplayMode="Left"
         AlwaysShowHeader="False"
         IsBackEnabled="False"
+        IsPaneToggleButtonVisible="False"
         IsBackButtonVisible="Collapsed"
         SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
-        IsSettingsVisible="True"
+        OpenPaneLength="94"
         Background="Transparent"
-        ExpandedModeThresholdWidth="1280"
+        HorizontalAlignment="Stretch"
+        IsSettingsVisible="False"
         Header="Remore">
-        <NavigationView.MenuItems>
-            <!--
-            TODO: Change the symbols for each item as appropriate for your app
-            More on Segoe UI Symbol icons: https://docs.microsoft.com/windows/uwp/style/segoe-ui-symbol-font
-            Or to use an IconElement instead of a Symbol see https://github.com/microsoft/TemplateStudio/blob/main/docs/UWP/projectTypes/navigationpane.md
-            Edit String/en-US/Resources.resw: Add a menu item title for each page
-            -->
-            <NavigationViewItem Tag="Shell_Main.Content" Content="{l10n:Localize Key=Shell_Main.Content}" Icon="Home" helpers:NavigationHelper.NavigateTo="Remore.WinUI.ViewModels.MainViewModel" />
-            <NavigationViewItem Tag="Shell_ServerSettings.Content" Content="{l10n:Localize Key=Shell_Main.Content}" Icon="Home" helpers:NavigationHelper.NavigateTo="Remore.WinUI.ViewModels.ServerSettingsViewModel" Visibility="Collapsed" />
-        </NavigationView.MenuItems>
-        <NavigationView.HeaderTemplate>
+        <muxc:NavigationView.FooterMenuItems>
+            <muxc:NavigationViewItem Tag="Shell.AddServer">
+                <Grid Padding="0 12 0 12" Margin="4 0 0 0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <fluent:FluentSymbolIcon Symbol="Add28" Width="28" Height="28" />
+                        <TextBlock FontSize="12" HorizontalAlignment="Center" HorizontalTextAlignment="Center" TextAlignment="Center" Text="{l10n:Localize Key=Shell.AddServer}" />
+                    </StackPanel>
+                </Grid>
+            </muxc:NavigationViewItem>
+            <muxc:NavigationViewItem Padding="0" VerticalAlignment="Bottom" Margin="0 4 0 0" Tag="Settings.Title" helpers:NavigationHelper.NavigateTo="Remore.WinUI.ViewModels.SettingsViewModel">
+                <Grid Padding="0 12 0 12" Margin="4 0 0 0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <fluent:FluentSymbolIcon Symbol="Settings28" Width="28" Height="28" />
+                        <TextBlock FontSize="12" HorizontalAlignment="Center" Text="{l10n:Localize Key=Settings.Title}" />
+                    </StackPanel>
+                </Grid>
+            </muxc:NavigationViewItem>
+        </muxc:NavigationView.FooterMenuItems>
+        <muxc:NavigationView.MenuItems>
+            <muxc:NavigationViewItem Margin="2 4 2 0" Tag="Shell_Main.Content" helpers:NavigationHelper.NavigateTo="Remore.WinUI.ViewModels.MainViewModel">
+                <Grid Padding="0 12 0 12" Margin="4 0 0 0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <fluent:FluentSymbolIcon HorizontalAlignment="Center" Symbol="Home32" Width="32" Height="32" />
+                        <TextBlock FontSize="12" HorizontalAlignment="Center" Text="{l10n:Localize Key=Shell_Main.Content}" />
+                    </StackPanel>
+                </Grid>
+            </muxc:NavigationViewItem>
+
+            
+
+        </muxc:NavigationView.MenuItems>
+        <muxc:NavigationView.HeaderTemplate>
             <DataTemplate>
                 <StackPanel></StackPanel>
             </DataTemplate>
-        </NavigationView.HeaderTemplate>
-        <!--<i:Interaction.Behaviors>
-            <behaviors:NavigationViewHeaderBehavior
-                DefaultHeader="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
-                <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-                    <DataTemplate>
-                        <StackPanel></StackPanel>
-                    </DataTemplate>
-                </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-            </behaviors:NavigationViewHeaderBehavior>
-        </i:Interaction.Behaviors>-->
+        </muxc:NavigationView.HeaderTemplate>
         <Grid>
             <Frame Background="Transparent" x:Name="shellFrame" />
         </Grid>
-    </NavigationView>
+    </muxc:NavigationView>
 </Page>

@@ -50,13 +50,22 @@
                                 <ComboBox Margin="0 0 0 0" VerticalAlignment="Center" ItemsSource="{x:Bind ViewModel.Languages}" MinWidth="300"  SelectedIndex="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}"></ComboBox>
                             </st:Setting.ActionContent>
                         </st:Setting>
+                        <st:Setting Header="{l10n:Localize Key=Settings_Backdrop.Header}">
+                            <st:Setting.Content>
+                                <ComboBox SelectedIndex="{x:Bind ViewModel.SelectedBackdrop, Mode=TwoWay}" >
+                                    <TextBlock Text="{l10n:Localize Key=Settings_Backdrop.Mica}"></TextBlock>
+                                    <TextBlock Text="{l10n:Localize Key=Settings_Backdrop.Acrylic}"></TextBlock>
+                                    <TextBlock Text="{l10n:Localize Key=Settings_Backdrop.Disabled}"></TextBlock>
+                                </ComboBox>
+                            </st:Setting.Content>
+                        </st:Setting>
                         <st:Setting Header="{l10n:Localize Key=Settings_Theme.Text}">
                             <st:Setting.Icon>
                                 <fluent:FluentSymbolIcon Symbol="PaintBrush20Filled" Width="20" Height="20" />
                             </st:Setting.Icon>
                             <st:Setting.ActionContent>
                                 <StackPanel>
-                                    <RadioButton
+                                    <RadioButton IsEnabled="False"
                         Content="{l10n:Localize Key=Settings_Theme_Light.Content}"
                         Command="{x:Bind ViewModel.SwitchThemeCommand}"
                         IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
@@ -76,7 +85,7 @@
                                             <xaml:ElementTheme>Dark</xaml:ElementTheme>
                                         </RadioButton.CommandParameter>
                                     </RadioButton>
-                                    <RadioButton
+                                    <RadioButton IsEnabled="False"
                         Content="{l10n:Localize Key=Settings_Theme_Default.Content}"
                         Command="{x:Bind ViewModel.SwitchThemeCommand}"
                         IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"

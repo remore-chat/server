@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Linq;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
@@ -42,8 +43,11 @@ namespace Remore.WinUI.Views
 
         private void OnNavigationViewItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-           
 
+            if (args.InvokedItemContainer.Tag.ToString() == "Shell.AddServer")
+            {
+                App.GetService<MainViewModel>().ShowConnectDialog.Execute(null);
+            }
         }
 
         private void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
