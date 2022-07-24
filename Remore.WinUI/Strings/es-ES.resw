@@ -337,4 +337,26 @@ Versión de la aplicación (v{1}) no coincide con la versión del servidor (v{2}
   <data name="ServerSettings_UnsavedChanges_Save" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="ConnectionFailed.Title" xml:space="preserve">
+    <value>Connection to server failed</value>
+  </data>
+  <data name="ConnectionFailed.Content" xml:space="preserve">
+    <value>Can't connect to server {0}</value>
+  </data>
+  <data name="Settings_Backdrop.Acrylic" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="Settings_Backdrop.Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="Settings_Backdrop.Header" xml:space="preserve">
+    <value>Backdrop</value>
+  </data>
+  <data name="Settings_Backdrop.Mica" xml:space="preserve">
+    <value>Mica</value>
+  </data>
+  <data name="Shell.AddServer" xml:space="preserve">
+    <value>Add
+server</value>
+  </data>
 </root>
