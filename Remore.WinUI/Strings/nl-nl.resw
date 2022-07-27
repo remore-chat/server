@@ -227,7 +227,7 @@ App versie (v{1}) komt niet overeen met server versie (v{2})</value>
     <value>Standaard nickname</value>
   </data>
   <data name="Settings_Personalization_DefaultNicknameDisconnectFromServer.Text" xml:space="preserve">
-    <value>Je moet opnieuw met deze server verbinden om je nickname op te slaan</value>
+    <value>.</value>
   </data>
   <data name="Settings_Personalization_MinimalLength.Text" xml:space="preserve">
     <value>Je nickname moet minimaal 3 karakters bevatten</value>
@@ -358,5 +358,11 @@ App versie (v{1}) komt niet overeen met server versie (v{2})</value>
   <data name="Shell.AddServer" xml:space="preserve">
     <value>Add
 server</value>
+  </data>
+  <data name="Main_ConnectToServer.ServerFull" xml:space="preserve">
+    <value>Server full</value>
+  </data>
+  <data name="Main_Reconnect" xml:space="preserve">
+    <value>Reconnect</value>
   </data>
 </root>
