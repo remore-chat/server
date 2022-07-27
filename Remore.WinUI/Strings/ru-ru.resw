@@ -227,7 +227,7 @@
     <value>Никнейм</value>
   </data>
   <data name="Settings_Personalization_DefaultNicknameDisconnectFromServer.Text" xml:space="preserve">
-    <value>Что-бы изменить никнейм нужно отключиться от сервера</value>
+    <value>.</value>
   </data>
   <data name="Settings_Personalization_MinimalLength.Text" xml:space="preserve">
     <value>Минимальная длина никнейма - 3 символа</value>
@@ -358,5 +358,11 @@
   <data name="Shell.AddServer" xml:space="preserve">
     <value>Добавить
 сервер</value>
+  </data>
+  <data name="Main_ConnectToServer.ServerFull" xml:space="preserve">
+    <value>Server full</value>
+  </data>
+  <data name="Main_Reconnect" xml:space="preserve">
+    <value>Reconnect</value>
   </data>
 </root>
