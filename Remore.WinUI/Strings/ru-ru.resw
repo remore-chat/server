@@ -360,9 +360,9 @@
 сервер</value>
   </data>
   <data name="Main_ConnectToServer.ServerFull" xml:space="preserve">
-    <value>Server full</value>
+    <value>Сервер заполнен</value>
   </data>
   <data name="Main_Reconnect" xml:space="preserve">
-    <value>Reconnect</value>
+    <value>Переподключиться</value>
   </data>
 </root>
