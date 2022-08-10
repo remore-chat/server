@@ -363,6 +363,6 @@ server</value>
     <value>Server full</value>
   </data>
   <data name="Main_Reconnect" xml:space="preserve">
-    <value>Reconnect</value>
+    <value>Reconectar</value>
   </data>
 </root>
