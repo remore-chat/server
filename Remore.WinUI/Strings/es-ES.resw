@@ -272,7 +272,7 @@ Versión de la aplicación (v{1}) no coincide con la versión del servidor (v{2}
     <value>Agregar bind</value>
   </data>
   <data name="Settings_KeyBindings_DialogTitle" xml:space="preserve">
-    <value>Create keybind</value>
+    <value>Crear enlace de teclado</value>
   </data>
   <data name="Settings_KeyBindings_Header" xml:space="preserve">
     <value>Keybinds</value>
