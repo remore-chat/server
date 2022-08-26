@@ -275,92 +275,91 @@ Versión de la aplicación (v{1}) no coincide con la versión del servidor (v{2}
     <value>Crear enlace de teclado</value>
   </data>
   <data name="Settings_KeyBindings_Header" xml:space="preserve">
-    <value>Keybinds</value>
+    <value>Enlaces de teclado</value>
   </data>
   <data name="Settings_KeyBindings_KeyInputPlaceholder" xml:space="preserve">
-    <value>Press any key</value>
+    <value>Pulsa cualquier tecla</value>
   </data>
   <data name="Main_CreateChannelDialog_ChannelNameInputPlaceholder" xml:space="preserve">
-    <value>Channel name</value>
+    <value>Nombre de canal</value>
   </data>
   <data name="Main_CreateChannelDialog_ConfirmText" xml:space="preserve">
-    <value>Create</value>
+    <value>Crear</value>
   </data>
   <data name="Main_CreateChannelDialog_TextChannel" xml:space="preserve">
-    <value>Text channel</value>
+    <value>Canal de texto</value>
   </data>
   <data name="Main_CreateChannelDialog_Title" xml:space="preserve">
-    <value>Create channel</value>
+    <value>Crear canal</value>
   </data>
   <data name="Main_CreateChannelDialog_VoiceChannel" xml:space="preserve">
-    <value>Voice channel</value>
+    <value>Canal de voz</value>
   </data>
   <data name="Main_CreateChannelDialog_Bitrate" xml:space="preserve">
     <value>Bitrate</value>
   </data>
   <data name="Main_DeleteChannelDialog_Confirm" xml:space="preserve">
-    <value>Delete channel</value>
+    <value>Eliminar canal</value>
   </data>
   <data name="Main_DeleteChannelDialog_Content" xml:space="preserve">
-    <value>Are you sure you want to delete channel {0}? This can not be undone.</value>
+    <value>¿Está seguro que desea eliminar el canal {0}? Esta acción se puede deshacer.</value>
   </data>
   <data name="Main_DeleteChannelDialog_Title" xml:space="preserve">
-    <value>Delete channel</value>
+    <value>Eliminar canal</value>
   </data>
   <data name="Application_Already_Running" xml:space="preserve">
-    <value>Application already running</value>
+    <value>La aplicación ya está ejecutada</value>
   </data>
   <data name="ServerSettings_Overview" xml:space="preserve">
-    <value>Overview</value>
+    <value>Resumen</value>
   </data>
   <data name="ServerSettings_Overview_ServerMaxClients" xml:space="preserve">
-    <value>Maximum clients</value>
+    <value>Máximos clientes</value>
   </data>
   <data name="ServerSettings_Overview_ServerMaxClients_Tip" xml:space="preserve">
-    <value>Sets the maximum number of simultaneously connected users to this server</value>
+    <value>Establece el número máximo de usuarios conectados simultáneamente a este servidor</value>
   </data>
   <data name="ServerSettings_Overview_ServerName" xml:space="preserve">
-    <value>Server name</value>
+    <value>Nombre del servidor</value>
   </data>
   <data name="ServerSettings_Overview_ServerNamePlaceholder" xml:space="preserve">
-    <value>My awesome server!</value>
+    <value>¡Mi impresionante servidor!</value>
   </data>
   <data name="ServerSettings_Overview_Title" xml:space="preserve">
-    <value>Server overview</value>
+    <value>Resumen del servidor</value>
   </data>
   <data name="ServerSettings_UnsavedChanges" xml:space="preserve">
-    <value>You have unsaved changes</value>
+    <value>Tienes cambios sin guardar</value>
   </data>
   <data name="ServerSettings_UnsavedChanges_Reset" xml:space="preserve">
-    <value>Reset</value>
+    <value>Reiniciar</value>
   </data>
   <data name="ServerSettings_UnsavedChanges_Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Guardar</value>
   </data>
   <data name="ConnectionFailed.Title" xml:space="preserve">
-    <value>Connection to server failed</value>
+    <value>Conexión al servidor ha fallado</value>
   </data>
   <data name="ConnectionFailed.Content" xml:space="preserve">
-    <value>Can't connect to server {0}</value>
+    <value>No se puede conectar con el servidor {0}</value>
   </data>
   <data name="Settings_Backdrop.Acrylic" xml:space="preserve">
-    <value>Acrylic</value>
+    <value>Acrílico</value>
   </data>
   <data name="Settings_Backdrop.Disabled" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Desactivado</value>
   </data>
   <data name="Settings_Backdrop.Header" xml:space="preserve">
-    <value>Backdrop</value>
+    <value>Fondo</value>
   </data>
   <data name="Settings_Backdrop.Mica" xml:space="preserve">
     <value>Mica</value>
   </data>
   <data name="Shell.AddServer" xml:space="preserve">
-    <value>Add
-server</value>
+    <value>Agregar servidor</value>
   </data>
   <data name="Main_ConnectToServer.ServerFull" xml:space="preserve">
-    <value>Server full</value>
+    <value>Servidor lleno</value>
   </data>
   <data name="Main_Reconnect" xml:space="preserve">
     <value>Reconectar</value>
