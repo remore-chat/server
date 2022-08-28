@@ -364,4 +364,10 @@ Versión de la aplicación (v{1}) no coincide con la versión del servidor (v{2}
   <data name="Main_Reconnect" xml:space="preserve">
     <value>Reconectar</value>
   </data>
+  <data name="Dialogs_Error" xml:space="preserve">
+    <value>Error occured</value>
+  </data>
+  <data name="Main_ConnectToServer_ServerWithThisAddressAlreadyPresent" xml:space="preserve">
+    <value>You already connected to this server</value>
+  </data>
 </root>
