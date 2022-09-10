@@ -145,230 +145,229 @@
     <value>このアプリについて</value>
   </data>
   <data name="Settings_AboutDescription.Text" xml:space="preserve">
-    <value>Remore - is free and open source alternative to teamspeak developed by Roxxel (https://roxxel.moe)</value>
+    <value>RemoreはRoxxel (https://roxxel.moe) によって開発された無料でオープンソースなチャットアプリです。teamspeakの代わりになることを目標としています。</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.Content" xml:space="preserve">
-    <value>Privacy Statement</value>
+    <value>プライバシーに関する情報</value>
   </data>
   <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
     <value>https://YourPrivacyUrlGoesHere/</value>
   </data>
   <data name="Main_Connect.Label" xml:space="preserve">
-    <value>Connect</value>
+    <value>追加</value>
   </data>
   <data name="Main_ConnectToServerFavorites_ConnectingToServer" xml:space="preserve">
-    <value>Connecting to server {0}</value>
+    <value>{0} に接続中...</value>
     <comment>where {0} - address of server</comment>
   </data>
   <data name="Main_ConnectToServerFavorites_FailedToConnect" xml:space="preserve">
-    <value>Failed to connect to server ({0})</value>
+    <value>{0} への接続に失敗しました</value>
     <comment>where {0} - address of server</comment>
   </data>
   <data name="Main_ConnectToServer_AddressInputPlaceholder" xml:space="preserve">
-    <value>Enter address here</value>
+    <value>アドレスを入力</value>
   </data>
   <data name="Main_ConnectToServer_AddServerToFavoritesAfterConnect" xml:space="preserve">
-    <value>Add this server to favorites after connect</value>
+    <value>このサーバーをお気に入りに追加</value>
   </data>
   <data name="Main_ConnectToServer_CloseButton" xml:space="preserve">
-    <value>Close</value>
+    <value>閉じる</value>
   </data>
   <data name="Main_ConnectToServer_ConnectButton" xml:space="preserve">
-    <value>Connect</value>
+    <value>接続</value>
   </data>
   <data name="Main_ConnectToServer_ConnectFromFavoritesList" xml:space="preserve">
-    <value>Favorites</value>
+    <value>お気に入り</value>
   </data>
   <data name="Main_ConnectToServer_ConnectWithAddress" xml:space="preserve">
-    <value>Connect with server address</value>
+    <value>アドレスを使って接続する</value>
   </data>
   <data name="Main_ConnectToServer_Description" xml:space="preserve">
-    <value>Enter address of the server you want to connect and press Connect</value>
+    <value>接続したいサーバーのアドレスを入力し、「接続」を押してください</value>
   </data>
   <data name="Main_ConnectToServer_InvalidNicknameContent" xml:space="preserve">
-    <value>Looks like your nickname isn't configured, before connecting you have to specify your nickname in settings</value>
+    <value>ニックネームが未設定です 接続する前に設定でニックネームを設定する必要があります</value>
   </data>
   <data name="Main_ConnectToServer_InvalidNicknameTitle" xml:space="preserve">
-    <value>Invald nickname</value>
+    <value>無効なニックネーム</value>
   </data>
   <data name="Main_ConnectToServer_Title" xml:space="preserve">
-    <value>Connect to server</value>
+    <value>サーバーに接続</value>
   </data>
   <data name="Main_ConnectToServer_VersionDontMatch" xml:space="preserve">
     <value>{0}
-App version (v{1}) doesn't match server's version (v{2})</value>
+アプリのバージョン (v{1}) がサーバーのバージョン (v{2}) と一致しません</value>
     <comment>{0} - server name, {1} - client version, {2} - server version</comment>
   </data>
   <data name="Main_Disconnect.Label" xml:space="preserve">
-    <value>Disconnect</value>
+    <value>切断</value>
   </data>
   <data name="Main_MessageContent.PlaceholderText" xml:space="preserve">
-    <value>Type something and press Enter to send!</value>
+    <value>入力してEnterで送信</value>
   </data>
   <data name="Main_ServerSettings.Label" xml:space="preserve">
-    <value>Server settings</value>
+    <value>サーバー設定</value>
   </data>
   <data name="Main_SetPrivilegeKey.Label" xml:space="preserve">
-    <value>Set privilege key</value>
+    <value>権限の設定</value>
   </data>
   <data name="Settings_Capture.Text" xml:space="preserve">
-    <value>Capture</value>
+    <value>キャプチャ</value>
   </data>
   <data name="Settings_Capture_CaptureDevice.Text" xml:space="preserve">
-    <value>Capture device</value>
+    <value>キャプチャデバイス</value>
   </data>
   <data name="Settings_Capture_UseVoiceActivityDetection.Text" xml:space="preserve">
-    <value>Use Voice Activity Detection</value>
+    <value>音声アクティビティを検出する</value>
   </data>
   <data name="Settings_Capture_VoiceActivityThreshold.Text" xml:space="preserve">
-    <value>Voice activity detection threshold</value>
+    <value>音声検出のしきい値</value>
   </data>
   <data name="Settings_Personalization_DefaultNickname.Text" xml:space="preserve">
-    <value>Default nickname</value>
+    <value>デフォルトニックネーム</value>
   </data>
   <data name="Settings_Personalization_DefaultNicknameDisconnectFromServer.Text" xml:space="preserve">
     <value>.</value>
   </data>
   <data name="Settings_Personalization_MinimalLength.Text" xml:space="preserve">
-    <value>Minimal length of nickname is 3 symbols</value>
+    <value>ニックネームは3文字以上です</value>
   </data>
   <data name="Settings_Playback.Text" xml:space="preserve">
-    <value>Playback</value>
+    <value>再生</value>
   </data>
   <data name="Settings_Playback_PlaybackDevice.Text" xml:space="preserve">
-    <value>Playback device</value>
+    <value>再生デバイス</value>
   </data>
   <data name="Main_PrivilegeKey.PlaceholderText" xml:space="preserve">
-    <value>Enter your privilege key</value>
+    <value>パスワードの入力</value>
   </data>
   <data name="Main_PrivilegeKey_AfterConfirmNotification.Text" xml:space="preserve">
-    <value>You must reconnect to the server for the changes to take effect</value>
+    <value>変更を有効にするには、再接続してください</value>
   </data>
   <data name="Main_PrivilegeKey_Close.Text" xml:space="preserve">
-    <value>Close</value>
+    <value>閉じる</value>
   </data>
   <data name="Main_PrivilegeKey_Confirm.Text" xml:space="preserve">
-    <value>Confirm</value>
+    <value>決定</value>
   </data>
   <data name="Main_PriviligeKey.Title" xml:space="preserve">
-    <value>Set privilege key</value>
+    <value>パスワードの設定</value>
   </data>
   <data name="Settings.Title" xml:space="preserve">
-    <value>Settings</value>
+    <value>設定</value>
   </data>
   <data name="Settings_Language.Text" xml:space="preserve">
-    <value>Language</value>
+    <value>言語</value>
   </data>
   <data name="Settings_Capture_EnableRNNoiseSuppresion" xml:space="preserve">
-    <value>Enable RNNoise noise suppression</value>
+    <value>RNNoiseノイズリダクションを有効にする</value>
   </data>
   <data name="Settings_KeyBindingsFailed" xml:space="preserve">
     <value>Looks like there's another action that bound to the key you pressed.</value>
   </data>
   <data name="Settings_KeyBindings_ActionInputPlaceholder" xml:space="preserve">
-    <value>Select action</value>
+    <value>アクションを選択</value>
   </data>
   <data name="Settings_KeyBindings_AddButton" xml:space="preserve">
-    <value>Add keybind</value>
+    <value>キー割り当てを追加</value>
   </data>
   <data name="Settings_KeyBindings_DialogTitle" xml:space="preserve">
-    <value>Create keybind</value>
+    <value>キー割り当てを作成</value>
   </data>
   <data name="Settings_KeyBindings_Header" xml:space="preserve">
-    <value>Keybinds</value>
+    <value>キー割り当て</value>
   </data>
   <data name="Settings_KeyBindings_KeyInputPlaceholder" xml:space="preserve">
-    <value>Press any key</value>
+    <value>何かキーを押してください</value>
   </data>
   <data name="Main_CreateChannelDialog_ChannelNameInputPlaceholder" xml:space="preserve">
-    <value>Channel name</value>
+    <value>チャンネル名</value>
   </data>
   <data name="Main_CreateChannelDialog_ConfirmText" xml:space="preserve">
-    <value>Create</value>
+    <value>作成</value>
   </data>
   <data name="Main_CreateChannelDialog_TextChannel" xml:space="preserve">
-    <value>Text channel</value>
+    <value>テキストチャンネル</value>
   </data>
   <data name="Main_CreateChannelDialog_Title" xml:space="preserve">
-    <value>Create channel</value>
+    <value>チャンネルを作成</value>
   </data>
   <data name="Main_CreateChannelDialog_VoiceChannel" xml:space="preserve">
-    <value>Voice channel</value>
+    <value>ボイスチャンネル</value>
   </data>
   <data name="Main_CreateChannelDialog_Bitrate" xml:space="preserve">
-    <value>Bitrate</value>
+    <value>ビットレート</value>
   </data>
   <data name="Main_DeleteChannelDialog_Confirm" xml:space="preserve">
-    <value>Delete channel</value>
+    <value>チャンネルを削除</value>
   </data>
   <data name="Main_DeleteChannelDialog_Content" xml:space="preserve">
-    <value>Are you sure you want to delete channel {0}? This can not be undone.</value>
+    <value>本当に {0} を削除しますか? この動作は取り消せません。</value>
   </data>
   <data name="Main_DeleteChannelDialog_Title" xml:space="preserve">
-    <value>Delete channel</value>
+    <value>チャンネル削除</value>
   </data>
   <data name="Application_Already_Running" xml:space="preserve">
-    <value>Application already running</value>
+    <value>アプリはすでに実行中です</value>
   </data>
   <data name="ServerSettings_Overview" xml:space="preserve">
-    <value>Overview</value>
+    <value>概要</value>
   </data>
   <data name="ServerSettings_Overview_ServerMaxClients" xml:space="preserve">
-    <value>Maximum clients</value>
+    <value>最大クライアント数</value>
   </data>
   <data name="ServerSettings_Overview_ServerMaxClients_Tip" xml:space="preserve">
-    <value>Sets the maximum number of simultaneously connected users to this server</value>
+    <value>このサーバーに同時に接続できるユーザーの数の最大値を設定します</value>
   </data>
   <data name="ServerSettings_Overview_ServerName" xml:space="preserve">
-    <value>Server name</value>
+    <value>サーバー名</value>
   </data>
   <data name="ServerSettings_Overview_ServerNamePlaceholder" xml:space="preserve">
-    <value>My awesome server!</value>
+    <value>私の素晴らしいサーバー</value>
   </data>
   <data name="ServerSettings_Overview_Title" xml:space="preserve">
-    <value>Server overview</value>
+    <value>サーバーの概要</value>
   </data>
   <data name="ServerSettings_UnsavedChanges" xml:space="preserve">
-    <value>You have unsaved changes</value>
+    <value>変更は保存されていません</value>
   </data>
   <data name="ServerSettings_UnsavedChanges_Reset" xml:space="preserve">
-    <value>Reset</value>
+    <value>リセット</value>
   </data>
   <data name="ServerSettings_UnsavedChanges_Save" xml:space="preserve">
-    <value>Save</value>
+    <value>保存</value>
   </data>
   <data name="ConnectionFailed.Title" xml:space="preserve">
-    <value>Connection to server failed</value>
+    <value>サーバーに接続できませんでした</value>
   </data>
   <data name="ConnectionFailed.Content" xml:space="preserve">
-    <value>Can't connect to server {0}</value>
+    <value>サーバーに接続できません {0}</value>
   </data>
   <data name="Settings_Backdrop.Acrylic" xml:space="preserve">
-    <value>Acrylic</value>
+    <value>背景のぼかし</value>
   </data>
   <data name="Settings_Backdrop.Disabled" xml:space="preserve">
-    <value>Disabled</value>
+    <value>無効</value>
   </data>
   <data name="Settings_Backdrop.Header" xml:space="preserve">
-    <value>Backdrop</value>
+    <value>背景</value>
   </data>
   <data name="Settings_Backdrop.Mica" xml:space="preserve">
     <value>Mica</value>
   </data>
   <data name="Shell.AddServer" xml:space="preserve">
-    <value>Add
-server</value>
+    <value>サーバーを追加</value>
   </data>
   <data name="Main_ConnectToServer.ServerFull" xml:space="preserve">
-    <value>Server full</value>
+    <value>サーバーは満員です</value>
   </data>
   <data name="Main_Reconnect" xml:space="preserve">
-    <value>Reconnect</value>
+    <value>再接続</value>
   </data>
   <data name="Dialogs_Error" xml:space="preserve">
-    <value>Error occured</value>
+    <value>エラーが発生しました</value>
   </data>
   <data name="Main_ConnectToServer_ServerWithThisAddressAlreadyPresent" xml:space="preserve">
-    <value>You already connected to this server</value>
+    <value>すでにこのサーバーに接続されています</value>
   </data>
 </root>
