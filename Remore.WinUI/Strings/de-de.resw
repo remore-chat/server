@@ -284,7 +284,7 @@ App-Version (v{1}) überstimmt nicht mit den Server (v{2}) überein</value>
     <value>Channel name</value>
   </data>
   <data name="Main_CreateChannelDialog_ConfirmText" xml:space="preserve">
-    <value>Create</value>
+    <value>Erstellen</value>
   </data>
   <data name="Main_CreateChannelDialog_TextChannel" xml:space="preserve">
     <value>Text channel</value>
@@ -299,19 +299,19 @@ App-Version (v{1}) überstimmt nicht mit den Server (v{2}) überein</value>
     <value>Bitrate</value>
   </data>
   <data name="Main_DeleteChannelDialog_Confirm" xml:space="preserve">
-    <value>Delete channel</value>
+    <value>Kanal löschen</value>
   </data>
   <data name="Main_DeleteChannelDialog_Content" xml:space="preserve">
     <value>Are you sure you want to delete channel {0}? This can not be undone.</value>
   </data>
   <data name="Main_DeleteChannelDialog_Title" xml:space="preserve">
-    <value>Delete channel</value>
+    <value>Kanal löschen</value>
   </data>
   <data name="Application_Already_Running" xml:space="preserve">
     <value>Application already running</value>
   </data>
   <data name="ServerSettings_Overview" xml:space="preserve">
-    <value>Overview</value>
+    <value>Übersicht</value>
   </data>
   <data name="ServerSettings_Overview_ServerMaxClients" xml:space="preserve">
     <value>Maximum clients</value>
@@ -332,10 +332,10 @@ App-Version (v{1}) überstimmt nicht mit den Server (v{2}) überein</value>
     <value>You have unsaved changes</value>
   </data>
   <data name="ServerSettings_UnsavedChanges_Reset" xml:space="preserve">
-    <value>Reset</value>
+    <value>Zurücksetzen</value>
   </data>
   <data name="ServerSettings_UnsavedChanges_Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Speichern</value>
   </data>
   <data name="ConnectionFailed.Title" xml:space="preserve">
     <value>Connection to server failed</value>
@@ -347,7 +347,7 @@ App-Version (v{1}) überstimmt nicht mit den Server (v{2}) überein</value>
     <value>Acrylic</value>
   </data>
   <data name="Settings_Backdrop.Disabled" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Deaktiviert</value>
   </data>
   <data name="Settings_Backdrop.Header" xml:space="preserve">
     <value>Backdrop</value>
@@ -356,17 +356,16 @@ App-Version (v{1}) überstimmt nicht mit den Server (v{2}) überein</value>
     <value>Mica</value>
   </data>
   <data name="Shell.AddServer" xml:space="preserve">
-    <value>Add
-server</value>
+    <value>Server hinzufügen</value>
   </data>
   <data name="Main_ConnectToServer.ServerFull" xml:space="preserve">
     <value>Server full</value>
   </data>
   <data name="Main_Reconnect" xml:space="preserve">
-    <value>Reconnect</value>
+    <value>Neu verbinden</value>
   </data>
   <data name="Dialogs_Error" xml:space="preserve">
-    <value>Error occured</value>
+    <value>Ein Fehler ist aufgetreten</value>
   </data>
   <data name="Main_ConnectToServer_ServerWithThisAddressAlreadyPresent" xml:space="preserve">
     <value>You already connected to this server</value>
